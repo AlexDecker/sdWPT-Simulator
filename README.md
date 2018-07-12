@@ -1,2 +1,2 @@
-# sdWPT
-Software-defined wireless power transfer simulator
+# sdWPT Simulator
+Software-defined wireless power transfer simulator for MATLAB
