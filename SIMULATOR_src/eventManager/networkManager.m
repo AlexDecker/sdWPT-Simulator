@@ -6,13 +6,15 @@ classdef networkManager
        np%número de nós passivos. O número de ativos é sempre 1
 	   latencia
 	   sigma %desvio padrão da latência para enviar mensagens
+	   SINR_PARAMS
    end
    methods
-       function obj = networkManager(np,latencia,sigma)
+       function obj = networkManager(np,latencia,sigma,SINR_PARAMS)
            obj.eventList=[];
            obj.np = np;
 		   obj.latencia = latencia;
 		   obj.sigma = sigma;
+		   obj.SINR_PARAMS = SINR_PARAMS;
        end
        
        function obj = addEvent(obj,isMsg,owner,data,T0,vTime,s)
@@ -22,8 +24,28 @@ classdef networkManager
            [~, ind] = sort([obj.eventList.time]);
            obj.eventList = obj.eventList(ind);
        end
+	   
+       function obj = setTimer(obj,myId,globalTime,vTime)
+           obj = addEvent(obj,false,myId,[],globalTime,vTime,0);
+       end
        
-       function obj = send(obj,dest,data,globalTime)
+       function resp = emptyEnventList(obj)
+           resp = (isempty(obj.eventList));
+       end
+       
+       function [GlobalTime, owner, isMsg, data, obj] = nextEvent(obj)
+           ev = obj.eventList(1);
+           obj.eventList = obj.eventList(2:end);
+           GlobalTime = ev.time;
+           owner = ev.owner;
+           isMsg = ev.isMsg;
+           data = ev.data;
+       end
+	   
+	   %Network functions
+	   
+	   %Reliable send - infinit range and no noise or interfearance%%%%%%%%%%%%%
+	   function obj = send(obj,dest,data,globalTime)
            if((dest>obj.np)||(dest<0))
                warningMsg('(NetworkManager) dest out of bounds');
                return;
@@ -43,21 +65,13 @@ classdef networkManager
 		   end
        end
 	   
-       function obj = setTimer(obj,myId,globalTime,vTime)
-           obj = addEvent(obj,false,myId,[],globalTime,vTime,0);
+	   %Realistic send - using SWIPT%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	   function obj = send_SWIPT(obj,dest,data,globalTime,WPTManager)
+           obj = send(obj,dest,data,globalTime);
        end
-       
-       function resp = emptyEnventList(obj)
-           resp = (isempty(obj.eventList));
-       end
-       
-       function [GlobalTime, owner, isMsg, data, obj] = nextEvent(obj)
-           ev = obj.eventList(1);
-           obj.eventList = obj.eventList(2:end);
-           GlobalTime = ev.time;
-           owner = ev.owner;
-           isMsg = ev.isMsg;
-           data = ev.data;
+	   %Realistic send - using RF%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	   function obj = send_RF(obj,dest,data,globalTime,WPTManager)
+           obj = send(obj,dest,data,globalTime);
        end
    end
 end

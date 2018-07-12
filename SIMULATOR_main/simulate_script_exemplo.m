@@ -63,9 +63,13 @@ sdLAT = 0.01;
 
 SHOW_PROGRESS = true;
 
+SINR_PARAMS.b = 0.5;%minimum SINR for the message to be undertood
+SINR_PARAMS.a = 2;%expoent for free-space path loss (RF only)
+SINR_PARAMS.N = 0.1;%Noise (W)
+
 [LOG_dev_list,LOG_app_list] = Simulate('save.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
     IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
-	powerTX,powerRX,LATENCIA,sdLAT);
+	powerTX,powerRX,LATENCIA,sdLAT,SINR_PARAMS);
 
 %VISUALIZAÇÃO DOS RESULTADOS
 	

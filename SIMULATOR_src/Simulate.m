@@ -1,6 +1,6 @@
 function [LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
-    IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
-	powerTX,powerRX,LATENCIA,sdLAT)
+    IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
+	LATENCIA,sdLAT,SINR_PARAMS)
     
 	GlobalTime = 0;
 	
@@ -15,7 +15,7 @@ function [LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOTAL_TIME
 	Manager = setVt(Manager, zeros(NTX,1), 0);
     
     %O objeto abaixo cuida dos aspectos eventos em redes
-    network = networkManager(length(envList(1).Coils)-NTX,LATENCIA,sdLAT);
+    network = networkManager(length(envList(1).Coils)-NTX,LATENCIA,sdLAT,SINR_PARAMS);
     
     %É executada a função de inicialização do TX
     [powerTX,network,Manager] = init(powerTX,network,Manager);
