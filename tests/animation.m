@@ -25,8 +25,13 @@ function animation(eList,dtime,ds)
                 py = [py eList(i).Coils(j).y];
                 pz = [pz eList(i).Coils(j).z];
             end
-            set(h, 'XData', px, 'YData', py, 'ZData', pz);
-            drawnow %you can probably remove this line, as pause already calls drawnow
+			try
+				set(h, 'XData', px, 'YData', py, 'ZData', pz);
+				drawnow %you can probably remove this line, as pause already calls drawnow
+			catch
+				quit = true;
+				break;
+			end
         end
     end
 end
