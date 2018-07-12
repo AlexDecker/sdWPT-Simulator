@@ -2,9 +2,9 @@
 clear all;
 
 %ASPECTOS GERAIS
-NTX = 12; %número de dispositivos transmissores
+NTX = 6; %número de dispositivos transmissores
 W = 1e6;
-R = 0.5*ones(14,1);%resistência dos RLCs
+R = 0.5*ones(9,1);%resistência dos RLCs
 MAX_POWER = 600;
 TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)
 
@@ -34,7 +34,7 @@ err = 0.05;     % (5%)
 STEP=0.2;     % (s)
 
 dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err);
-DEVICE_LIST = [dev dev];
+DEVICE_LIST = [dev dev dev];
 
 %APLICAÇÕES
 TIME_SKIP = 10;% (s)
@@ -63,7 +63,7 @@ sdLAT = 0.01;
 
 SHOW_PROGRESS = true;
 
-[LOG_dev_list,LOG_app_list] = Simulate('save8.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
+[LOG_dev_list,LOG_app_list] = Simulate('save.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
     IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
 	powerTX,powerRX,LATENCIA,sdLAT);
 
@@ -71,8 +71,8 @@ SHOW_PROGRESS = true;
 	
 for i=1:length(LOG_dev_list)
 	LOG = endDataAquisition(LOG_dev_list(i));
-	%plotBatteryChart(LOG); %use isso se estiver no R2017
-    plotBatteryChart2010(LOG);%use isso se estiver no R2010
+	plotBatteryChart(LOG); %use isso se estiver no R2017
+    %plotBatteryChart2010(LOG);%use isso se estiver no R2010
 end
 
 figure;

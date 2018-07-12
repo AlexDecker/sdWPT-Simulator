@@ -182,7 +182,8 @@ classdef linearBattery
           [obj,Fase] = getFase(obj);
           current = charge_current-discharge_current;
           if((current<obj.constantCurrent_min)&&(Fase==1))
-              if time>0 %se não tiver definido uma tensão válida no init
+			  %se não tiver definido uma tensão válida no init
+              if time>0 
                 warningMsg('Current is not enough to charge the battery.');
               end
           else

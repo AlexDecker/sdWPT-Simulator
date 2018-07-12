@@ -1,15 +1,16 @@
 classdef coil
    properties
-       x
-       y
-       z
-       r %raio da área do fio em metros
-       X %coordenadas X,Y,Z do centro da bobina
+       x %list of values for x coordinate
+       y %list of values for y coordinate
+       z %list of values for z coordinate
+       r %ratio of the wire (meters)
+	   %coordinates of coil's center
+       X
        Y
        Z
    end
    methods
-      %descreve geometricamente a bobina e inicializa os atributos
+      %creates a coil centered at the origin
       function obj = coil(R2,R1,N,wire_radius,pts)
          delta = (R2-R1)/N;
          tetaMin = R1*N*2*pi/(R2-R1);
@@ -21,10 +22,10 @@ classdef coil
          obj.r = wire_radius;
          obj.X = 0;obj.Y = 0;obj.Z = 0;
       end
+	  
       function plotCoil(obj)
            plot3(obj.x, obj.y, obj.z);
       end
-      
       function obj = rotateCoilX(obj,ang)
           tX = obj.X;tY = obj.Y;tZ = obj.Z;
           obj = translateCoil(obj,-tX,-tY,-tZ);
@@ -72,7 +73,7 @@ classdef coil
           obj.Y = obj.Y + ty;
           obj.Z = obj.Z + tz;
       end
-      
+      %evaluate the mutual inductance between two coils
       function L = evalMutualInductance(obj1, obj2)
         L=inductance_neuman(obj1.x,obj1.y,obj1.z,obj2.x,obj2.y,obj2.z);
       end
