@@ -186,6 +186,13 @@ classdef linearBattery
                 if time>0 
                     warningMsg('Current is not enough to charge the battery.');
                 end
+                if current<0
+                    %se a corrente de entrada não é capaz de suprir o consumo do dispositivo
+                    obj.Q = obj.Q+current*timeVariation;
+                    if(obj.Q<0)%limitando o SOC em 0%
+                        obj.Q = 0
+                    end
+                end
             else
                 obj.Q = obj.Q+current*timeVariation;
                 if obj.Q>obj.Qmax%limitando o SOC em 100%
