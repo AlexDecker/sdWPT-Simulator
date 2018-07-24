@@ -1,6 +1,6 @@
 function [LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
     IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
-	LATENCIA,sdLAT,SINR_PARAMS)
+	B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF)
     
 	GlobalTime = 0;
 	
@@ -15,13 +15,19 @@ function [LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOTAL_TIME
 	Manager = setVt(Manager, zeros(NTX,1), 0);
     
     %O objeto abaixo cuida dos aspectos eventos em redes
-    network = networkManager(length(envList(1).Coils)-NTX,LATENCIA,sdLAT,SINR_PARAMS);
+    network = networkManager(length(envList(1).Coils)-NTX);
     
     %É executada a função de inicialização do TX
+    if(powerTX.ID!=0)
+        error('powerTX is not a powerTXApplication');
+    end
     [powerTX,network,Manager] = init(powerTX,network,Manager);
     
     %São executadas as funções de inicialização dos RX
     for i=1:length(powerRX);
+        if(powerRX(i).ID!=i)
+            error('ID of powerRX(i) must be equals to its index in powerRX vector');
+        end
         [powerRX(i),network,Manager] = init(powerRX(i),network,Manager);
     end
 
@@ -31,7 +37,12 @@ function [LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOTAL_TIME
             break;
 		end
         
-		[GlobalTime, owner, isMsg, data, network] = nextEvent(network);
+		[GlobalTime, conflictingMsgs, event, network] = nextEvent(network);
+        
+        owner = event.owner;
+        creator = event.creator;
+        isMsg = event.isMsg;
+        data = event.data;
 
         if(GlobalTime>TOTAL_TIME)
 			disp('TOTAL_TIME achieved');
@@ -40,13 +51,31 @@ function [LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOTAL_TIME
         
         if(owner==0)%TX
             if(isMsg)
-                [powerTX, network, Manager] = handleMessage(powerTX,data,GlobalTime,network,Manager);
+                if(powerTX.SEND_OPTIONS.baudRate~=powerRX(creator).SEND_OPTIONS.baudRate)
+                    warningMsg('BaudRate values do not match');
+                end
+                [I,~,~,Manager] = getSystemState(Manager,GlobalTime);
+                Z = getCompleteLastZMatrix(Manager);
+                if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,..
+                    N_RF,I,Z)
+                    [powerTX, network, Manager] = handleMessage(...
+                        powerTX,data,GlobalTime,network,Manager);
+                end
             else                
                 [powerTX, network, Manager] = handleTimer(powerTX,GlobalTime,network,Manager);
             end
         else%RX
             if(isMsg)
-                [powerRX(owner), network, Manager] = handleMessage(powerRX(owner),data,GlobalTime,network,Manager);
+                if(powerTX.SEND_OPTIONS.baudRate~=powerRX(owner).SEND_OPTIONS.baudRate)
+                    warningMsg('BaudRate values do not match');
+                end
+                [I,~,~,Manager] = getSystemState(Manager,GlobalTime);
+                Z = getCompleteLastZMatrix(Manager);
+                if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,...
+                    N_RF,I,Z)
+                    [powerRX(owner), network, Manager] = handleMessage(...
+                        powerRX(owner),data,GlobalTime,network,Manager);
+                end
             else
                 [powerRX(owner), network, Manager] = handleTimer(powerRX(owner),GlobalTime,network,Manager);
             end

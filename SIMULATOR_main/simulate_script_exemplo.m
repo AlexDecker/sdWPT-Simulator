@@ -5,7 +5,7 @@ clear all;
 NTX = 6; %número de dispositivos transmissores
 W = 1e6;
 R = 0.5*ones(9,1);%resistência dos RLCs
-MAX_POWER = 100;%600;
+MAX_POWER = 200;%600;
 TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)
 
 %BATERIA
@@ -63,15 +63,15 @@ sdLAT = 0.01;
 
 SHOW_PROGRESS = true;
 
-SINR_PARAMS.b_SWIPT = 0.5;%minimum SINR for the message to be undertood
-SINR_PARAMS.b_RF = 0.5;%minimum SINR for the message to be undertood
-SINR_PARAMS.a_RF = 2;%expoent for free-space path loss (RF only)
-SINR_PARAMS.N_SWIPT = 0.1;%Noise for SWIPT (W)
-SINR_PARAMS.N_RF = 0.1;%Noise for RF (W)
+B_SWIPT = 0.5;%minimum SINR for the message to be undertood
+B_RF = 0.5;%minimum SINR for the message to be undertood
+A_RF = 2;%expoent for free-space path loss (RF only)
+N_SWIPT = 0.1;%Noise for SWIPT (W)
+N_RF = 0.1;%Noise for RF (W)
 
 [LOG_dev_list,LOG_app_list] = Simulate('testENV.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
-    IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
-	powerTX,powerRX,LATENCIA,sdLAT,SINR_PARAMS);
+    IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
+    LATENCIA,sdLAT,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
 %VISUALIZAÇÃO DOS RESULTADOS
 	

@@ -25,7 +25,9 @@ classdef powerTXApplication_exemplo < powerTXApplication
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
-            netManager = broadcast(obj,netManager,0,0);%faz um broadcast com seu id (0)
+            %canal 1 de RF, 1000bps, 5W
+            obj = setSendOptions(obj,1,1000,5);
+            netManager = broadcast(obj,netManager,0,32,0);%faz um broadcast com seu id (0, 32 bits)
             netManager = setTimer(netManager,0,0,10);
         end
 
