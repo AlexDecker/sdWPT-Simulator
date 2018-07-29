@@ -88,8 +88,8 @@ classdef networkManager
             for(i=0:obj.np)
                 %é somado 1 pois os identificadores se iniciam em 0 e a indexação no matlab
                 %se inicia em 1
-                resp = resp&&noNextEvent(msgRFEventLists(i+1));
-                resp = resp&&noNextEvent(msgSWIPTEventLists(i+1));
+                resp = resp&&noNextEvent(obj.msgRFEventLists(i+1));
+                resp = resp&&noNextEvent(obj.msgSWIPTEventLists(i+1));
             end
             resp = (isempty(obj.timerEventList)&&resp);
         end
@@ -173,8 +173,8 @@ classdef networkManager
                             %busca os eventos conflitantes
                             for i=1:length(obj.msgSWIPTEventLists)
                                 if(i~=event.creator+1)%se não tiver a mesma origem
-                                    c = conflictingEvents(obj.msgSWIPTEventLists(i),event);
-                                    conflictingMsgs = [conflictingMsgs,c];
+                                    c.events = conflictingEvents(obj.msgSWIPTEventLists(i),event);
+                                    conflictingMsgs = [conflictingMsgs;c];
                                 end
                             end
                         otherwise
@@ -190,7 +190,7 @@ classdef networkManager
                             %busca os eventos conflitantes
                             for i=1:length(obj.msgRFEventLists)
                                 if(i~=event.creator+1)%se não tiver a mesma origem
-                                    c = conflictingEvents(obj.msgRFEventLists(i),event);
+                                    c.events = conflictingEvents(obj.msgRFEventLists(i),event);
                                     conflictingMsgs = [conflictingMsgs,c];
                                 end
                             end
@@ -265,8 +265,8 @@ classdef networkManager
             obj.newEventId = obj.newEventId + 1;
         end
 
-        function obj = broadcast(obj,src,data,dataLen,options,globalTime)
-            if((src>obj.np)||(src<0)||(dataLen<=0))
+        function obj = broadcast(obj,myId,data,dataLen,options,globalTime)
+            if((myId>obj.np)||(myId<0)||(dataLen<=0))
                 warningMsg('(NetworkManager) parameter out of bounds');
                 return;
             end
@@ -282,7 +282,7 @@ classdef networkManager
             
             %envia uma mensagem para cada dispositivo excetuando o transmissor
             for i=0:obj.np
-                if(i~=src)
+                if(i~=myId)
                     switch(options.type)
                         case 0
                             %é somado 1 pois os identificadores se iniciam em 0 e no matlab a

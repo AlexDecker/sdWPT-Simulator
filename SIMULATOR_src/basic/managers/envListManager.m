@@ -106,14 +106,16 @@ classdef envListManager
         end
 
         %RL: resistência equivalente do dispositivo atrelado a cada receptor.
-        function [obj,I] = getCurrent(obj,RL,time)%requer onisciência
+        function [obj,I,TRANSMITTER_DATA] = getCurrent(obj,RL,...
+            TRANSMITTER_DATA,time)
             if ~check(obj)
                 error('envListManager: attribute violation');
             end
             Z = getZ(obj,time);
-            [obj.mostRecentZ,obj.RS,I]=calculateCurrents(obj.Vt,Z,RL,obj.RS,...
-                obj.err,obj.maxResistance,obj.ifactor,obj.dfactor,...
+            [obj.mostRecentZ,obj.RS,I]=calculateCurrents(obj.Vt,Z,RL,...
+                obj.RS,obj.err,obj.maxResistance,obj.ifactor,obj.dfactor,...
                 obj.iVel,obj.maxPower);
+            TRANSMITTER_DATA = logRLData(TRANSMITTER_DATA,obj.RS,time);
         end
     end
 end

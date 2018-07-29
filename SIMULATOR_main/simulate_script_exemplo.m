@@ -58,9 +58,6 @@ DFACTOR=2;
 INIT_VEL=0.01;
 MAX_ERR = 0.005;
 
-LATENCIA = 0.1;
-sdLAT = 0.01;
-
 SHOW_PROGRESS = true;
 
 B_SWIPT = 0.5;%minimum SINR for the message to be undertood
@@ -69,9 +66,9 @@ A_RF = 2;%expoent for free-space path loss (RF only)
 N_SWIPT = 0.1;%Noise for SWIPT (W)
 N_RF = 0.1;%Noise for RF (W)
 
-[LOG_dev_list,LOG_app_list] = Simulate('testENV.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
+[~,LOG_dev_list,LOG_app_list] = Simulate('testENV.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
     IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
-    LATENCIA,sdLAT,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
+    B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
 %VISUALIZAÇÃO DOS RESULTADOS
 	

@@ -14,8 +14,9 @@ classdef envListManagerBAT
 
         showProgress %se verdadeiro, imprime na tela o progresso da simulação
         lastPrint %utilizado para reduzir o número de prints de progresso
-
-        DEVICE_DATA %lista de simulationResults
+        
+        TRANSMITTER_DATA %simulationResults (TX)
+        DEVICE_DATA %lista de simulationResults (RX)
         nt %número de transmissores
 
         latestCI %os últimos valores calculados da corrente em fasores
@@ -39,7 +40,9 @@ classdef envListManagerBAT
             obj.lastPrint=0;
 
             obj.latestCI = zeros(length(deviceList)+obj.nt,1);
-
+            
+            obj.TRANSMITTER_DATA = simulationResults(0);
+            
             obj.DEVICE_DATA=[];
             for i=1:length(deviceList)
                 obj.DEVICE_DATA = [obj.DEVICE_DATA simulationResults(i)];
@@ -105,13 +108,31 @@ classdef envListManagerBAT
             obj.ENV.Vt = Vt;
             t = t0;
             [obj,RL] = calculateAllRL(obj,t,Vt);
-            [obj.ENV,I0] = getCurrent(obj.ENV,RL,t);
+            [obj.ENV,I0,obj.TRANSMITTER_DATA] = getCurrent(obj.ENV,RL,...
+                obj.TRANSMITTER_DATA,t);
+            %log-------------------
+            obj.TRANSMITTER_DATA = logBCData(obj.TRANSMITTER_DATA,...
+                I0(1:obj.nt),t);
+            for i=1:length(obj.DEVICE_DATA)
+                obj.DEVICE_DATA(i) = logBCData(obj.DEVICE_DATA(i),...
+                    I0(i+obj.nt),t);
+            end
+            %log-------------------
             I1=I0;%valor default
             t=t+obj.step;
             while(t<t1)
                 [obj,RL] = calculateAllRL(obj,t,Vt);
-                [obj.ENV,I1] = getCurrent(obj.ENV,RL,t);
+                [obj.ENV,I1,obj.TRANSMITTER_DATA] = getCurrent(obj.ENV,RL,...
+                    obj.TRANSMITTER_DATA,t);
                 meanI = (I1+I0)/2;
+                %log-------------------
+                obj.TRANSMITTER_DATA = logBCData(obj.TRANSMITTER_DATA,...
+                    meanI(1:obj.nt),t);
+                for i=1:length(obj.DEVICE_DATA)
+                    obj.DEVICE_DATA(i) = logBCData(obj.DEVICE_DATA(i),...
+                        meanI(i+obj.nt),t);
+                end
+                %log-------------------
                 for i=1:length(obj.deviceList)
                     [obj.deviceList(i),obj.DEVICE_DATA(i)] = updateDeviceState(obj.deviceList(i),...
                     meanI(length(Vt)+i), obj.step,obj.DEVICE_DATA(i),t);
@@ -175,6 +196,21 @@ classdef envListManagerBAT
                 Q(i) = obj.deviceList(i).bat.Q;
             end
             I = abs(cI);
+        end
+        
+        %calcula o vetor de corrente e a matriz de impedância completa
+        %com base em estimativas de simulationResults para determinado
+        %momento t
+        function [curr,Z] = getEstimates(obj,t)
+            curr = getCurrentEstimate(obj.TRANSMITTER_DATA,t);
+            RS = getRLEstimate(obj.TRANSMITTER_DATA,t);
+            RL = [];
+            for i=1:length(obj.DEVICE_DATA)
+                curr = [curr,getCurrentEstimate(obj.DEVICE_DATA(i),t)];
+                RL = [RL,getRLEstimate(obj.DEVICE_DATA(i),t)];
+            end
+            
+            Z = getZ(obj.ENV,t) + diag([RS*ones(1,obj.nt),RL]);
         end
     end
 end

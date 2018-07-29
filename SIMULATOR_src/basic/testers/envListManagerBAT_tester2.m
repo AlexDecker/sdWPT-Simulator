@@ -1,12 +1,12 @@
 %script para testar o envListManagerBAT
 clear all;
-env = Environment([0 0],0,0);%criando um objeto vazio
-env.M = 5e-7*[0 1 1;1 0 1;1 1 0]; %indutância mútua de 50uH
+env = Environment([0 0],0,0,false);%criando um objeto vazio
+env.M = 5e-7*[0 1 0.5;1 0 1;0.5 1 0]; %indutância mútua de 50uH
 
 envList = [env env];
 
 w = 1e6;
-R = [0.5 0.5 0.5]';%resistência dos RLCs
+R = [0.5 2 0.5]';%resistência dos RLCs
 maxPower = 50;%mude para 20 e veja os efeitos da saturação
 tTime = 6000;%segundos de simulação (em tempo virtual)
 

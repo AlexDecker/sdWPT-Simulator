@@ -46,7 +46,7 @@ coilListPrototype = [translateCoil(coilPrototypeTX,-R2_tx-stx,+2*R2_tx+stx,0)%1
                 translateCoil(coilPrototypeRX,0,0,0.15)
                 translateCoil(coilPrototypeRX,0,-(2*R2_tx+stx),0.05)];
             
-envPrototype = Environment(coilListPrototype,1e+5,zeros(1,length(coilListPrototype)));
+envPrototype = Environment(coilListPrototype,1e+5,zeros(1,length(coilListPrototype)),true);
 
 envList = envPrototype;
 if fixedSeed ~= -1
@@ -60,7 +60,7 @@ for i=2:nFrames
         aux = [aux rotateCoilX(rotateCoilY(c,unifrnd(-maxR,maxR)),...
                     unifrnd(-maxR,maxR))];
     end
-    envList = [envList Environment([coilListPrototype(1:ntx).' aux],1e+5,zeros(1,length(coilListPrototype)))];
+    envList = [envList Environment([coilListPrototype(1:ntx).' aux],1e+5,zeros(1,length(coilListPrototype)),true)];
 end
 
 ok = true;

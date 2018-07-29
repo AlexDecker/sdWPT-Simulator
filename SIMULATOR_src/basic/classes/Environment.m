@@ -5,21 +5,25 @@ classdef Environment
         M
         R
         w
+        conferable
     end
     methods
         %inicia a lista de coils e a matriz de acoplamento. R é a lista de
         %resistências ohmicas dos RLCs em ordem, V a lista de tensões das
         %fontes (0 para receptores) e w é a frequência ressonante.
-        function obj = Environment(Coils,w,R)
+        function obj = Environment(Coils,w,R,conferable)
             obj.Coils = Coils;
             obj.w = w;
             obj.R = R;
+            obj.conferable = conferable;
         end
 
         function r = check(obj)
             r = true;
-            for i = 1:length(obj.Coils)
-                r = r && check(obj.Coils(i));
+            if(obj.conferable)
+                for i = 1:length(obj.Coils)
+                    r = r && check(obj.Coils(i));
+                end
             end
         end
 

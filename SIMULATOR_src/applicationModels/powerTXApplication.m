@@ -4,7 +4,7 @@ classdef powerTXApplication < powerApplication
     end
     methods(Access=public)
         function obj = powerTXApplication()
-           obj@powerTXApplication(0);%construindo a estrutura referente à superclasse (ID=0)
+           obj@powerApplication(0);%construindo a estrutura referente à superclasse (ID=0)
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
