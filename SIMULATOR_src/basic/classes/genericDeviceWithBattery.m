@@ -2,9 +2,10 @@
 %a contactless IPT system for EV charger" de Chen et al.
 
 classdef genericDeviceWithBattery
-
-    properties(SetAccess = private, GetAccess = public)
+    properties(Access = public)
         bat %linearBattery
+    end
+    properties(SetAccess = private, GetAccess = public)
         power_m %média de potência consumida (W)
         power_sd %desvio padrão da potência consumida
         minV %tensão mínima necessária para o dispositivo operar

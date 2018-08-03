@@ -45,7 +45,7 @@ while true
             end
             if(~past)
                 %se não tiver sido escolhido ainda, escolha o de menor time1
-                if(length(event1)==0)
+                if(isempty(event1))
                     event1 = eventList(i);
                 else
                     if(eventList(i).time1<event1.time1)
@@ -74,13 +74,19 @@ while true
         end
     end
     
-    [globalTime, conflictingMsgs2, event2, network] = nextEvent(network);
+    [globalTime, c, event2, network] = nextEvent(network);
+    conflictingMsgs2 = [];
+    for i=1:length(c)
+        if(~isempty(c(i)))
+            conflictingMsgs2 = [conflictingMsgs2,c(i).events];
+        end
+    end
     
     if(length(event1)~=length(event2))
         error('Events have different lenghts');
     else
-        if(length(event1)==0)
-            if((length(conflictingMsgs1)~=0)||(length(conflictingMsgs2)~=0))
+        if(isempty(event1))
+            if((~isempty(conflictingMsgs1))||(~isempty(conflictingMsgs2)))
                 error('ConflictingMsgs must be empty');
             else
                 disp('OK');

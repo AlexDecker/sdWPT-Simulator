@@ -11,7 +11,7 @@ newEventId = 0;
 
 while true
     for i=1:2
-        if(rand<0.5)
+        if(rand<0.2)
             myId = i;
             owner = i+1;
             dataLen = round(rand*900)+100;
@@ -49,7 +49,7 @@ while true
             end
             if(~past)
                 %se não tiver sido escolhido ainda, escolha o de menor time1
-                if(length(event1)==0)
+                if(isempty(event1))
                     event1 = eventList1(i);
                 else
                     if(eventList1(i).time1<event1.time1)
@@ -126,8 +126,8 @@ while true
     if(length(event1)~=length(event2))
         error('Events have different lenghts');
     else
-        if(length(event1)==0)
-            if((length(conflictingMsgs1)~=0)||(length(conflictingMsgs2)~=0))
+        if(isempty(event1))
+            if((~isempty(conflictingMsgs1))||(~isempty(conflictingMsgs2)))
                 error('ConflictingMsgs must be empty');
             else
                 disp('OK');

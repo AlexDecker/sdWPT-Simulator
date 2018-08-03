@@ -4,17 +4,27 @@ classdef Environment
         Coils
         M
         R
+        C
         w
         conferable
     end
     methods
         %inicia a lista de coils e a matriz de acoplamento. R é a lista de
         %resistências ohmicas dos RLCs em ordem, V a lista de tensões das
-        %fontes (0 para receptores) e w é a frequência ressonante.
-        function obj = Environment(Coils,w,R,conferable)
+        %fontes (0 para receptores), w é a frequência da fonte e C (opcional)
+        %é a lista em ordem das capacitâncias dos circuitos. Na falta de C,
+        %é presumida ressonância magnética. Use conferable como false caso
+        %queira usar uma versão simplificada para testes
+        %(vide envListManagerBAT_tester)
+        function obj = Environment(Coils,w,R,conferable,C)
             obj.Coils = Coils;
             obj.w = w;
             obj.R = R;
+            if exist('C','var')
+                obj.C = C;
+            else
+                obj.C = [];
+            end
             obj.conferable = conferable;
         end
 
@@ -31,16 +41,12 @@ classdef Environment
         function obj = evalM(obj,M)
             for i = 1:length(M)
                 for j = 1:length(M)
-                    if i==j
-                        M(i,j)=0;%self-inductance não é calculada aqui.
-                    else
-                        if (M(i,j)==-1)
-                            if(M(j,i)~=-1)
-                                M(i,j)=M(j,i);
-                            else
-                                disp('Iniciando calculo de acoplamento');
-                                M(i,j)=evalMutualInductance(obj.Coils(i), obj.Coils(j));
-                            end
+                    if (M(i,j)==-1)
+                        if(M(j,i)~=-1)
+                            M(i,j)=M(j,i);
+                        else
+                            disp('Iniciando calculo de acoplamento');
+                            M(i,j)=evalMutualInductance(obj.Coils(i), obj.Coils(j));
                         end
                     end
                 end
@@ -52,7 +58,12 @@ classdef Environment
             if(length(obj.R)~=length(obj.M))
                 error('R and M sizes dont agree');
             end
-            Z = diag(obj.R)-(1i)*obj.w*obj.M;
+            
+            if(isempty(obj.C))
+                obj.C = 1./(obj.w^2*diag(obj.M));
+            end
+                
+            Z = diag(obj.R) - (1i)*(obj.w*obj.M - diag(1./(obj.w*obj.C)));
         end
     end
 end

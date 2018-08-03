@@ -1,5 +1,5 @@
 classdef coil
-    properties
+    properties(SetAccess = private, GetAccess = public)
         x %list of values for x coordinate
         y %list of values for y coordinate
         z %list of values for z coordinate
@@ -10,15 +10,11 @@ classdef coil
         Z
     end
     methods
-        %creates a coil centered at the origin
-        function obj = coil(R2,R1,N,wire_radius,pts)
-            delta = (R2-R1)/N;
-            tetaMin = R1*N*2*pi/(R2-R1);
-            tetaMax = R2*N*2*pi/(R2-R1);
-            teta = linspace(tetaMin,tetaMax,pts);
-            obj.x = delta*teta.*cos(teta)/(2*pi);
-            obj.y = delta*teta.*sin(teta)/(2*pi);
-            obj.z = zeros(1,pts);
+        %creates a coil
+        function obj = coil(x,y,z,wire_radius)
+            obj.x = x;
+            obj.y = y;
+            obj.z = z;
             obj.r = wire_radius;
             obj.X = 0;obj.Y = 0;obj.Z = 0;
         end
@@ -87,7 +83,9 @@ classdef coil
         
         %evaluate the mutual inductance between two coils
         function L = evalMutualInductance(obj1, obj2)
-            L=inductance_neuman(obj1.x,obj1.y,obj1.z,obj2.x,obj2.y,obj2.z);
+            L=inductance_neuman(obj1.x,obj1.y,obj1.z,obj2.x,obj2.y,obj2.z,...
+                max(obj1.r,obj2.r));
         end
+        
     end
 end

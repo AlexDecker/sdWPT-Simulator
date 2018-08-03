@@ -145,6 +145,7 @@ classdef networkManager
             
             %garbage collector (eventos anteriores ao nextEvent (msg) de menor time0 não
             %são mais necessários
+            
             if(~isempty(oldestTime0))
                 for i=0:obj.np
                     obj.msgSWIPTEventLists(i+1) = cleanUntilT(obj.msgSWIPTEventLists(i+1),...

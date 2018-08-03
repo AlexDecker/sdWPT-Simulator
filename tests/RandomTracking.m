@@ -12,9 +12,9 @@ nthreads = 4;%para o processamento paralelo
 
 maxV = 0;%amplitude das variações de translação
 maxR = 0;%amplitude das variações de rotação
-dV = 0.1;%velocidade de distanciamento
+dV = 0.05;%velocidade de distanciamento
 
-nFrames = 7;
+nFrames = 5;
 ntx = 6;%número de transmissores
 stx = 0.01;%espaçamento entre os transmissores
 
@@ -33,8 +33,8 @@ pts = 750;%resolução de cada bobina
 
 shift = 4*R2_tx+4*stx;%distância entre os conjuntos de 6 bobinas tradicionais
 
-coilPrototypeRX = coil(R2_rx,R1_rx,N_rx,wire_radius,pts);
-coilPrototypeTX = coil(R2_tx,R1_tx,N_tx,wire_radius,pts);
+coilPrototypeRX = SpiralPlanarCoil(R2_rx,R1_rx,N_rx,wire_radius,pts);
+coilPrototypeTX = SpiralPlanarCoil(R2_tx,R1_tx,N_tx,wire_radius,pts);
 
 coilListPrototype = [translateCoil(coilPrototypeTX,-R2_tx-stx,+2*R2_tx+stx,0)%1
                 translateCoil(coilPrototypeTX,-R2_tx-stx,0,0)%2
@@ -71,10 +71,13 @@ end
 if(ok)
     if evalMutualCoupling
         %o primeiro é o único que precisa ser completamente calculado
-        disp('Iniciando primeira bobina');
+        disp('Iniciando o primeiro quadro');
         envList(1) = evalM(envList(1),-ones(length(coilListPrototype)));
+        
+        %não é necessário recalcular a indutância entre as bobinas transmissoras
+        %nem nenhuma self-inductance
         M0 = -ones(length(coilListPrototype));
-        M0(1:ntx,1:ntx) = envList(1).M(1:ntx,1:ntx);
+        M0(1:ntx,1:ntx) = envList(1).M(1:ntx,1:ntx);%%AQUI!!!!!!!!!
         %calculado o resto
         disp('Iniciando as demais bobinas');
         parfor(i=2:length(envList),nthreads)

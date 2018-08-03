@@ -1,4 +1,4 @@
-function L=inductance_neuman(x1,y1,z1,x2,y2,z2)
+function L=inductance_neuman(x1,y1,z1,x2,y2,z2,r)
 % mutual inductance of two contours
 % conturs are polygones in 3d
 % contour 1 vertecies: x1 y1 z1
@@ -154,9 +154,14 @@ for cc=1:length(xim) % current pieces counting in first contour
     
     D=sqrt(dximt.^2+dyimt.^2+dzimt.^2);
     
-    
     dp=dxit*dxi2+dyit*dyi2+dzit*dzi2; % dot product
-    I2=I2+dp./D;
+    
+    for i=1:length(D)
+        if D(i)>r
+            I2(i)=I2(i)+dp(i)/D(i);
+        end
+    end
+    
 end
 
 mu0=4*pi*1e-7;
