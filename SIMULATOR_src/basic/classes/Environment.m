@@ -63,7 +63,10 @@ classdef Environment
                 obj.C = 1./(obj.w^2*diag(obj.M));
             end
                 
-            Z = diag(obj.R) - (1i)*(obj.w*obj.M - diag(1./(obj.w*obj.C)));
+            Z = diag(obj.R)... %resistência própria
+                - (1i)*obj.w*(obj.M-diag(diag(obj.M)))...%indutâncias dos outros
+                + (1i)*obj.w*diag(diag(obj.M))...%indutância própria
+                - (1i)*diag(1./(obj.w*obj.C));%capacitância própria
         end
     end
 end
