@@ -1,7 +1,7 @@
 %baseado no modelo apresentado em "Analysis and parameters optimization of 
 %a contactless IPT system for EV charger" de Chen et al.
 
-classdef genericDeviceWithBattery
+classdef genericDeviceWithBattery < Device
     properties(Access = public)
         bat %linearBattery
     end
@@ -10,24 +10,19 @@ classdef genericDeviceWithBattery
         power_sd %desvio padrão da potência consumida
         minV %tensão mínima necessária para o dispositivo operar
         minVTO %tensão mínima necessária para o dispositivo ligar
-        working %bool, mostra quando o dispositivo está funcionando
         err %erro percentual admitissível para os cálculos (entre 0 e 1)
 		efficiency %taxa de êxito na conversão analógico/digital (entre 0 e 1)
-		
-        chargeCurrent
-        dischargeCurrent
-        Vbatt
     end
 
     methods
         function obj = genericDeviceWithBattery(battery, power_m, power_sd,...
         minV, minVTO, err, efficiency)
+	        obj@Device(false,battery.constantCurrent_max);%se inicia desligado
             obj.bat = battery;
             obj.power_m = power_m;
             obj.power_sd = power_sd;
             obj.minV = minV;
             obj.minVTO = minVTO;
-            obj.working = false;
             obj.err = err;
             obj.efficiency = efficiency;
 
