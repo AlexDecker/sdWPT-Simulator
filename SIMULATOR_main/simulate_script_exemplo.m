@@ -30,10 +30,11 @@ power_sd = 0.001;
 minV = 2.3;     % (V)
 minVTO = 3.3;   % (V)
 err = 0.05;     % (5%)
+efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
 
 STEP=0.2;     % (s)
 
-dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err);
+dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
 DEVICE_LIST = [dev dev dev];
 
 %APLICAÇÕES
@@ -74,8 +75,8 @@ N_RF = 0.1;%Noise for RF (W)
 	
 for i=1:length(LOG_dev_list)
 	LOG = endDataAquisition(LOG_dev_list(i));
-	plotBatteryChart(LOG); %use isso se estiver no R2017
-    %plotBatteryChart2010(LOG);%use isso se estiver no R2010
+	%plotBatteryChart(LOG); %use isso se estiver no R2017
+    plotBatteryChart2010(LOG);%use isso se estiver no R2010
 end
 
 figure;

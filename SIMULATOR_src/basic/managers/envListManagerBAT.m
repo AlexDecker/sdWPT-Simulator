@@ -121,10 +121,16 @@ classdef envListManagerBAT
             I1=I0;%valor default
             t=t+obj.step;
             while(t<t1)
+            	%calcula a resistência equivalente dos consumidores de energia
                 [obj,RL] = calculateAllRL(obj,t,Vt);
+                
+                %obtém a medida de corrente em cada anel RLC
                 [obj.ENV,I1,obj.TRANSMITTER_DATA] = getCurrent(obj.ENV,RL,...
                     obj.TRANSMITTER_DATA,t);
+                    
+                %encontra o ponto médio com a última amostragem
                 meanI = (I1+I0)/2;
+                
                 %log-------------------
                 obj.TRANSMITTER_DATA = logBCData(obj.TRANSMITTER_DATA,...
                     meanI(1:obj.nt),t);
@@ -133,15 +139,21 @@ classdef envListManagerBAT
                         meanI(i+obj.nt),t);
                 end
                 %log-------------------
+                
+                %atualiza a carga das baterias de acordo com a corrente atual e o intervalo de tempo t
                 for i=1:length(obj.deviceList)
                     [obj.deviceList(i),obj.DEVICE_DATA(i)] = updateDeviceState(obj.deviceList(i),...
                     meanI(length(Vt)+i), obj.step,obj.DEVICE_DATA(i),t);
                 end
+                
                 I0 = I1;
+                
+                %visualização do progresso
                 if obj.showProgress && (obj.lastPrint ~= round(100*t/obj.ENV.tTime))
                     disp(['progress: ',num2str(round(100*t/obj.ENV.tTime)),'%']);
                     obj.lastPrint = round(100*t/obj.ENV.tTime);
                 end
+                
                 t=t+obj.step;
             end
         end

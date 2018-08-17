@@ -12,7 +12,8 @@ classdef genericDeviceWithBattery
         minVTO %tensão mínima necessária para o dispositivo ligar
         working %bool, mostra quando o dispositivo está funcionando
         err %erro percentual admitissível para os cálculos (entre 0 e 1)
-
+		efficiency %taxa de êxito na conversão analógico/digital (entre 0 e 1)
+		
         chargeCurrent
         dischargeCurrent
         Vbatt
@@ -20,7 +21,7 @@ classdef genericDeviceWithBattery
 
     methods
         function obj = genericDeviceWithBattery(battery, power_m, power_sd,...
-        minV, minVTO, err)
+        minV, minVTO, err, efficiency)
             obj.bat = battery;
             obj.power_m = power_m;
             obj.power_sd = power_sd;
@@ -28,6 +29,7 @@ classdef genericDeviceWithBattery
             obj.minVTO = minVTO;
             obj.working = false;
             obj.err = err;
+            obj.efficiency = efficiency;
 
             obj.chargeCurrent = 0;
             obj.dischargeCurrent = 0;
@@ -41,7 +43,8 @@ classdef genericDeviceWithBattery
         %verifica se os parâmetros estão em ordem
         function r=check(obj)
             r=(obj.power_m>=0)&&(obj.power_sd>=0)&&(obj.minV>=0)&&...
-                (obj.minVTO>=obj.minV)&&(obj.err>0)&&(obj.err<1)&&check(obj.bat);
+                (obj.minVTO>=obj.minV)&&(obj.err>0)&&(obj.err<1)&&check(obj.bat)&&...
+                (obj.efficiency>=0)&&(obj.efficiency<=1);
         end
 
         %retorna a corrente esperada de acordo com o procedimento de
@@ -54,8 +57,8 @@ classdef genericDeviceWithBattery
         %-timeVariation (s): intervalo de tempo
         function [obj,DEVICE_DATA] = updateDeviceState(obj, avgChargeCurrent_ac, timeVariation, DEVICE_DATA, time)
             
-            %converte a corrente para DC (ideal e sem perda)
-            avgChargeCurrent_dc = abs(avgChargeCurrent_ac);
+            %converte a corrente para DC
+            avgChargeCurrent_dc = obj.efficiency * abs(avgChargeCurrent_ac);
             
             %limita a corrente para não danificar a bateria
             if(avgChargeCurrent_dc>obj.bat.constantCurrent_max)

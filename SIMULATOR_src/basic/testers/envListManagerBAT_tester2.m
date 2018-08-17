@@ -32,8 +32,9 @@ power_sd = 0.001;
 minV = 2.3;     % (V)
 minVTO = 3.3;   % (V)
 err = 0.05;     % (5%)
+efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
 
-dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err);
+dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
 deviceList = [dev dev];
 
 ifactor=1.5;
@@ -56,5 +57,6 @@ manager = setVt(manager, Vt, 0.01);
 
 for i=1:length(manager.DEVICE_DATA)
 	LOG = endDataAquisition(manager.DEVICE_DATA(i));
-	plotBatteryChart(LOG);
+	%plotBatteryChart(LOG);
+	plotBatteryChart2010(LOG);
 end
