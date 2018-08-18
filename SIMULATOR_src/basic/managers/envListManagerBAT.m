@@ -4,7 +4,7 @@ classdef envListManagerBAT
     
     properties
         ENV %envListManager
-        deviceList %lista de dispositivos com interface compatível com genericDeviceBattery
+        deviceList %lista de dispositivos com interface compatível com Device
         Vlist %lista das tensões Vt variadas porém ainda não computadas
         Tlist %tempos em que cada entrada em Vlist foi adicionada
         CurrTime %último momento que se tem conhecimento (por leitura ou escrita)

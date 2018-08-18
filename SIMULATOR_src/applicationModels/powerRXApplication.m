@@ -23,5 +23,13 @@ classdef powerRXApplication < powerApplication
             [Current,~,~,WPTManager] = getSystemState(WPTManager,GlobalTime);
             I = Current(WPTManager.nt+obj.id);
         end
+        %obtém a corrente de recarga, a corrente de descarga e a tensão da bateria
+        function [Ir,Id,Vb,WPTManager] = getBatteryParams(obj,WPTManager,GlobalTime)
+            [~,~,~,WPTManager] = getSystemState(WPTManager,GlobalTime);
+            
+            Ir = WPTManager.deviceList(obj.id).chargeCurrent;
+            Ir = WPTManager.deviceList(obj.id).dischargeCurrent;
+            Ir = WPTManager.deviceList(obj.id).Vbatt;
+        end
     end
 end
