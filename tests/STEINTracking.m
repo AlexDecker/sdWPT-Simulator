@@ -3,8 +3,8 @@
 %nestas enquanto se movem
 clear;
 
-savefile = true;%salvar depois da execução?
-plotAnimation = true;%mostrar a animação?
+savefile = false;%salvar depois da execução?
+plotAnimation = false;%mostrar a animação?
 evalMutualCoupling = true;%calcular as interações das bobinas (operação custosa)?
 
 file = 'STEIN_ENV.mat';%arquivo para onde irão os ambientes
@@ -19,24 +19,27 @@ nFrames = 5;
 ntx = 6;%número de transmissores
 stx = 0.01;%espaçamento entre os transmissores
 
-%Dimensões das bobinas transmissoras
+%Dimensões da bobina transmissora
 R2_tx = 0.15;%raio externo
 R1_tx = 0.05;%raio interno
 N_tx = 25;%número de espiras
+ang_tx = pi/6;%trecho angular de descida da primeira para a segunda camada
+wire_radius_tx = 0.001;%espessura do fio (raio)
+pts_tx = 750;%resolução da bobina
 
-%Dimensões das bobinas receptoras
+%Dimensões da bobina receptora
 R2_rx = 0.05;%raio externo
 R1_rx = 0.025;%raio interno
 N_rx = 25;%número de espiras
+a_rx = 0.015;%dimensão da volta mais interna da bobina
+b_rx = 0.025;%dimensão da volta mais interna da bobina
+wire_radius_rx = 0.0005;%espessura do fio (raio)
+pts_rx = 750;%resolução da bobina
 
-wire_radius = 0.001;%espessura do fio
-pts = 750;%resolução de cada bobina
+coilPrototype_tx = QiTXCoil(R2_tx,R1_tx,N_tx,ang_tx,wire_radius_tx,pts_tx);
+coilPrototype_rx = QiRXCoil(R1_rx,R2_rx,N_rx,a_rx,b_rx,wire_radius_rx,pts_rx);
 
-coilPrototypeRX = QiRXCoil(R1_rx,R2_rx,N_rx,a,b,wire_radius,pts)
-coilPrototypeTX = SpiralPlanarCoil(R2_tx,R1_tx,N_tx,wire_radius,pts);
-
-coilListPrototype = [SpiralPlanarCoil(R2_tx,R1_tx,N_tx,wire_radius,pts)
-					 QiRXCoil(R1_rx,R2_rx,N_rx,a,b,wire_radius,pts)];
+coilListPrototype = [coilPrototype_tx,coilPrototype_rx];
             
 envPrototype = Environment(coilListPrototype,1e+5,zeros(1,length(coilListPrototype)),true);
 
