@@ -72,12 +72,17 @@ classdef envListManager
 
         function Z = getZ(obj,time)%requer onisciência forçada
             [i0,i1,lambda] = getIndexFromTime(obj,time);
-
-            obj.envList(i0).R = obj.R;
+			
+			%define com R os valores antes marcados com -1
+            obj.envList(i0).R = obj.envList(i0).R...
+            	+ (obj.envList(i0).R<0).*(obj.R-obj.envList(i0).R);
+            	
             obj.envList(i0).w = obj.w;
             Z0 = generateZENV(obj.envList(i0));
-
-            obj.envList(i1).R = obj.R;
+			
+			%define com R os valores antes marcados com -1
+            obj.envList(i1).R = obj.envList(i1).R...
+            	+ (obj.envList(i1).R<0).*(obj.R-obj.envList(i1).R);
             obj.envList(i1).w = obj.w;
             Z1 = generateZENV(obj.envList(i1));
 

@@ -74,7 +74,8 @@ classdef envListManagerBAT
             obj.Vlist = [obj.Vlist Vt];
             obj.Tlist = [obj.Tlist CurrTime];
         end   
-
+		
+		%para fins de medições
         function Z = getCompleteLastZMatrix(obj)
             Z = getZ(obj.ENV,obj.CurrTime)
                 + diag([obj.ENV.RS*ones(obj.nt,1);obj.previousRL]);
