@@ -1,7 +1,7 @@
 classdef QiRXCoil < coil
     methods
         %creates a spiral planar coil centered at the origin
-        %R1: outter border-radius, R2: inner border-radius,
+        %R1: inner border-radius, R2: outter border-radius,
         %N: number of turns,
         %pts: desired number of points of the path,
         %a,b:distance between the center of the borders
