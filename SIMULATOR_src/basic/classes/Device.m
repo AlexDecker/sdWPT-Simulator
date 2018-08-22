@@ -3,6 +3,7 @@ classdef Device
     properties(SetAccess = protected, GetAccess = public)
         working %bool, mostra quando o dispositivo está funcionando
 		maxCurrent %corrente máxima para não danificar o dispositivo
+		efficiency %eficiência de conversão da corrente
 		
         chargeCurrent
         dischargeCurrent
@@ -10,9 +11,10 @@ classdef Device
     end
 
     methods
-        function obj = Device(working,maxCurrent)
+        function obj = Device(working,maxCurrent,efficiency)
 			obj.working = working;
 			obj.maxCurrent = maxCurrent;
+			obj.efficiency = efficiency;
 			
             obj.chargeCurrent = 0;
             obj.dischargeCurrent = 0;
@@ -21,7 +23,9 @@ classdef Device
 
         %apenas o protótipo
         function r=check(obj)
-            r=true;
+            r=(length(obj.working)==1)&&(length(obj.maxCurrent)==1)...
+            	&&(length(obj.efficiency)==1)&&(obj.maxCurrent>0)...
+            	&&(obj.efficiency>0)&&(obj.efficiency<=1);
         end
 
         %retorna a corrente esperada de acordo com o procedimento de

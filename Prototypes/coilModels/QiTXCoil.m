@@ -5,23 +5,21 @@ classdef QiTXCoil < coil
         %ang: angle (rad) through which the wire moves from first
         %to second layers, pts: desired number of points of the path
         function obj = QiTXCoil(R2,R1,N,ang,wire_radius,pts)
-            delta = (R2-R1)/N;
             
-            tetaMin1 = R1*N*2*pi/(R2-R1);
-            tetaMax1 = R2*N*2*pi/(R2-R1);
+            delta = (R2-R1)/(2*pi*N);
             
-            teta1 = linspace(tetaMin1,tetaMax1,pts/2);
-            teta2 = linspace(tetaMax1+ang,tetaMin1+ang,pts/2);
+            teta1 = linspace(0,2*pi*N,pts/2);
+            teta2 = linspace(2*pi*N-ang,ang,pts/2);
             
-            x1 = delta*teta1.*cos(teta1)/(2*pi);
-            y1 = delta*teta1.*sin(teta1)/(2*pi);
+            x1 = (R2-teta1*delta).*cos(teta1);
+            y1 = (R2-teta1*delta).*sin(teta1);
             z1 = zeros(1,pts/2);
             
-            x2 = delta*teta2.*cos(-teta2)/(2*pi);
-            y2 = delta*teta2.*sin(-teta2)/(2*pi);
+            x2 = (R2-teta2*delta).*cos(-teta2);
+            y2 = (R2-teta2*delta).*sin(-teta2);
             z2 = 2*wire_radius*ones(1,pts/2);
             
-            obj@coil([x2,x1],[y2,y1],[z2,z1],wire_radius);
+            obj@coil([x1,x2],[y1,y2],[z1,z2],wire_radius);
         end
     end
 end

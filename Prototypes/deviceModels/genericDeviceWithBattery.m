@@ -11,20 +11,18 @@ classdef genericDeviceWithBattery < Device
         minV %tensão mínima necessária para o dispositivo operar
         minVTO %tensão mínima necessária para o dispositivo ligar
         err %erro percentual admitissível para os cálculos (entre 0 e 1)
-		efficiency %taxa de êxito na conversão analógico/digital (entre 0 e 1)
     end
 
     methods
         function obj = genericDeviceWithBattery(battery, power_m, power_sd,...
         minV, minVTO, err, efficiency)
-	        obj@Device(false,battery.constantCurrent_max);%se inicia desligado
+	        obj@Device(false,battery.constantCurrent_max,efficiency);%se inicia desligado
             obj.bat = battery;
             obj.power_m = power_m;
             obj.power_sd = power_sd;
             obj.minV = minV;
             obj.minVTO = minVTO;
             obj.err = err;
-            obj.efficiency = efficiency;
 
             obj.chargeCurrent = 0;
             obj.dischargeCurrent = 0;
