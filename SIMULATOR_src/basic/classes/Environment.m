@@ -31,8 +31,9 @@ classdef Environment
         function r = check(obj)
             r = true;
             if(obj.conferable)
+            	r = (length(obj.Coils)==length(obj.R))&&(obj.w>0);
                 for i = 1:length(obj.Coils)
-                    r = r && check(obj.Coils(i));
+                    r = r && check(obj.Coils(i).obj);
                 end
             end
         end
@@ -46,7 +47,7 @@ classdef Environment
                             M(i,j)=M(j,i);
                         else
                             disp('Iniciando calculo de acoplamento');
-                            M(i,j)=evalMutualInductance(obj.Coils(i), obj.Coils(j));
+                            M(i,j)=evalMutualInductance(obj.Coils(i).obj, obj.Coils(j).obj);
                         end
                     end
                 end

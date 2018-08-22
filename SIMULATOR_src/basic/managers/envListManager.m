@@ -102,10 +102,10 @@ classdef envListManager
             P0 = zeros(length(obj.envList(i0).Coils),3);
             P1 = zeros(length(obj.envList(i1).Coils),3);
             for j = 1:length(obj.envList(i0).Coils)
-                P0(j,:) = [obj.envList(i0).Coils(j).X,...
-                    obj.envList(i0).Coils(j).Y, obj.envList(i0).Coils(j).Z];
-                P1(j,:) = [obj.envList(i1).Coils(j).X,...
-                    obj.envList(i1).Coils(j).Y, obj.envList(i1).Coils(j).Z];
+                P0(j,:) = [obj.envList(i0).Coils(j).obj.X,...
+                    obj.envList(i0).Coils(j).obj.Y, obj.envList(i0).Coils(j).obj.Z];
+                P1(j,:) = [obj.envList(i1).Coils(j).obj.X,...
+                    obj.envList(i1).Coils(j).obj.Y, obj.envList(i1).Coils(j).obj.Z];
             end
             P = lambda*P0 + (1-lambda)*P1;
         end

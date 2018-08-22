@@ -24,8 +24,9 @@ power_sd = 0.001;
 minV = 2.3;     % (V)
 minVTO = 3.3;   % (V)
 err = 0.05;     % (5%)
+efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
 
-dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err);
+dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
 
 ifactor=1.5;
 dfactor=2;
@@ -120,14 +121,14 @@ title('SOC(%) x Battery Voltage (V)');
 figure;
 
 hold on;
-yyaxis left
-plot(timeVariation/3600*(0:1:steps2),CC);
-plot(timeVariation/3600*(0:1:steps2),IE);
-plot(timeVariation/3600*(0:1:steps2),DC);
-plot(timeVariation/3600*(0:1:steps2),VB);
+plot(timeVariation/3600*(0:1:steps2),CC,'r');
+plot(timeVariation/3600*(0:1:steps2),IE,'b');
+plot(timeVariation/3600*(0:1:steps2),DC,'g');
+plot(timeVariation/3600*(0:1:steps2),VB,'m');
 ylabel('(A) / (V)')
-yyaxis right
+legend('Charge Current','Expected Current','Discharge Current','Battery Voltage');
+figure;
 plot(timeVariation/3600*(0:1:steps2),SOC*100);
-legend('Charge Current','Expected Current','Discharge Current','Battery Voltage','SOC');
+title('SOC evolution');
 xlabel('Time (h)')
 ylabel('(%)')

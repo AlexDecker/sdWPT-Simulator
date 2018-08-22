@@ -36,17 +36,17 @@ shift = 4*R2_tx+4*stx;%distância entre os conjuntos de 6 bobinas tradicionais
 coilPrototypeRX = SpiralPlanarCoil(R2_rx,R1_rx,N_rx,wire_radius,pts);
 coilPrototypeTX = SpiralPlanarCoil(R2_tx,R1_tx,N_tx,wire_radius,pts);
 
-coilListPrototype = [translateCoil(coilPrototypeTX,-R2_tx-stx,+2*R2_tx+stx,0)%1
-                translateCoil(coilPrototypeTX,-R2_tx-stx,0,0)%2
-                translateCoil(coilPrototypeTX,-R2_tx-stx,-2*R2_tx-stx,0)%3
-                translateCoil(coilPrototypeTX,+R2_tx+stx,+2*R2_tx+stx,0)%4
-                translateCoil(coilPrototypeTX,+R2_tx+stx,0,0)%5
-                translateCoil(coilPrototypeTX,+R2_tx+stx,-2*R2_tx-stx,0)%6 - até aqui são os transmissores normais
-                translateCoil(coilPrototypeRX,0,2*R2_tx+stx,0.05)
-                translateCoil(coilPrototypeRX,0,0,0.15)
-                translateCoil(coilPrototypeRX,0,-(2*R2_tx+stx),0.05)];
+coilListPrototype = [struct('obj',translateCoil(coilPrototypeTX,-R2_tx-stx,+2*R2_tx+stx,0))%1
+                struct('obj',translateCoil(coilPrototypeTX,-R2_tx-stx,0,0))%2
+                struct('obj',translateCoil(coilPrototypeTX,-R2_tx-stx,-2*R2_tx-stx,0))%3
+                struct('obj',translateCoil(coilPrototypeTX,+R2_tx+stx,+2*R2_tx+stx,0))%4
+                struct('obj',translateCoil(coilPrototypeTX,+R2_tx+stx,0,0))%5
+                struct('obj',translateCoil(coilPrototypeTX,+R2_tx+stx,-2*R2_tx-stx,0))%6 - até aqui são os transmissores normais
+                struct('obj',translateCoil(coilPrototypeRX,0,2*R2_tx+stx,0.05))
+                struct('obj',translateCoil(coilPrototypeRX,0,0,0.15))
+                struct('obj',translateCoil(coilPrototypeRX,0,-(2*R2_tx+stx),0.05))];
             
-envPrototype = Environment(coilListPrototype,1e+5,zeros(1,length(coilListPrototype)),true);
+envPrototype = Environment(coilListPrototype,1e+5,-ones(length(coilListPrototype),1),true);
 
 envList = envPrototype;
 if fixedSeed ~= -1
@@ -55,12 +55,12 @@ end
 for i=2:nFrames
     aux = [];
     for j=ntx+1:length(coilListPrototype)
-        c = translateCoil(envList(i-1).Coils(j),unifrnd(-maxV,maxV),...
+        c = translateCoil(envList(i-1).Coils(j).obj,unifrnd(-maxV,maxV),...
                                 unifrnd(-maxV,maxV),unifrnd(-maxV,maxV)+dV);
-        aux = [aux rotateCoilX(rotateCoilY(c,unifrnd(-maxR,maxR)),...
-                    unifrnd(-maxR,maxR))];
+        aux = [aux struct('obj',rotateCoilX(rotateCoilY(c,unifrnd(-maxR,maxR)),...
+                    unifrnd(-maxR,maxR)))];
     end
-    envList = [envList Environment([coilListPrototype(1:ntx).' aux],1e+5,zeros(1,length(coilListPrototype)),true)];
+    envList = [envList Environment([coilListPrototype(1:ntx).' aux],1e+5,-ones(length(coilListPrototype),1),true)];
 end
 
 ok = true;
@@ -77,7 +77,9 @@ if(ok)
         %não é necessário recalcular a indutância entre as bobinas transmissoras
         %nem nenhuma self-inductance
         M0 = -ones(length(coilListPrototype));
-        M0(1:ntx,1:ntx) = envList(1).M(1:ntx,1:ntx);%%AQUI!!!!!!!!!
+        M0(1:ntx,1:ntx) = envList(1).M(1:ntx,1:ntx);
+        M0 = M0-diag(diag(M0))+diag(diag(envList(1).M));
+        
         %calculado o resto
         disp('Iniciando as demais bobinas');
         parfor(i=2:length(envList),nthreads)

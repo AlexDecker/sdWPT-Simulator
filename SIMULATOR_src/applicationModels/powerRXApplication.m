@@ -27,9 +27,9 @@ classdef powerRXApplication < powerApplication
         function [Ir,Id,Vb,WPTManager] = getBatteryParams(obj,WPTManager,GlobalTime)
             [~,~,~,WPTManager] = getSystemState(WPTManager,GlobalTime);
             
-            Ir = WPTManager.deviceList(obj.id).chargeCurrent;
-            Ir = WPTManager.deviceList(obj.id).dischargeCurrent;
-            Ir = WPTManager.deviceList(obj.id).Vbatt;
+            Ir = WPTManager.deviceList(obj.id).obj.chargeCurrent;
+            Id = WPTManager.deviceList(obj.id).obj.dischargeCurrent;
+            Vb = WPTManager.deviceList(obj.id).obj.Vbatt;
         end
     end
 end

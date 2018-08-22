@@ -41,7 +41,7 @@ function simulate_battery(version)
 	efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
 
 	dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
-	deviceList = dev;
+	deviceList = struct('obj',dev);
 
 	ifactor=1.5;
 	dfactor=2;

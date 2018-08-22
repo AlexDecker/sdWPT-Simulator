@@ -37,7 +37,7 @@ function simulate_script_exemplo(version)
     STEP=0.2;     % (s)
 
     dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
-    DEVICE_LIST = [dev dev dev];
+    DEVICE_LIST = [struct('obj',dev), struct('obj',dev), struct('obj',dev)];
 
     %APLICAÇÕES
     TIME_SKIP = 10;% (s)
@@ -51,7 +51,7 @@ function simulate_script_exemplo(version)
     powerRX = [];
 
     for i=1:length(R)-NTX
-        powerRX = [powerRX powerRXApplication_exemplo(i)];
+        powerRX = [powerRX struct('obj',powerRXApplication_exemplo(i))];
     end
 
     %SIMULADOR

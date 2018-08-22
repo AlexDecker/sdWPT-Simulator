@@ -28,10 +28,10 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOT
     
     %São executadas as funções de inicialização dos RX
     for i=1:length(powerRX);
-        if(powerRX(i).ID~=i)
+        if(powerRX(i).obj.ID~=i)
             error('ID of powerRX(i) must be equals to its index in powerRX vector');
         end
-        [powerRX(i),network,Manager] = init(powerRX(i),network,Manager);
+        [powerRX(i).obj,network,Manager] = init(powerRX(i).obj,network,Manager);
     end
 
     while(true)
@@ -54,7 +54,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOT
                 %se for uma mensagem
                 
                 %apenas um alerta para fins de realismo
-                if(powerTX.SEND_OPTIONS.baudRate~=powerRX(event.creator).SEND_OPTIONS.baudRate)
+                if(powerTX.SEND_OPTIONS.baudRate~=powerRX(event.creator).obj.SEND_OPTIONS.baudRate)
                     warningMsg('BaudRate values do not match');
                 end
                 
@@ -76,11 +76,11 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOT
             
                 %apenas um alerta para fins de realismo
                 if(event.creator==0)
-                    if(powerTX.SEND_OPTIONS.baudRate~=powerRX(event.owner).SEND_OPTIONS.baudRate)
+                    if(powerTX.SEND_OPTIONS.baudRate~=powerRX(event.owner).obj.SEND_OPTIONS.baudRate)
                         warningMsg('BaudRate values do not match');
                     end
                 else
-                    if(powerRX(event.creator).SEND_OPTIONS.baudRate~=powerRX(event.owner).SEND_OPTIONS.baudRate)
+                    if(powerRX(event.creator).obj.SEND_OPTIONS.baudRate~=powerRX(event.owner).obj.SEND_OPTIONS.baudRate)
                         warningMsg('BaudRate values do not match');
                     end
                 end
@@ -90,11 +90,11 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOT
                 
                 %avalia via SINR se a mensagem deve ser enviada
                 if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,I,Z,STEP))
-                    [powerRX(owner), network, Manager] = handleMessage(powerRX(event.owner),event.data,GlobalTime,network,Manager);
+                    [powerRX(owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
                 end
             else
                 %evento de timer
-                [powerRX(event.owner), network, Manager] = handleTimer(powerRX(event.owner),GlobalTime,network,Manager);
+                [powerRX(event.owner).obj, network, Manager] = handleTimer(powerRX(event.owner).obj,GlobalTime,network,Manager);
             end
         end
         
@@ -114,7 +114,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOT
 	
 	LOG_app_list = powerTX.APPLICATION_LOG;
 	for i=1:length(powerRX)
-		LOG_app_list = [LOG_app_list powerRX(i).APPLICATION_LOG];
+		LOG_app_list = [LOG_app_list powerRX(i).obj.APPLICATION_LOG];
 	end
 	
     disp(['Simulation ended at time ', num2str(GlobalTime)]);

@@ -57,7 +57,7 @@ classdef envListManagerBAT
         function r=check(obj)
             r=(obj.step>0)&&check(obj.ENV);
             for i=1:length(obj.deviceList)
-                r = r && check(obj.deviceList(i));
+                r = r && check(obj.deviceList(i).obj);
             end
         end
 
@@ -86,7 +86,7 @@ classdef envListManagerBAT
         function [obj,RL] = calculateAllRL(obj,time,Vt)
             Ie = zeros(length(obj.deviceList),1);%corrente esperada
             for i=1:length(obj.deviceList)
-                [obj.deviceList(i),Ie(i)] = expectedCurrent(obj.deviceList(i)); 
+                [obj.deviceList(i).obj,Ie(i)] = expectedCurrent(obj.deviceList(i).obj); 
                 %LOG%%%%%%%%%%%%%%%%%%%%%%%%%%
                 obj.DEVICE_DATA(i) = logIEData(obj.DEVICE_DATA(i),Ie(i),time);
                 %LOG%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,7 +143,7 @@ classdef envListManagerBAT
                 
                 %atualiza a carga das baterias de acordo com a corrente atual e o intervalo de tempo t
                 for i=1:length(obj.deviceList)
-                    [obj.deviceList(i),obj.DEVICE_DATA(i)] = updateDeviceState(obj.deviceList(i),...
+                    [obj.deviceList(i).obj,obj.DEVICE_DATA(i)] = updateDeviceState(obj.deviceList(i).obj,...
                     meanI(length(Vt)+i), obj.step,obj.DEVICE_DATA(i),t);
                 end
                 
@@ -206,7 +206,7 @@ classdef envListManagerBAT
 
             Q = zeros(length(obj.deviceList),1);
             for i=1:length(obj.deviceList)
-                Q(i) = obj.deviceList(i).bat.Q;
+                Q(i) = obj.deviceList(i).obj.bat.Q;
             end
             I = abs(cI);
         end

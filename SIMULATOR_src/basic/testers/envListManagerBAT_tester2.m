@@ -1,6 +1,6 @@
 %script para testar o envListManagerBAT
 clear all;
-env = Environment([0 0],0,0,false);%criando um objeto vazio
+env = Environment([0 0],0,[-1; -1; -1],false);%criando um objeto vazio
 env.M = 5e-7*[0 1 0.5;1 0 1;0.5 1 0]; %indutância mútua de 50uH
 
 envList = [env env];
@@ -35,7 +35,7 @@ err = 0.05;     % (5%)
 efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
 
 dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
-deviceList = [dev dev];
+deviceList = [struct('obj',dev), struct('obj',dev)];
 
 ifactor=1.5;
 dfactor=2;

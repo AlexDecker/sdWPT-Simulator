@@ -5,9 +5,9 @@ function animation(eList,dtime,ds)
     X = [];Y = [];Z = [];
     for i=1:length(eList)
         for j=1:length(eList(i).Coils)
-            X = [X eList(i).Coils(j).x];
-            Y = [Y eList(i).Coils(j).y];
-            Z = [Z eList(i).Coils(j).z];
+            X = [X eList(i).Coils(j).obj.x];
+            Y = [Y eList(i).Coils(j).obj.y];
+            Z = [Z eList(i).Coils(j).obj.z];
         end
     end
     
@@ -21,9 +21,9 @@ function animation(eList,dtime,ds)
             py = [];
             pz = [];
             for j=1:length(eList(i).Coils)
-                px = [px eList(i).Coils(j).x];
-                py = [py eList(i).Coils(j).y];
-                pz = [pz eList(i).Coils(j).z];
+                px = [px eList(i).Coils(j).obj.x];
+                py = [py eList(i).Coils(j).obj.y];
+                pz = [pz eList(i).Coils(j).obj.z];
             end
 			try
 				set(h, 'XData', px, 'YData', py, 'ZData', pz);
