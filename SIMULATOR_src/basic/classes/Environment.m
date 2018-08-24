@@ -7,6 +7,7 @@ classdef Environment
         C
         w
         conferable
+        miEnv %constante de permeabilidade magnética do meio
     end
     methods
         %inicia a lista de coils e a matriz de acoplamento. R é a lista de
@@ -26,12 +27,13 @@ classdef Environment
                 obj.C = [];
             end
             obj.conferable = conferable;
+            obj.miEnv = pi*4e-7;%este valor é apenas default e alterável via envListManager
         end
 
         function r = check(obj)
             r = true;
             if(obj.conferable)
-            	r = (length(obj.Coils)==length(obj.R))&&(obj.w>0);
+            	r = (length(obj.Coils)==length(obj.R))&&(obj.w>0)&&(obj.miEnv>0);
                 for i = 1:length(obj.Coils)
                     r = r && check(obj.Coils(i).obj);
                 end
@@ -60,13 +62,22 @@ classdef Environment
                 error('R and M sizes dont agree');
             end
             
+            if(isempty(obj.Coils))
+            	miVector = pi*4e-7*ones(length(obj.M),1);
+           	else
+		        miVector = zeros(length(obj.M),1);
+		        for i=1:length(miVector)
+		        	miVector(i) = obj.Coils(i).obj.mi;
+		        end
+		    end
+            
             if(isempty(obj.C))
-                obj.C = 1./(obj.w^2*diag(obj.M));
+                obj.C = 1./(obj.w^2*miVector.*diag(obj.M));
             end
-                
+            
             Z = diag(obj.R)... %resistência própria
-                - (1i)*obj.w*(obj.M-diag(diag(obj.M)))...%indutâncias dos outros
-                + (1i)*obj.w*diag(diag(obj.M))...%indutância própria
+                - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)))...%indutâncias dos outros
+                + (1i)*obj.w*diag(miVector.*diag(obj.M))...%indutância própria
                 - (1i)*diag(1./(obj.w*obj.C));%capacitância própria
         end
     end

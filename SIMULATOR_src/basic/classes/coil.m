@@ -8,22 +8,30 @@ classdef coil
         X
         Y
         Z
+        %Constante de permeabilidade magnética a ser considerada para
+        %a self-inductance (H/m)
+        mi
     end
     methods
         %creates a coil
-        function obj = coil(x,y,z,wire_radius)
+        function obj = coil(x,y,z,wire_radius,mi)
             obj.x = x;
             obj.y = y;
             obj.z = z;
             obj.r = wire_radius;
             obj.X = 0;obj.Y = 0;obj.Z = 0;
+            if exist('mi','var')
+                obj.mi = mi;
+            else
+                obj.mi = pi*4e-7;
+            end
         end
         
         function r = check(obj)
             r = (length(obj.x)>=2) && (length(obj.y)==length(obj.x)) &&...
                 (length(obj.z)==length(obj.x)) && (length(obj.r)==1) &&...
                 (obj.r>0) && (length(obj.X)==1) && (length(obj.Y)==1) &&...
-                (length(obj.Z)==1);
+                (length(obj.Z)==1)&&(length(obj.mi)==1)&&(obj.mi>0);
         end
         
         function plotCoil(obj)

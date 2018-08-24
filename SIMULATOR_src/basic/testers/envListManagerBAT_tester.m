@@ -1,7 +1,7 @@
 %script para testar o envListManagerBAT
 clear all;
-env = Environment([0 0],0,[-1; -1],false);%criando um objeto vazio
-env.M = 5e-7*[0 1;1 0]; %indutância mútua de 50uH
+env = Environment([],0,[-1; -1],false);%criando um objeto vazio
+env.M = 5e-7*[0 1;1 0]/(pi*4e-7); %indutância mútua de 50uH (sem a permissividade magnética)
 
 envList = [env env];
 

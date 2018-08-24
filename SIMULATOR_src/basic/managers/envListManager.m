@@ -12,12 +12,12 @@ classdef envListManager
         iVel %velocidade inical para a busca de RS
         maxPower %potência máxima da fonte dos transmissores
         mostRecentZ %valor mais recente de Z utilizado 
-
+		miEnv %constante de permeabilidade magnética do meio
         RS %ponto de partida para a busca do próximo vetor RS
     end
     methods
         function obj = envListManager(envList,Vt,w,R,tTime,err,...
-            maxResistance,ifactor,dfactor,iVel,maxPower)
+            maxResistance,ifactor,dfactor,iVel,maxPower,miEnv)
             obj.envList = envList;
             obj.Vt = Vt;
             obj.w = w;
@@ -30,7 +30,12 @@ classdef envListManager
             obj.dfactor=dfactor;
             obj.iVel=iVel;
             obj.maxPower=maxPower;
-
+            if exist('miEnv','var')
+                obj.miEnv = miEnv;
+            else
+                obj.miEnv = pi*4e-7;
+            end
+			
             obj.mostRecentZ = getZ(obj,0);
 
             obj.RS = 0;
@@ -76,13 +81,16 @@ classdef envListManager
 			%define com R os valores antes marcados com -1
             obj.envList(i0).R = obj.envList(i0).R...
             	+ (obj.envList(i0).R<0).*(obj.R-obj.envList(i0).R);
-            	
+            
+            obj.envList(i0).miEnv = obj.miEnv;
             obj.envList(i0).w = obj.w;
             Z0 = generateZENV(obj.envList(i0));
 			
 			%define com R os valores antes marcados com -1
             obj.envList(i1).R = obj.envList(i1).R...
             	+ (obj.envList(i1).R<0).*(obj.R-obj.envList(i1).R);
+            	
+           	obj.envList(i1).miEnv = obj.miEnv;
             obj.envList(i1).w = obj.w;
             Z1 = generateZENV(obj.envList(i1));
 

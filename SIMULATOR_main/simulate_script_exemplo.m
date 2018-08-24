@@ -7,7 +7,7 @@ function simulate_script_exemplo(version)
     NTX = 6; %número de dispositivos transmissores
     W = 1e6;
     R = 0.5*ones(9,1);%resistência dos RLCs
-    MAX_POWER = 200;%600;
+    MAX_POWER = 200;%W;
     TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)
 
     %BATERIA

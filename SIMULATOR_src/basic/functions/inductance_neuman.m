@@ -1,5 +1,5 @@
 function L=inductance_neuman(x1,y1,z1,x2,y2,z2,r)
-% mutual inductance of two contours
+% mutual inductance of two contours (sem a constante de permeabilidade)
 % conturs are polygones in 3d
 % contour 1 vertecies: x1 y1 z1
 % contour 2 vertecies: x1 y1 z1
@@ -164,5 +164,7 @@ for cc=1:length(xim) % current pieces counting in first contour
     
 end
 
-mu0=4*pi*1e-7;
-L=(mu0/(4*pi))*abs(sum(I2));
+%mu0=4*pi*1e-7;
+%L=(mu0/(4*pi))*abs(sum(I2));
+
+L=(1/(4*pi))*abs(sum(I2));
