@@ -38,7 +38,7 @@ classdef simulationResults
                 if(isempty(obj.BC))
                     obj.BC = aux;
                 else
-                    if(time>obj.BC(end,end))
+                    if(time>=obj.BC(end,end))
                         %caso esperado
                         obj.BC = [obj.BC,aux];
                     else
@@ -94,13 +94,13 @@ classdef simulationResults
                 if(isempty(obj.RL))
                     obj.RL = aux;
                 else
-                    if(time>obj.RL(end,end))
+                    if(time>=obj.RL(end,end))
                         %caso esperado
                         obj.RL = [obj.RL,aux];
                     else
                         %tratamento de excessão
                         i = find(obj, obj.RL, time);
-                        %os casos em que l log está vazio e em que a inserção é
+                        %os casos em que o log está vazio e em que a inserção é
                         %no final já são tratados individualmente. No caso em que
                         %a inserção é no início o tratamento ocorre naturalmente
                         obj.RL = [obj.RL(:,1:i),aux,obj.RL(:,i+1:end)];
@@ -181,11 +181,13 @@ classdef simulationResults
                 else
                     if(time>=log(end,end))
                         %o momento é posterior ao último que se tem registro
-                        i = length(log);
+                        s = size(log);
+                        i = s(2);
                     else
                         %i0 e i1 delimitam o espaço de busca (e fazem parte dele inclusive)
                         i0 = 1;
-                        i1 = length(log)-1; %i=end já foi tratado
+                        s = size(log);
+                        i1 = s(2)-1;%i=end já foi tratado
                         while(true)
                             i = floor((i1+i0)/2);
                             if(time>=log(end,i))

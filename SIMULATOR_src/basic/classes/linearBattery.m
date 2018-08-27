@@ -184,7 +184,8 @@ classdef linearBattery
             if((current<obj.constantCurrent_min)&&(Fase==1))
                 %se não tiver definido uma tensão válida no init
                 if time>0 
-                    warningMsg('Current is not enough to charge the battery.');
+                    warningMsg('Current is not enough to charge the battery.',...
+                    	['(Got ',num2str(current),' A from ', num2str(obj.constantCurrent_min),' A)']);
                 end
                 if current<0
                     %se a corrente de entrada não é capaz de suprir o consumo do dispositivo
