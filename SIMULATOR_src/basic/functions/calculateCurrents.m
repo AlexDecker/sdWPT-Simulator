@@ -1,14 +1,12 @@
 %saídas
 %eZ: Matriz de impedância efetivamente usada
 %RS: resistência da fonte (considerando que todos possuem a mesma fonte, ohms)
-%I: Vetor coluna com as correntes nos elementos do sistema (A)
+%I: Vetor coluna com as correntes nos elementos do sistema (A, uma por anel RLC)
 
 %entradas
-%Vt: Vetor coluna com as tensões das fontes dos transmissores (V, phasor)
-%Z: Matriz de impedância do sistema, com as resistências ohimicas na
-%diagonal principal e -jwM nas demais posições, sendo j a unidade
-%imaginária, w a frequência angular e M a indutância
-%RL: resistência equivalente do sistema sendo carregado (ohms)
+%Vt_group: Vetor coluna com as tensões das fontes (V, phasor, uma por grupo transmissor)
+%Z: Matriz de impedância do sistema (considerando os aneis RLC)
+%RL_group: resistência equivalente do sistema sendo carregado (ohms, uma por grupo receptor)
 %RS0: RS inicial (escalar, ohms). 0 se não tiver algum valor pronto
 %err: erro percentual admissível para o limite de potência
 %maxResistance: valor máximo para a RS ou a resistência fixa (escalar, ohms)
@@ -17,30 +15,43 @@
 %dfactor: fator de decremento para a busca de RS
 %iVel: velocidade inicial para a busca de RS no espaço se soluções
 %maxPower: potência máxima da fonte de tensão (W)
+%groupMarking: groupMarking(i,j) = {1 caso i pertença ao grupo j e 0 caso contrário}.
 
-function [eZ,RS,I]=calculateCurrents(Vt,Z,RL,RS0,err,maxResistance,ifactor,...
-    dfactor,iVel,maxPower)
+function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,ifactor,...
+    dfactor,iVel,maxPower,groupMarking)
 
     s = size(Z);
-    n = s(1);
-    nt = length(Vt);
+    s2 = size(groupMarking);
+    
+    n = s(1);%número de anéis RLC
+    n_groups = s2(2);%número de grupos
+    nt_groups = length(Vt_group);%número de grupos transmissores
+    nr_groups = n_groups-nt_groups;%número de grupos receptores
+    nt = sum(sum(groupMarking(:,1:nt_groups)));%número de anéis RLC transmissores
     nr = n-nt;
     
     %verificações dos parâmetros
-    if (s(1)~=s(2))||(length(Vt)>=n)||(err<0)||(err>1)||(length(err)~=1)...
+    if (s(1)~=s(2))||(nt>=n)||(nt_groups>=n_groups)||(err<0)||(err>1)||(length(err)~=1)...
             ||(ifactor>dfactor)||(dfactor<=1)||(length(ifactor)~=1)||(length(dfactor)~=1)...
-            ||(iVel<=0)||(length(iVel)~=1)||(length(RL)~=nr)||(sum(RL<0)>0)...
-            ||(length(RS0)~=1)||(length(maxResistance)~=1)||(length(maxPower)~=1)||(maxPower<=0)
+            ||(iVel<=0)||(length(iVel)~=1)||(length(RL_group)~=nr_groups)||(sum(RL_group<0)>0)...
+            ||(length(RS0)~=1)||(length(maxResistance)~=1)||(length(maxPower)~=1)...
+            ||(maxPower<=0)||(~checkGroupMarking(groupMarking))
         error('calculateCurrents: parameter error');
     end
     
-    V = [Vt;zeros(nr,1)];
-    Z = Z + diag([zeros(nt,1);RL]);
+    %passando de espaço de grupo para espaço de anel RLC
+    V = groupMarking*[Vt_group;zeros(nr_groups,1)];
+    
+    %montando a matriz de impedância Z do sistema
+    Z = composeZMatrix(Z,[zeros(nt_groups,1);RL_group],groupMarking);
     for i=1:n %para evitar problemas com singularidade matricial
-        if Z(i,i)>maxResistance
-            Z(i,i)=maxResistance;
+    	for j=1:n
+		    if real(Z(i,j))>maxResistance
+		        Z(i,j)=maxResistance+imag(Z(i,j));
+		    end
         end
     end
+    
     I = Z\V;
     P = abs(V.'*I);
     
@@ -54,13 +65,15 @@ function [eZ,RS,I]=calculateCurrents(Vt,Z,RL,RS0,err,maxResistance,ifactor,...
         deltaRS = 0;
         while true
 			ttl = ttl-1;
-            R = diag([RS*ones(nt,1);zeros(nr,1)]);
-            I = (Z+R)\V;
+
+            I = composeZMatrix(Z,[RS*ones(nt_groups,1);zeros(nr_groups,1)],groupMarking)\V;
+            
             %cálculo do erros
             absPerr = abs(V.'*I)-maxPower;%se negativo, diminua a resistência.
             %se positivo, aumente a resistência
-
-            cond1 = (abs(absPerr)<err*maxPower); %se todos estão dentro da margem de erro tolerável
+			
+			%se todos estão dentro da margem de erro tolerável
+            cond1 = (abs(absPerr)<err*maxPower); 
 
             cond2 = (absPerr<0); %deve diminuir a resistência
             cond3 = (RS==0); %já abaixou a resistência ao mínimo

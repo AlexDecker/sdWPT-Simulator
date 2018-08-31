@@ -1,14 +1,24 @@
 %script para testar o envListManagerBAT
 clear all;
-env = Environment([],0,[-1; -1],false);%criando um objeto vazio
-env.M = 5e-7*[0 1;1 0]/(pi*4e-7); %indutância mútua de 50uH (sem a permissividade magnética)
 
-envList = [env env];
-
+mi = (pi*4e-7);
+M = 5e-7;
 w = 1e6;
 R = [0.5 0.5]';%resistência dos RLCs
 maxPower = 50;
 tTime = 6000;%segundos de simulação (em tempo virtual)
+
+coilPrototype = coil([0;1],[0;1],[0;1],1,mi);%dummie coil
+
+%dummie group
+groupPrototype.coils.obj = coilPrototype;
+groupPrototype.R = -1;
+groupPrototype.C = 0;
+
+envPrototype = Environment([groupPrototype;groupPrototype],w,mi);%dummie environment
+envPrototype.M = M*[0 1;1 0]/mi; %indutância mútua de 50uH (sem a permissividade magnética)
+
+envList = [envPrototype envPrototype];
 
 %bateria
 fase1Limit = 0.7;          % (70%)

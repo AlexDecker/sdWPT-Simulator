@@ -1,5 +1,5 @@
 function r = rightDelivered(message,messageLists,WPTManager,...
-    B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,curr,Z,step)
+    B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z,step)
     %TODO: descontar a energia gasta
     r = true;
     out = false;

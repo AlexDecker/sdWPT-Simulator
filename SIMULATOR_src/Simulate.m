@@ -58,11 +58,11 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOT
                     warningMsg('BaudRate values do not match');
                 end
                 
-                [I,~,~,Manager] = getSystemState(Manager,GlobalTime);
+                [~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);
                 Z = getCompleteLastZMatrix(Manager);
                 
                 %avalia via SINR se a mensagem deve ser enviada
-                if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,I,Z,STEP))
+                if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z,STEP))
                     %função de tratamento de mensagens do destinatário
                     [powerTX, network, Manager] = handleMessage(powerTX,event.data,GlobalTime,network,Manager);
                 end
@@ -85,11 +85,11 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOT
                     end
                 end
                 
-                [I,~,~,Manager] = getSystemState(Manager,GlobalTime);
+                [~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);
                 Z = getCompleteLastZMatrix(Manager);
                 
                 %avalia via SINR se a mensagem deve ser enviada
-                if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,I,Z,STEP))
+                if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z,STEP))
                     [powerRX(owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
                 end
             else
@@ -99,7 +99,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,W,TOT
         end
         
         %Resultados desta execução (acesso direto a medições, com onisciência)
-        [~,~,~,Manager] = getSystemState(Manager,GlobalTime);%atualiza o sistema a cada evento
+        [~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);%atualiza o sistema a cada evento
         cleanWarningMsg();%permite que mensagens se acumulem apenas a cada evento
     end
     

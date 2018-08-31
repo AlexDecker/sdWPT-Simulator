@@ -1,27 +1,27 @@
 classdef envListManager
     properties
         envList
-        Vt %vetor coluna com a tensão ac de cada transmissor (V) 
-        R %vetor coluna com a resisência de cada Transmissor/Receptor (ohm)
-        w %frequência ressonante angular (rad/s)
-        tTime %tempo decorrido do primeiro (time=0) ao último quadro (s)
-        err %erro admissível para a potência (%)
-        maxResistance %teto para qualquer valor de resistência (ohm)
+        Vt_group %vetor coluna com a tensï¿½o ac de cada grupo transmissor (V) 
+        R_group %vetor coluna com a resisï¿½ncia de cada grupo Transmissor/Receptor (ohm)
+        w %frequï¿½ncia ressonante angular (rad/s)
+        tTime %tempo decorrido do primeiro (time=0) ao ï¿½ltimo quadro (s)
+        err %erro admissï¿½vel para a potï¿½ncia (%)
+        maxResistance %teto para qualquer valor de resistï¿½ncia (ohm)
         ifactor %> 1 e < dfactor, usado na busca por RS
         dfactor
         iVel %velocidade inical para a busca de RS
-        maxPower %potência máxima da fonte dos transmissores
+        maxPower %potï¿½ncia mï¿½xima da fonte dos transmissores
         mostRecentZ %valor mais recente de Z utilizado 
-		miEnv %constante de permeabilidade magnética do meio
-        RS %ponto de partida para a busca do próximo vetor RS
+		miEnv %constante de permeabilidade magnï¿½tica do meio
+        RS %ponto de partida para a busca do prï¿½ximo vetor RS
     end
     methods
-        function obj = envListManager(envList,Vt,w,R,tTime,err,...
+        function obj = envListManager(envList,Vt_group,w,R_group,tTime,err,...
             maxResistance,ifactor,dfactor,iVel,maxPower,miEnv)
             obj.envList = envList;
-            obj.Vt = Vt;
+            obj.Vt_group = Vt_group;
             obj.w = w;
-            obj.R = R;
+            obj.R_group = R_group;
             obj.tTime=tTime;
 
             obj.err=err;
@@ -43,29 +43,33 @@ classdef envListManager
             if ~check(obj)
                 error('envListManager: parameter error');
             else
-                disp(['Environment Manager created with ',num2str(length(obj.Vt)),...
-                    ' actives and ',num2str(length(obj.R)-length(obj.Vt)),' passives']);
+                disp(['Environment Manager created with ',num2str(length(obj.Vt_group)),...
+                    ' active groups and ',num2str(length(obj.R_group)-length(obj.Vt_group)),' passives']);
             end
         end
 
-        %verifica se os parâmetros estão em ordem
+        %verifica se os parï¿½metros estï¿½o em ordem
         function r = check(obj)
             r = true;
             for i = 1:length(obj.envList)
                 r = r && check(obj.envList(i));
             end
-            r = r && (obj.w>0) && (sum(obj.R<=0)==0) && (obj.tTime>0) &&...
-                (length(obj.R)==length(obj.mostRecentZ)) &&...
-                (length(obj.Vt)<length(obj.R)) && (obj.err>0) && (obj.err<1) &&...
-                (sum(obj.R>obj.maxResistance)==0) && (length(obj.maxResistance)==1) &&...
+            r = r && (obj.w>0) && (sum(obj.R_group<=0)==0) && (obj.tTime>0) &&...
+                (length(obj.R_group)<=length(obj.mostRecentZ)) &&...
+                (length(obj.Vt_group)<length(obj.R_group)) && (obj.err>0) && (obj.err<1) &&...
+                (sum(obj.R_group>obj.maxResistance)==0) && (length(obj.maxResistance)==1) &&...
                 (obj.ifactor>1) && (length(obj.ifactor)==1) && ...
                 (obj.dfactor>obj.ifactor) && (length(obj.dfactor)==1) && ...
                 (obj.iVel>0) && (length(obj.iVel)==1) && ...
                 (obj.maxPower>0) && (length(obj.maxPower)==1);
         end
+        
+        function groupMarking = getGroupMarking(obj)
+        	groupMarking = obj.envList(1).groupMarking;
+        end
 
-        %os dados de que não se têm informação são aproximados com uma
-        %combinação linear convexa, na forma
+        %os dados de que nï¿½o se tï¿½m informaï¿½ï¿½o sï¿½o aproximados com uma
+        %combinaï¿½ï¿½o linear convexa, na forma
         %dado[time] = dado[i0]*lambda+(1-lambda)*dado[1]
         function [i0,i1,lambda] = getIndexFromTime(obj,time)
             n = length(obj.envList);
@@ -75,33 +79,27 @@ classdef envListManager
             lambda = i1-i;
         end
 
-        function Z = getZ(obj,time)%requer onisciência forçada
+        function Z = getZ(obj,time)%requer onisciï¿½ncia forï¿½ada
             [i0,i1,lambda] = getIndexFromTime(obj,time);
 			
 			%define com R os valores antes marcados com -1
-            obj.envList(i0).R = obj.envList(i0).R...
-            	+ (obj.envList(i0).R<0).*(obj.R-obj.envList(i0).R);
+            obj.envList(i0).R_group = obj.envList(i0).R_group...
+            	+ (obj.envList(i0).R_group<0).*(obj.R_group-obj.envList(i0).R_group);
             
             obj.envList(i0).miEnv = obj.miEnv;
             obj.envList(i0).w = obj.w;
             Z0 = generateZENV(obj.envList(i0));
 			
 			%define com R os valores antes marcados com -1
-            obj.envList(i1).R = obj.envList(i1).R...
-            	+ (obj.envList(i1).R<0).*(obj.R-obj.envList(i1).R);
+            obj.envList(i1).R_group = obj.envList(i1).R_group...
+            	+ (obj.envList(i1).R_group<0).*(obj.R_group-obj.envList(i1).R_group);
             	
            	obj.envList(i1).miEnv = obj.miEnv;
             obj.envList(i1).w = obj.w;
             Z1 = generateZENV(obj.envList(i1));
 
-            Z = lambda*Z0+(1-lambda)*Z1;%faz a interpolação linear entre as
-            %duas matrizes que se tem informação real
-        end
-
-        %sub-matriz de Z correspondente aos trasmissores
-        function Zt = getZt(obj,time)
-            Z = getZ(obj,time);
-            Zt = Z(1:length(obj.Vt),1:length(obj.Vt));
+            Z = lambda*Z0+(1-lambda)*Z1;%faz a interpolaï¿½ï¿½o linear entre as
+            %duas matrizes que se tem informaï¿½ï¿½o real
         end
 
         %generates a matrix in which each line is the ordered triple of the center of each coil.
@@ -118,16 +116,16 @@ classdef envListManager
             P = lambda*P0 + (1-lambda)*P1;
         end
 
-        %RL: resistência equivalente do dispositivo atrelado a cada receptor.
-        function [obj,I,TRANSMITTER_DATA] = getCurrent(obj,RL,...
+        %RL_group: resistï¿½ncia equivalente do dispositivo atrelado a cada grupo receptor.
+        function [obj,I,TRANSMITTER_DATA] = getCurrent(obj,RL_group,...
             TRANSMITTER_DATA,time)
             if ~check(obj)
                 error('envListManager: attribute violation');
             end
             Z = getZ(obj,time);
-            [obj.mostRecentZ,obj.RS,I]=calculateCurrents(obj.Vt,Z,RL,...
+            [obj.mostRecentZ,obj.RS,I]=calculateCurrents(obj.Vt_group,Z,RL_group,...
                 obj.RS,obj.err,obj.maxResistance,obj.ifactor,obj.dfactor,...
-                obj.iVel,obj.maxPower);
+                obj.iVel,obj.maxPower,getGroupMarking(obj));
             TRANSMITTER_DATA = logRLData(TRANSMITTER_DATA,obj.RS,time);
         end
     end

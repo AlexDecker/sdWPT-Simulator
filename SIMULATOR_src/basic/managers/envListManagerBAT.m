@@ -1,25 +1,26 @@
-%Baseado no envListManager, porém com suporte à recarga de baterias.
+%Baseado no envListManager, porï¿½m com suporte ï¿½ recarga de baterias.
 
 classdef envListManagerBAT
     
     properties
         ENV %envListManager
-        deviceList %lista de dispositivos com interface compatível com Device
-        Vlist %lista das tensões Vt variadas porém ainda não computadas
+        deviceList %lista de dispositivos com interface compatï¿½vel com Device
+        Vlist %lista das tensï¿½es Vt variadas porï¿½m ainda nï¿½o computadas
         Tlist %tempos em que cada entrada em Vlist foi adicionada
-        CurrTime %último momento que se tem conhecimento (por leitura ou escrita)
-        previousRL %RL da última iteração, guardado por razões de eficiência
-        step %passo de integração
+        CurrTime %ï¿½ltimo momento que se tem conhecimento (por leitura ou escrita)
+        previousRL %RL da ï¿½ltima iteraï¿½ï¿½o, guardado por razï¿½es de eficiï¿½ncia
+        step %passo de integraï¿½ï¿½o
         first %booleano. indica a primeira vez que as baterias foram atualizadas
 
-        showProgress %se verdadeiro, imprime na tela o progresso da simulação
-        lastPrint %utilizado para reduzir o número de prints de progresso
+        showProgress %se verdadeiro, imprime na tela o progresso da simulaï¿½ï¿½o
+        lastPrint %utilizado para reduzir o nï¿½mero de prints de progresso
         
         TRANSMITTER_DATA %simulationResults (TX)
         DEVICE_DATA %lista de simulationResults (RX)
-        nt %número de transmissores
+        nt %nï¿½mero de anï¿½is transmissores
+        nt_groups %nï¿½mero de grupos transmissores
 
-        latestCI %os últimos valores calculados da corrente em fasores
+        latestCI %os ï¿½ltimos valores calculados da corrente em fasores
     end
 
     methods
@@ -27,8 +28,12 @@ classdef envListManagerBAT
             obj.ENV = elManager;
             obj.deviceList = deviceList;
 
-            obj.nt = length(obj.ENV.Vt);
-            obj.Vlist = zeros(length(obj.ENV.Vt),0);
+            obj.nt_groups = length(obj.ENV.Vt_group);
+            
+            gm = getGroupMarking(obj.ENV);
+            obj.nt = sum(sum(gm(:,1:obj.nt_groups)));
+            
+            obj.Vlist = zeros(length(obj.ENV.Vt_group),0);
             obj.Tlist = [];
             obj.CurrTime = 0;
 
@@ -39,7 +44,7 @@ classdef envListManagerBAT
             obj.showProgress=showProgress;
             obj.lastPrint=0;
 
-            obj.latestCI = zeros(length(deviceList)+obj.nt,1);
+            obj.latestCI = zeros(length(obj.ENV.envList(1).Coils),1);
             
             obj.TRANSMITTER_DATA = simulationResults(0);
             
@@ -53,7 +58,7 @@ classdef envListManagerBAT
             end
         end
 
-        %verifica se os parâmetros estão em ordem
+        %verifica se os parï¿½metros estï¿½o em ordem
         function r=check(obj)
             r=(obj.step>0)&&check(obj.ENV);
             for i=1:length(obj.deviceList)
@@ -61,9 +66,9 @@ classdef envListManagerBAT
             end
         end
 
-        %altera o vetor de tansões dos transmissores
+        %altera o vetor de tansï¿½es dos transmissores
         function obj = setVt(obj, Vt, CurrTime)
-            if(length(Vt)~=length(obj.ENV.Vt))
+            if(length(Vt)~=obj.nt_groups)
                 error('envListManagerBAT: Inconsistent value of Vt');
             end
             if(CurrTime<obj.CurrTime)
@@ -75,13 +80,13 @@ classdef envListManagerBAT
             obj.Tlist = [obj.Tlist CurrTime];
         end   
 		
-		%para fins de medições
+		%para fins de mediï¿½ï¿½es
         function Z = getCompleteLastZMatrix(obj)
-            Z = getZ(obj.ENV,obj.CurrTime)
-                + diag([obj.ENV.RS*ones(obj.nt,1);obj.previousRL]);
+        	Z = composeZMatrix(getZ(obj.ENV,obj.CurrTime),...
+        		[obj.ENV.RS*ones(obj.nt_groups,1);obj.previousRL],getGroupMarking(obj.ENV));
         end
 
-        %calcula o vetor de resistências que abstrai os dispositivos
+        %calcula o vetor de resistï¿½ncias que abstrai os dispositivos
         %receptores do sistema
         function [obj,RL] = calculateAllRL(obj,time,Vt)
             Ie = zeros(length(obj.deviceList),1);%corrente esperada
@@ -91,10 +96,10 @@ classdef envListManagerBAT
                 obj.DEVICE_DATA(i) = logIEData(obj.DEVICE_DATA(i),Ie(i),time);
                 %LOG%%%%%%%%%%%%%%%%%%%%%%%%%%
             end
-            Z = getZ(obj.ENV,time);%matriz de impedância atual
+            Z = getZ(obj.ENV,time);%matriz de impedï¿½ncia atual
             [RL,~,~]=calculateRLMatrix(Vt,Z,Ie,obj.previousRL,...
             obj.ENV.err,obj.ENV.maxResistance,obj.ENV.ifactor,...
-            obj.ENV.dfactor,obj.ENV.iVel);
+            obj.ENV.dfactor,obj.ENV.iVel,getGroupMarking(obj.ENV));
 
             %LOG%%%%%%%%%%%%%%%%%%%%%%%%%%
             for i=1:length(obj.deviceList)
@@ -102,11 +107,11 @@ classdef envListManagerBAT
             end
             %LOG%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            obj.previousRL = RL;%para recalcular futuramente com mais eficiência
+            obj.previousRL = RL;%para recalcular futuramente com mais eficiï¿½ncia
         end
 
-        function [obj,I1] = integrateCurrent(obj,t0,t1,Vt)
-            obj.ENV.Vt = Vt;
+        function [obj,I1] = integrateCurrent(obj,t0,t1,Vt)        
+            obj.ENV.Vt_group = Vt;
             t = t0;
             [obj,RL] = calculateAllRL(obj,t,Vt);
             [obj.ENV,I0,obj.TRANSMITTER_DATA] = getCurrent(obj.ENV,RL,...
@@ -115,41 +120,44 @@ classdef envListManagerBAT
             obj.TRANSMITTER_DATA = logBCData(obj.TRANSMITTER_DATA,...
                 I0(1:obj.nt),t);
             for i=1:length(obj.DEVICE_DATA)
+            	[c0,c1] = getGroupLimits(obj.nt_groups+i);
                 obj.DEVICE_DATA(i) = logBCData(obj.DEVICE_DATA(i),...
-                    I0(i+obj.nt),t);
+                    I0(c0:c1),t);
             end
             %log-------------------
             I1=I0;%valor default
             t=t+obj.step;
             while(t<t1)
-            	%calcula a resistência equivalente dos consumidores de energia
+            	%calcula a resistï¿½ncia equivalente dos consumidores de energia
                 [obj,RL] = calculateAllRL(obj,t,Vt);
                 
-                %obtém a medida de corrente em cada anel RLC
+                %obtï¿½m a medida de corrente em cada anel RLC
                 [obj.ENV,I1,obj.TRANSMITTER_DATA] = getCurrent(obj.ENV,RL,...
                     obj.TRANSMITTER_DATA,t);
                     
-                %encontra o ponto médio com a última amostragem
+                %encontra o ponto mï¿½dio com a ï¿½ltima amostragem
                 meanI = (I1+I0)/2;
+                meanI_group = envList(1).groupMarking'*meanI;
                 
                 %log-------------------
                 obj.TRANSMITTER_DATA = logBCData(obj.TRANSMITTER_DATA,...
                     meanI(1:obj.nt),t);
                 for i=1:length(obj.DEVICE_DATA)
+                	[c0,c1] = getGroupLimits(obj.nt_groups+i);
                     obj.DEVICE_DATA(i) = logBCData(obj.DEVICE_DATA(i),...
-                        meanI(i+obj.nt),t);
+                        meanI(c0:c1),t);
                 end
                 %log-------------------
                 
                 %atualiza a carga das baterias de acordo com a corrente atual e o intervalo de tempo t
                 for i=1:length(obj.deviceList)
                     [obj.deviceList(i).obj,obj.DEVICE_DATA(i)] = updateDeviceState(obj.deviceList(i).obj,...
-                    meanI(length(Vt)+i), obj.step,obj.DEVICE_DATA(i),t);
+                    meanI_group(length(Vt)+i), obj.step,obj.DEVICE_DATA(i),t);
                 end
                 
                 I0 = I1;
                 
-                %visualização do progresso
+                %visualizaï¿½ï¿½o do progresso
                 if obj.showProgress && (obj.lastPrint ~= round(100*t/obj.ENV.tTime))
                     disp(['progress: ',num2str(round(100*t/obj.ENV.tTime)),'%']);
                     obj.lastPrint = round(100*t/obj.ENV.tTime);
@@ -159,7 +167,7 @@ classdef envListManagerBAT
             end
         end
 
-        %atualiza a carga de todas as baterias, porém admitindo Vt variável
+        %atualiza a carga de todas as baterias, porï¿½m admitindo Vt variï¿½vel
         function [obj,I] = updateBatteryCharges(obj,time)
             if(time<obj.CurrTime)
                 error('envListManagerBAT: Inconsistent time value');
@@ -188,7 +196,7 @@ classdef envListManagerBAT
         end
 
         %'tolerance' pode ser utilizado para melhorar o desempenho
-        function [cI,I,Q,obj] = getSystemState(obj,CurrTime,tolerance)
+        function [cI,I,cI_groups,Q,obj] = getSystemState(obj,CurrTime,tolerance)
             s = size(obj.Vlist);
             nCol = s(2);
             if exist('tolerance','var')
@@ -196,12 +204,12 @@ classdef envListManagerBAT
             else
                 tolerance_val = 0;%valor default
             end
-            %recalcule se já tiver passado mais do que um período de tolerância,
-            %se a tensão tiver mudado ou se for a primeira medição
+            %recalcule se jï¿½ tiver passado mais do que um perï¿½odo de tolerï¿½ncia,
+            %se a tensï¿½o tiver mudado ou se for a primeira mediï¿½ï¿½o
             if((abs(CurrTime-obj.CurrTime)>tolerance_val)||(nCol~=1)||(obj.first))
                 [obj,cI] = updateBatteryCharges(obj,CurrTime);
             else
-                cI = obj.latestCI;%envie o último valor calculado
+                cI = obj.latestCI;%envie o ï¿½ltimo valor calculado
             end
 
             Q = zeros(length(obj.deviceList),1);
@@ -209,9 +217,10 @@ classdef envListManagerBAT
                 Q(i) = obj.deviceList(i).obj.bat.Q;
             end
             I = abs(cI);
+            cI_groups = getGroupMarking(obj.ENV)'*cI;
         end
         
-        %calcula o vetor de corrente e a matriz de impedância completa
+        %calcula o vetor de corrente e a matriz de impedï¿½ncia completa
         %com base em estimativas de simulationResults para determinado
         %momento t
         function [curr,Z] = getEstimates(obj,t)
@@ -223,7 +232,8 @@ classdef envListManagerBAT
                 RL = [RL,getRLEstimate(obj.DEVICE_DATA(i),t)];
             end
             
-            Z = getZ(obj.ENV,t) + diag([RS*ones(1,obj.nt),RL]);
+            Z = composeZMatrix(getZ(obj.ENV,obj.CurrTime),...
+        		[RS*ones(obj.nt_groups,1);RL],getGroupMarking(obj.ENV));
         end
     end
 end

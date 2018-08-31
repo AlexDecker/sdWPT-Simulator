@@ -2,44 +2,69 @@
 classdef Environment
     properties
         Coils
+        groupMarking
         M
-        R
-        C
+        R_group
+        C_group
         w
-        conferable
-        miEnv %constante de permeabilidade magnética do meio
+        miEnv %constante de permeabilidade magnï¿½tica do meio
     end
     methods
-        %inicia a lista de coils e a matriz de acoplamento. R é a lista de
-        %resistências ohmicas dos RLCs em ordem, V a lista de tensões das
-        %fontes (0 para receptores), w é a frequência da fonte e C (opcional)
-        %é a lista em ordem das capacitâncias dos circuitos. Na falta de C,
-        %é presumida ressonância magnética. Use conferable como false caso
-        %queira usar uma versão simplificada para testes
-        %(vide envListManagerBAT_tester)
-        function obj = Environment(Coils,w,R,conferable,C)
-            obj.Coils = Coils;
-            obj.w = w;
-            obj.R = R;
-            if exist('C','var')
-                obj.C = C;
-            else
-                obj.C = [];
+	    %Argumentos:
+	    %w - frequï¿½ncia angular do sinal da fonte de tensï¿½o
+	    %miEnv - constante de permeabilidade magnï¿½tica do meio (H/m)
+	    %groups - cada elemento desse vetor corresponde a um dos circuitos do sistema, que ï¿½ um
+	    %anel RLC atrelado com um nï¿½mero arbitrï¿½rio de bobinas em paralelo
+        %Estrutura esperada para groups:
+        %groups(i) - Lista de estruras
+        %	.coils(j) - Lista de estruturas
+        %		.obj  - Objeto coil (esse nï¿½vel a mais permite coils de diferentes classes)
+        %	.R - Valor da resistï¿½ncia (real positiva)
+        %	.C - Valor da capacitï¿½ncia (real positiva)
+        function obj = Environment(groups,w,miEnv)
+        	obj.w = w;
+            obj.miEnv = miEnv;
+            obj.Coils = [];
+            obj.R_group = [];
+            obj.C_group = [];
+            obj.groupMarking = zeros(0,length(groups));
+            
+            for i=1:length(groups)
+            	obj.Coils = [obj.Coils;groups(i).coils];
+		        obj.R_group = [obj.R_group;groups(i).R];
+		        obj.C_group = [obj.C_group;groups(i).C];
+		        gm = [zeros(length(groups(i).coils),i-1),...
+		        		ones(length(groups(i).coils),1),...
+		        		zeros(length(groups(i).coils),length(groups)-i)];
+		        obj.groupMarking = [obj.groupMarking;gm];
             end
-            obj.conferable = conferable;
-            obj.miEnv = pi*4e-7;%este valor é apenas default e alterável via envListManager
+            
+            if(~check(obj))
+            	error('Environment: parameter error');
+            end
         end
 
         function r = check(obj)
-            r = true;
-            if(obj.conferable)
-            	r = (length(obj.Coils)==length(obj.R))&&(obj.w>0)&&(obj.miEnv>0);
-                for i = 1:length(obj.Coils)
-                    r = r && check(obj.Coils(i).obj);
-                end
+        	s = size(obj.groupMarking);
+        	r = checkGroupMarking(obj.groupMarking);
+        	r = r && (length(obj.C_group)==length(obj.R_group))&&(obj.w>0)&&(obj.miEnv>0);
+        	r =	r && (s(1)==length(obj.Coils)) && (s(2)==length(obj.R_group));
+            for i = 1:length(obj.Coils)
+                r = r && check(obj.Coils(i).obj);
             end
         end
-
+		
+		%encontra os ï¿½ndices da primeira e da ï¿½ltima bobina de determinado grupo. A numeraï¿½ï¿½o
+		%dos grupos se inicia em 1.
+		function [c0,c1] = getGroupLimits(g)
+			if(g==1)
+				c0=1;
+			else
+				c0=sum(sum(obj.groupMarking(:,1:(g-1))))+1;
+			end
+			c1=sum(sum(obj.groupMarking(:,1:g)));
+		end
+		
         %Os valores desconhecidos de M devem vir com valor -1.
         function obj = evalM(obj,M)
             for i = 1:length(M)
@@ -58,12 +83,9 @@ classdef Environment
         end
 
         function Z = generateZENV(obj)
-            if(length(obj.R)~=length(obj.M))
-                error('R and M sizes dont agree');
-            end
             
-            if(isempty(obj.Coils))
-            	miVector = pi*4e-7*ones(length(obj.M),1);
+            if isempty(obj.Coils)
+            	miVector = obj.miEnv*ones(length(obj.M),1);
            	else
 		        miVector = zeros(length(obj.M),1);
 		        for i=1:length(miVector)
@@ -71,14 +93,11 @@ classdef Environment
 		        end
 		    end
             
-            if(isempty(obj.C))
-                obj.C = 1./(obj.w^2*miVector.*diag(obj.M));
-            end
+            Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)))...%indutï¿½ncias mï¿½tua
+                + (1i)*obj.w*diag(miVector.*diag(obj.M));%auto-indutï¿½ncia
             
-            Z = diag(obj.R)... %resistência própria
-                - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)))...%indutâncias dos outros
-                + (1i)*obj.w*diag(miVector.*diag(obj.M))...%indutância própria
-                - (1i)*diag(1./(obj.w*obj.C));%capacitância própria
+            Z = composeZMatrix(Z,...
+            	obj.R_group-(1i)./(obj.w*obj.C_group),obj.groupMarking);
         end
     end
 end

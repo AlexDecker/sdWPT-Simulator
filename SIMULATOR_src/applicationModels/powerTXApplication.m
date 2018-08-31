@@ -20,8 +20,8 @@ classdef powerTXApplication < powerApplication
     methods(Access=protected)
         %obtém um vetor 'I' de correntes em fasores.
         function [It,WPTManager] = getCurrents(obj,WPTManager,GlobalTime)
-            [Current,~,~,WPTManager] = getSystemState(WPTManager,GlobalTime);
-            It = Current(1:WPTManager.nt);
+            [~,~,cI_groups,~,WPTManager] = getSystemState(WPTManager,GlobalTime);
+            It = cI_groups(1:WPTManager.nt_groups);
         end
         %define as tensões 'Vt' das fontes dos transmissores em fasores
         function WPTManager = setSourceVoltages(obj,WPTManager,Vt,GlobalTime)
