@@ -67,6 +67,10 @@ classdef envListManager
         function groupMarking = getGroupMarking(obj)
         	groupMarking = obj.envList(1).groupMarking;
         end
+        
+        function [c0,c1] = getGroupLimits(obj,g)
+            [c0,c1] = getGroupLimits(obj.envList(1),g);
+        end
 
         %os dados de que n�o se t�m informa��o s�o aproximados com uma
         %combina��o linear convexa, na forma

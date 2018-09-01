@@ -19,7 +19,7 @@ classdef Environment
         %groups(i) - Lista de estruras
         %	.coils(j) - Lista de estruturas
         %		.obj  - Objeto coil (esse n�vel a mais permite coils de diferentes classes)
-        %	.R - Valor da resist�ncia (real positiva)
+        %	.R - Valor da resist�ncia (real positiva ou -1)
         %	.C - Valor da capacit�ncia (real positiva)
         function obj = Environment(groups,w,miEnv)
         	obj.w = w;
@@ -56,7 +56,7 @@ classdef Environment
 		
 		%encontra os �ndices da primeira e da �ltima bobina de determinado grupo. A numera��o
 		%dos grupos se inicia em 1.
-		function [c0,c1] = getGroupLimits(g)
+		function [c0,c1] = getGroupLimits(obj,g)
 			if(g==1)
 				c0=1;
 			else

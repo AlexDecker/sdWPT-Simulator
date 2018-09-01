@@ -120,7 +120,7 @@ classdef envListManagerBAT
             obj.TRANSMITTER_DATA = logBCData(obj.TRANSMITTER_DATA,...
                 I0(1:obj.nt),t);
             for i=1:length(obj.DEVICE_DATA)
-            	[c0,c1] = getGroupLimits(obj.nt_groups+i);
+            	[c0,c1] = getGroupLimits(obj.ENV,obj.nt_groups+i);
                 obj.DEVICE_DATA(i) = logBCData(obj.DEVICE_DATA(i),...
                     I0(c0:c1),t);
             end
@@ -137,13 +137,13 @@ classdef envListManagerBAT
                     
                 %encontra o ponto m�dio com a �ltima amostragem
                 meanI = (I1+I0)/2;
-                meanI_group = envList(1).groupMarking'*meanI;
+                meanI_group = getGroupMarking(obj.ENV)'*meanI;
                 
                 %log-------------------
                 obj.TRANSMITTER_DATA = logBCData(obj.TRANSMITTER_DATA,...
                     meanI(1:obj.nt),t);
                 for i=1:length(obj.DEVICE_DATA)
-                	[c0,c1] = getGroupLimits(obj.nt_groups+i);
+                	[c0,c1] = getGroupLimits(obj.ENV,obj.nt_groups+i);
                     obj.DEVICE_DATA(i) = logBCData(obj.DEVICE_DATA(i),...
                         meanI(c0:c1),t);
                 end

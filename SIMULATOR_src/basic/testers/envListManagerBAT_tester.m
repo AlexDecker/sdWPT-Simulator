@@ -13,7 +13,7 @@ coilPrototype = coil([0;1],[0;1],[0;1],1,mi);%dummie coil
 %dummie group
 groupPrototype.coils.obj = coilPrototype;
 groupPrototype.R = -1;
-groupPrototype.C = 0;
+groupPrototype.C = inf;
 
 envPrototype = Environment([groupPrototype;groupPrototype],w,mi);%dummie environment
 envPrototype.M = M*[0 1;1 0]/mi; %indutância mútua de 50uH (sem a permissividade magnética)
@@ -63,10 +63,10 @@ manager = envListManagerBAT(elManager,deviceList,step,true);
 Vt = 5;
 manager = setVt(manager, Vt, 0.01);
 
-[cI,I,Q,manager] = getSystemState(manager,tTime);
+[~,~,~,~,manager] = getSystemState(manager,tTime);
 
 for i=1:length(manager.DEVICE_DATA)
 	LOG = endDataAquisition(manager.DEVICE_DATA);
-	%plotBatteryChart(LOG);
-	plotBatteryChart2010(LOG);
+	plotBatteryChart(LOG);
+	%plotBatteryChart2010(LOG);
 end
