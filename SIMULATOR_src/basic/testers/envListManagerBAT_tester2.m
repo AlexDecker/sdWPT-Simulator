@@ -1,14 +1,26 @@
 %script para testar o envListManagerBAT
 clear all;
-env = Environment([],0,[-1; -1; -1],false);%criando um objeto vazio
-env.M = 5e-7*[0 1 0.5;1 0 1;0.5 1 0]/(pi*4e-7); %indutância mútua de 50uH (sem a permissividade magnética)
 
-envList = [env env];
-
+mi = (pi*4e-7);
+M = 5e-7;
 w = 1e6;
-R = [0.5 2 0.5]';%resistência dos RLCs
-maxPower = 50;%mude para 20 e veja os efeitos da saturação
+R = [0.5 0.5 0.5]';%resistência dos RLCs
+maxPower = 50;
 tTime = 6000;%segundos de simulação (em tempo virtual)
+
+coilPrototype = coil([0;1],[0;1],[0;1],1,mi);%dummie coil
+
+%dummie group
+groupPrototype.coils.obj = coilPrototype;
+groupPrototype.R = -1;
+groupPrototype.C = inf;
+
+envPrototype = Environment(...
+    [groupPrototype;groupPrototype;groupPrototype],...
+    w,mi);%dummie environment
+envPrototype.M = M*[0 1 0.2;1 0 0.5;0.2 0.5 0]/mi; %indutância mútua de 50uH (sem a permissividade magnética)
+
+envList = [envPrototype envPrototype];
 
 %bateria
 fase1Limit = 0.7;          % (70%)
@@ -53,10 +65,10 @@ manager = envListManagerBAT(elManager,deviceList,step,true);
 Vt = 5;
 manager = setVt(manager, Vt, 0.01);
 
-[cI,I,Q,manager] = getSystemState(manager,tTime);
+[~,~,~,~,manager] = getSystemState(manager,tTime);
 
 for i=1:length(manager.DEVICE_DATA)
 	LOG = endDataAquisition(manager.DEVICE_DATA(i));
-	%plotBatteryChart(LOG);
-	plotBatteryChart2010(LOG);
+	plotBatteryChart(LOG);
+	%plotBatteryChart2010(LOG);
 end

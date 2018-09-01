@@ -35,17 +35,16 @@ classdef envListManager
             else
                 obj.miEnv = pi*4e-7;
             end
-			
-            obj.mostRecentZ = getZ(obj,0);
 
             obj.RS = 0;
-
             if ~check(obj)
                 error('envListManager: parameter error');
             else
                 disp(['Environment Manager created with ',num2str(length(obj.Vt_group)),...
                     ' active groups and ',num2str(length(obj.R_group)-length(obj.Vt_group)),' passives']);
             end
+            
+            obj.mostRecentZ = getZ(obj,0);
         end
 
         %verifica se os par�metros est�o em ordem
@@ -54,14 +53,42 @@ classdef envListManager
             for i = 1:length(obj.envList)
                 r = r && check(obj.envList(i));
             end
-            r = r && (obj.w>0) && (sum(obj.R_group<=0)==0) && (obj.tTime>0) &&...
-                (length(obj.R_group)<=length(obj.mostRecentZ)) &&...
-                (length(obj.Vt_group)<length(obj.R_group)) && (obj.err>0) && (obj.err<1) &&...
-                (sum(obj.R_group>obj.maxResistance)==0) && (length(obj.maxResistance)==1) &&...
-                (obj.ifactor>1) && (length(obj.ifactor)==1) && ...
-                (obj.dfactor>obj.ifactor) && (length(obj.dfactor)==1) && ...
-                (obj.iVel>0) && (length(obj.iVel)==1) && ...
-                (obj.maxPower>0) && (length(obj.maxPower)==1);
+            
+            if (obj.w<=0) || (obj.tTime<=0)
+                warningMsg('The angular frequency and the tTime must both be real positive.');
+                r = false;
+            end
+            
+            if (sum(obj.R_group<=0)~=0)||(sum(obj.R_group>obj.maxResistance)~=0)
+                warningMsg('The resistance values must be real positive and less then maxResistance.');
+                r = false;
+            end
+            
+            if ((length(obj.R_group)>length(obj.mostRecentZ)) &&...
+                ~isempty(obj.mostRecentZ)) ||...
+                (length(obj.R_group)~=length(obj.envList(1).R_group)) ||...
+                (length(obj.Vt_group)>=length(obj.R_group))
+                warningMsg('Please review the lengths of R_group and Vt_group.');
+                r = false;
+            end
+                
+            if (obj.err<=0) || (obj.err>=1)
+                warningMsg('err must be more then 0 and less then 1.');
+                r = false;
+            end 
+                
+            if (obj.ifactor<=1)||(obj.dfactor<=obj.ifactor)
+                warningMsg('You must respect the relation 1<ifactor<dfactor.');
+                r = false;
+            end
+                
+            if (length(obj.ifactor)~=1)||(length(obj.dfactor)~=1)|| ...
+                (length(obj.iVel)~=1)||(length(obj.maxPower)~=1)|| ...
+                (obj.iVel<=0)||(obj.maxPower<=0)||(length(obj.maxResistance)~=1)||...
+                (obj.maxResistance<=0)
+                warningMsg('ifactor, dfactor, iVel, maxPower and maxResistance must be real positive scalars.');
+                r = false;
+            end
         end
         
         function groupMarking = getGroupMarking(obj)
