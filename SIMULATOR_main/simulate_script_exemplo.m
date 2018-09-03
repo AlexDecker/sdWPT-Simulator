@@ -7,6 +7,7 @@ function simulate_script_exemplo(version)
     NTX = 6; %número de dispositivos transmissores
     W = 1e6;
     R = 0.5*ones(9,1);%resistência dos RLCs
+    C = -1*ones(9,1);%capacitância dos RLCs (usar a do arquivo .mat)
     MAX_POWER = 200;%W;
     TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)
 
@@ -69,7 +70,7 @@ function simulate_script_exemplo(version)
     N_SWIPT = 0.1;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)
 
-    [~,LOG_dev_list,LOG_app_list] = Simulate('testENV.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
+    [~,LOG_dev_list,LOG_app_list] = Simulate('testENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
         B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 

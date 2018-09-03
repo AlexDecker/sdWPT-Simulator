@@ -4,15 +4,16 @@ function simulate_STEIN(version)
 
     %ASPECTOS GERAIS
     NTX = 2; %número de dispositivos transmissores
-    W = ;
-    R = [;;;];%resistência dos RLCs
-    MAX_POWER = ;%W;
+    W = 2*pi*200000;%200kHz
+    R = [0.025;0.2];%resistência dos grupos RLC
+    C = [400e-9;200e-9];%capacitância dos grupos RLC
+    MAX_POWER = 7.5;%W;
     TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)
 	
 
     %DISPOSITIVO
-    maxCurrent = ; % (A)
-    efficiency = ; % (% de eficiência de conversão AC/DC)
+    maxCurrent = 1.5; % (A)
+    efficiency = 0.93; % (eficiência de conversão AC/DC)
 
     STEP=0.2;     % (s)
 
@@ -42,7 +43,7 @@ function simulate_STEIN(version)
     N_SWIPT = 0.1;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)
 
-    [~,LOG_dev_list,LOG_app_list] = Simulate('STEIN_ENV.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
+    [~,LOG_dev_list,LOG_app_list] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
         B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 

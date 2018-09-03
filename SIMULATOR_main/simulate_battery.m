@@ -7,6 +7,7 @@ function simulate_battery(version)
 	NTX = 1;
 	W = 3769.911; %600Hz
 	R = [1.5 1.5]'; %resistência fixa dos RLCs (default)
+	C = [-1 -1]';%capacitância dos RLCs (usar a do arquivo .mat)
 	MAX_POWER = 300; %W
 	TOTAL_TIME = 6000; %segundos de simulação (em tempo virtual)
 	
@@ -63,7 +64,7 @@ function simulate_battery(version)
     N_SWIPT = 0.1;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)
 	
-    [~,LOG_dev_list,LOG_app_list] = Simulate('BAT_ENV.mat',NTX,R,W,TOTAL_TIME,MAX_ERR,R_MAX,...
+    [~,LOG_dev_list,LOG_app_list] = Simulate('BAT_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
         B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
