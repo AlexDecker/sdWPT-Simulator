@@ -66,7 +66,8 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
         while true
 			ttl = ttl-1;
 
-            I = composeZMatrix(Z,[RS*ones(nt_groups,1);zeros(nr_groups,1)],groupMarking)\V;
+            eZ = composeZMatrix(Z,[RS*ones(nt_groups,1);zeros(nr_groups,1)],groupMarking);
+            I = eZ\V;
             
             %cálculo do erros
             absPerr = abs(V.'*I)-maxPower;%se negativo, diminua a resistência.
@@ -84,7 +85,6 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
             %condição de parada: resultado aceitável ou deve variar e não
             %consegue
             if  cond1 || (cond2 && cond3) || (cond4 && cond5)
-                eZ = Z+R;
                 break;
             end
 			

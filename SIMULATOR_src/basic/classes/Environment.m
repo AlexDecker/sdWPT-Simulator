@@ -83,7 +83,6 @@ classdef Environment
         end
 
         function Z = generateZENV(obj)
-            
             if isempty(obj.Coils)
             	miVector = obj.miEnv*ones(length(obj.M),1);
            	else
@@ -92,9 +91,10 @@ classdef Environment
 		        	miVector(i) = obj.Coils(i).obj.mi;
 		        end
 		    end
+            L = (obj.groupMarking*obj.C_group ~= -1).*diag(obj.M);
             
-            Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)))...%indut�ncias m�tua
-                + (1i)*obj.w*diag(miVector.*diag(obj.M));%auto-indut�ncia
+            Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)));...%indut�ncias m�tua
+                + (1i)*obj.w*diag(miVector.*L);%auto-indut�ncia
             
             Z = composeZMatrix(Z,...
             	obj.R_group-(1i)./(obj.w*obj.C_group),obj.groupMarking);

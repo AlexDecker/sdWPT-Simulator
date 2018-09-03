@@ -4,21 +4,26 @@ clear all;
 mi = (pi*4e-7);
 M = 5e-7;
 w = 1e6;
-R = [1.5 1.5 1.5]';%resistência dos RLCs
+R = [1.5 1.5]';%resistÃªncia dos RLCs
 maxPower = 50;
-tTime = 6000;%segundos de simulação (em tempo virtual)
+tTime = 6000;%segundos de simulaÃ§Ã£o (em tempo virtual)
 
 coilPrototype = coil([0;1],[0;1],[0;1],1,mi);%dummie coil
 
 %dummie group
-groupPrototype.coils.obj = coilPrototype;
-groupPrototype.R = -1;
-groupPrototype.C = inf;
+groupPrototype1.coils.obj = coilPrototype;
+groupPrototype1.R = -1;
+groupPrototype1.C = inf;
+
+groupPrototype2.coils = [struct('obj',coilPrototype);...
+    struct('obj',coilPrototype)];
+groupPrototype2.R = -1;
+groupPrototype2.C = inf;
 
 envPrototype = Environment(...
-    [groupPrototype;groupPrototype;groupPrototype],...
+    [groupPrototype1;groupPrototype2],...
     w,mi);%dummie environment
-envPrototype.M = M*[0 1 0.2;1 0 0.5;0.2 0.5 0]/mi; %indutância mútua de 50uH (sem a permissividade magnética)
+envPrototype.M = M*[0 1 0.2;1 0 0.5;0.2 0.5 0]/mi; %indutÃ¢ncia mÃºtua de 50uH (sem a permissividade magnÃ©tica)
 
 envList = [envPrototype envPrototype];
 
@@ -44,10 +49,10 @@ power_sd = 0.001;
 minV = 2.3;     % (V)
 minVTO = 3.3;   % (V)
 err = 0.05;     % (5%)
-efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
+efficiency = 0.95; % (95% de eficiÃªncia de conversÃ£o AC/DC)
 
 dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
-deviceList = [struct('obj',dev), struct('obj',dev)];
+deviceList = struct('obj',dev);
 
 ifactor=1.5;
 dfactor=2;
