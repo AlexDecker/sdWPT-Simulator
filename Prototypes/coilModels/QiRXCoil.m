@@ -6,13 +6,11 @@ classdef QiRXCoil < coil
         %pts: desired number of points of the path,
         %a,b:distance between the center of the borders
         
-        function obj = QiRXCoil(R1,R2,N,a,b,wire_radius,pts)
-            delta = (R2-R1)/N;
-            tetaMin = R1*N*2*pi/(R2-R1);
-            tetaMax = R2*N*2*pi/(R2-R1);
-            teta = linspace(tetaMin,tetaMax,pts);
-            x = delta*teta.*cos(teta)/(2*pi);
-            y = delta*teta.*sin(teta)/(2*pi);
+        function obj = QiRXCoil(R1,R2,N,a,b,wire_radius,pts,mi)
+            delta = (R2-R1)/(2*pi*N);
+            teta = linspace(0,2*pi*N,pts);
+            x = (R2-delta*teta).*cos(teta);
+            y = (R2-delta*teta).*sin(teta);
             z = zeros(1,pts);
             
             i=1;
@@ -39,7 +37,14 @@ classdef QiRXCoil < coil
                 y(i) = y(i)+dy;
                 i = i+1;
             end
-            obj@coil(x,y,z,wire_radius);
+            
+            if exist('mi','var')
+                MI=mi;
+            else
+                MI=pi*4e-7;
+            end
+            
+            obj@coil(x,y,z,wire_radius,MI);
         end
     end
 end

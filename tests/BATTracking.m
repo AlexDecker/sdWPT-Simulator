@@ -7,6 +7,10 @@ evalMutualCoupling = true;%calcular as interações das bobinas? (operação cus
 file = 'BAT_ENV.mat';%arquivo para onde irão os ambientes
 
 ntx = 1;%número de transmissores
+w = 1e+5;%frequência angular padrão
+mi = pi*4e-7;
+
+%Criação de bobinas dummie
 
 %Dimensões da bobina transmissora
 R_tx = 0.01;%raio
@@ -22,17 +26,18 @@ pitch_rx = 0.002;%espaçamento entre as espiras
 wire_radius_rx = 0.0004;%espessura do fio (raio)
 pts_rx = 2; %resolução do caminho
 
-coilPrototype_tx = SolenoidCoil(R_tx,N_tx,pitch_tx,wire_radius_tx,pts_tx);
-coilPrototype_rx = SolenoidCoil(R_rx,N_rx,pitch_rx,wire_radius_rx,pts_rx);
+groupTX.coils.obj = SolenoidCoil(R_tx,N_tx,pitch_tx,wire_radius_tx,pts_tx,mi);
+groupTX.R = -1;groupTX.C = -1;
+
+groupRX.coils.obj = translateCoil(SolenoidCoil(R_rx,N_rx,pitch_rx,...
+    wire_radius_rx,pts_rx,mi),0,0.025,0);
+groupRX.R = -1;groupRX.C = -1;
 
 L_tx = N_tx^2*pi*R_tx^2/(pitch_tx*N_tx);%indutância própria sem a constante de permissividade magnética
 L_rx = N_rx^2*pi*R_rx^2/(pitch_rx*N_rx);%indutância própria sem a constante de permissividade magnética
 
-coilListPrototype = [struct('obj',coilPrototype_tx),...
-	struct('obj',translateCoil(coilPrototype_rx,0,0.025,0))];
-
 %w = 1e+5 é apenas um valor default. A frequência é de fato definida a posteriori   
-envPrototype = Environment(coilListPrototype,1e+5,-ones(length(coilListPrototype),1),true);
+envPrototype = Environment([groupTX;groupRX],w,mi);
 
 envList = [envPrototype,envPrototype];
 

@@ -5,13 +5,13 @@ function simulate_STEIN(version)
     %ASPECTOS GERAIS
     NTX = 2; %número de dispositivos transmissores
     W = ;
-    R = [;;];%resistência dos RLCs
+    R = [;;;];%resistência dos RLCs
     MAX_POWER = ;%W;
     TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)
 	
 
     %DISPOSITIVO
-    maxCurrent = ;% (A)
+    maxCurrent = ; % (A)
     efficiency = ; % (% de eficiência de conversão AC/DC)
 
     STEP=0.2;     % (s)

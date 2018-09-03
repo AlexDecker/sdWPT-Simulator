@@ -41,6 +41,15 @@ function [RL_group,It,Ir]=calculateRLMatrix(Vt_group,Z,Ie_group,RL0_group,err,ma
         error('calculateRLMatrix: parameter error');
     end
     
+    %limitando os elementos de impedância (para não prejudicar a inversão)
+    for i=1:n %para evitar problemas com singularidade matricial
+    	for j=1:n
+		    if abs(Z(i,j))>maxRL %testa para impedância máxima
+		        Z(i,j)=maxRL/abs(Z(i,j))*Z(i,j);
+		    end
+        end
+    end
+    
     %passando de espaço de grupo para espaço de anel RLC
     V = groupMarking*[Vt_group;zeros(nr_groups,1)];
     

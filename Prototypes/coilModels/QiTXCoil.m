@@ -4,7 +4,7 @@ classdef QiTXCoil < coil
         %R1: inner radius, R2: outter radius, N: number of turns,
         %ang: angle (rad) through which the wire moves from first
         %to second layers, pts: desired number of points of the path
-        function obj = QiTXCoil(R2,R1,N,ang,wire_radius,pts)
+        function obj = QiTXCoil(R2,R1,N,ang,wire_radius,pts,mi)
             
             delta = (R2-R1)/(2*pi*N);
             
@@ -19,7 +19,13 @@ classdef QiTXCoil < coil
             y2 = (R2-teta2*delta).*sin(-teta2);
             z2 = 2*wire_radius*ones(1,pts/2);
             
-            obj@coil([x1,x2],[y1,y2],[z1,z2],wire_radius);
+            if exist('mi','var')
+                MI=mi;
+            else
+                MI=pi*4e-7;
+            end
+            
+            obj@coil([x1,x2],[y1,y2],[z1,z2],wire_radius,MI);
         end
     end
 end

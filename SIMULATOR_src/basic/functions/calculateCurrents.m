@@ -46,8 +46,8 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
     Z = composeZMatrix(Z,[zeros(nt_groups,1);RL_group],groupMarking);
     for i=1:n %para evitar problemas com singularidade matricial
     	for j=1:n
-		    if real(Z(i,j))>maxResistance
-		        Z(i,j)=maxResistance+imag(Z(i,j));
+		    if abs(Z(i,j))>maxResistance %testa para impedância máxima
+		        Z(i,j)=maxResistance/abs(Z(i,j))*Z(i,j);
 		    end
         end
     end

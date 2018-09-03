@@ -40,31 +40,31 @@ coilPrototypeRX = SpiralPlanarCoil(R2_rx,R1_rx,N_rx,wire_radius,pts);
 coilPrototypeTX = SpiralPlanarCoil(R2_tx,R1_tx,N_tx,wire_radius,pts);
 
 group1.coils.obj = translateCoil(coilPrototypeTX,-R2_tx-stx,+2*R2_tx+stx,0);
-group1.R = -1;group1.C = inf;
+group1.R = -1;group1.C = -1;
 
 group2.coils.obj = translateCoil(coilPrototypeTX,-R2_tx-stx,0,0);
-group2.R = -1;group2.C = inf;
+group2.R = -1;group2.C = -1;
 
 group3.coils.obj = translateCoil(coilPrototypeTX,-R2_tx-stx,-2*R2_tx-stx,0);
-group3.R = -1;group3.C = inf;
+group3.R = -1;group3.C = -1;
 
 group4.coils.obj = translateCoil(coilPrototypeTX,+R2_tx+stx,+2*R2_tx+stx,0);
-group4.R = -1;group4.C = inf;
+group4.R = -1;group4.C = -1;
 
 group5.coils.obj = translateCoil(coilPrototypeTX,+R2_tx+stx,0,0);
-group5.R = -1;group5.C = inf;
+group5.R = -1;group5.C = -1;
 
 group6.coils.obj = translateCoil(coilPrototypeTX,+R2_tx+stx,-2*R2_tx-stx,0);
-group6.R = -1;group6.C = inf;                
+group6.R = -1;group6.C = -1;                
 
 group7.coils.obj = translateCoil(coilPrototypeRX,0,2*R2_tx+stx,0.05);
-group7.R = -1;group7.C = inf;
+group7.R = -1;group7.C = -1;
 
 group8.coils.obj = translateCoil(coilPrototypeRX,0,0,0.15);
-group8.R = -1;group8.C = inf;
+group8.R = -1;group8.C = -1;
 
 group9.coils.obj = translateCoil(coilPrototypeRX,0,-(2*R2_tx+stx),0.05);
-group9.R = -1;group9.C = inf;
+group9.R = -1;group9.C = -1;
 
 groupList = [group1;group2;group3;group4;group5;group6;group7;group8;group9];
 
@@ -80,7 +80,7 @@ for i=2:nFrames
         c = translateCoil(envList(i-1).Coils(j).obj,unifrnd(-maxV,maxV),...
                                 unifrnd(-maxV,maxV),unifrnd(-maxV,maxV)+dV);
         group.coils.obj = rotateCoilX(rotateCoilY(c,unifrnd(-maxR,maxR)),unifrnd(-maxR,maxR));
-        group.R = -1;group.C = inf;
+        group.R = -1;group.C = -1;
         aux = [aux group];
     end
     envList = [envList Environment([groupList(1:ntx).' aux],w,mi)];
@@ -95,11 +95,11 @@ if(ok)
     if evalMutualCoupling
         %o primeiro é o único que precisa ser completamente calculado
         disp('Iniciando o primeiro quadro');
-        envList(1) = evalM(envList(1),-ones(length(groupList)));
+        envList(1) = evalM(envList(1),-ones(length(envList(1).Coils)));
         
         %não é necessário recalcular a indutância entre as bobinas transmissoras
         %nem nenhuma self-inductance
-        M0 = -ones(length(groupList));
+        M0 = -ones(length(envList(1).Coils));
         M0(1:ntx,1:ntx) = envList(1).M(1:ntx,1:ntx);
         M0 = M0-diag(diag(M0))+diag(diag(envList(1).M));
         
