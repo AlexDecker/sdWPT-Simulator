@@ -4,7 +4,7 @@ classdef powerRXApplication_Qi < powerRXApplication
     properties
     end
     methods
-        function obj = powerRXApplication_exemplo(id)
+        function obj = powerRXApplication_Qi(id)
             obj@powerRXApplication(id);%construindo a estrutura referente à superclasse
         end
 

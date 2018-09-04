@@ -32,7 +32,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 	Manager = setVt(Manager, zeros(NTX,1), 0);
 	
 	%O objeto abaixo cuida dos aspectos eventos em redes e timers
-	network = networkManager(length(envList(1).Coils)-NTX);
+	network = networkManager(length(envList(1).R_group)-NTX);
 	
 	if(powerTX.ID~=0)
 		%ID=0 indica que é uma aplicação de TX

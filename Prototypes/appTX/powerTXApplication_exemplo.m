@@ -28,7 +28,7 @@ classdef powerTXApplication_exemplo < powerTXApplication
             %canal 1 de RF, 1000bps, 5W
             obj = setSendOptions(obj,1,1000,5);
             netManager = broadcast(obj,netManager,0,32,0);%faz um broadcast com seu id (0, 32 bits)
-            netManager = setTimer(netManager,0,0,10);
+            netManager = setTimer(obj,netManager,0,obj.timeSkip);
         end
 
         function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)          
@@ -54,7 +54,7 @@ classdef powerTXApplication_exemplo < powerTXApplication
                 obj.V=0;
             end
             
-            netManager = setTimer(netManager,0,GlobalTime,obj.timeSkip);
+            netManager = setTimer(obj,netManager,GlobalTime,obj.timeSkip);
         end
 
         function [WPTManager,P] = getPower(obj,WPTManager,GlobalTime)

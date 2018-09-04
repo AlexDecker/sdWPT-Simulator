@@ -69,6 +69,10 @@ classdef envListManager
                 (length(obj.R_group)~=length(obj.envList(1).R_group)) ||...
                 (length(obj.Vt_group)>=length(obj.R_group))
                 warningMsg('Please review the lengths of R_group and Vt_group.');
+                disp('R_group:');
+                disp(obj.R_group);
+                disp('Vt_group:');
+                disp(obj.Vt_group);
                 r = false;
             end
                 

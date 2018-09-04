@@ -11,7 +11,7 @@ classdef powerTXApplication_dummie < powerTXApplication
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
-        	netManager = setTimer(netManager,0,0,1000);
+        	netManager = setTimer(obj,netManager,0,1000);
         	WPTManager = setSourceVoltages(obj,WPTManager,obj.V,0); 
         end
 
@@ -19,7 +19,7 @@ classdef powerTXApplication_dummie < powerTXApplication
         end
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
-        	netManager = setTimer(netManager,0,GlobalTime,1000);
+        	netManager = setTimer(obj,netManager,GlobalTime,1000);
         end
     end
 end

@@ -1,21 +1,22 @@
-%version: 2010a ou 2017a
-function simulate_STEIN(version)
+%W = 2*pi*200000;%200kHz
+%R = [0.025;30];%resistência dos grupos RLC
+%C = [400e-9;200e-9];%capacitância dos grupos RLC
+
+function [t, CC] = simulate_STEIN(R,C,W)
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
     %ASPECTOS GERAIS
-    NTX = 2; %número de dispositivos transmissores
-    W = 2*pi*200000;%200kHz
-    R = [0.025;0.2];%resistência dos grupos RLC
-    C = [400e-9;200e-9];%capacitância dos grupos RLC
+    NTX = 1; %número de grupos transmissores
+    
     MAX_POWER = 7.5;%W;
-    TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)
-	
+    R_MAX = 1e7;   % (ohm)
+    TOTAL_TIME = 1000;%segundos de simulação (em tempo virtual)
+	STEP=5; % (s) Aqui basta que esse valor seja inferior ao timeSkip da aplicação,
+	%visto que não há recarga de bateria
 
     %DISPOSITIVO
     maxCurrent = 1.5; % (A)
     efficiency = 0.93; % (eficiência de conversão AC/DC)
-
-    STEP=0.2;     % (s)
 
     dev = Device(true,maxCurrent,efficiency);
     DEVICE_LIST = struct('obj',dev);
@@ -47,27 +48,8 @@ function simulate_STEIN(version)
         IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
         B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
-    %VISUALIZAÇÃO DOS RESULTADOS
-        
-    for i=1:length(LOG_dev_list)
-        LOG = endDataAquisition(LOG_dev_list(i));
-        if(strcmp(version, '2010a'))
-            plotBatteryChart2010(LOG);%use isso se estiver no R2010
-        else
-            plotBatteryChart(LOG); %use isso se estiver no R2017
-        end
-    end
-
-    figure;
-    plot(LOG_app_list(1).DATA(2,:)/3600,LOG_app_list(1).DATA(1,:));
-    xlabel('Time (h)')
-    ylabel('(V)')
-    title('Voltage across each TX coil');
-
-    for i=2:length(LOG_app_list)
-        disp(' ');
-        disp(['For RX ',num2str(i-1),':']);
-        disp('--------------------------------------');
-        disp(LOG_app_list(i).DATA);
-    end
+    
+    LOG = endDataAquisition(LOG_dev_list(i));
+    t = LOG.CC(2,:);
+    CC = LOG.CC(1,:);
 end

@@ -4,6 +4,7 @@ classdef Device
         working %bool, mostra quando o dispositivo está funcionando
 		maxCurrent %corrente máxima para não danificar o dispositivo
 		efficiency %eficiência de conversão da corrente
+		bat
 		
         chargeCurrent
         dischargeCurrent
@@ -15,6 +16,7 @@ classdef Device
 			obj.working = working;
 			obj.maxCurrent = maxCurrent;
 			obj.efficiency = efficiency;
+			obj.bat.Q = 0;
 			
             obj.chargeCurrent = 0;
             obj.dischargeCurrent = 0;
