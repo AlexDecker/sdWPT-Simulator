@@ -1,5 +1,5 @@
 function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,...
-	SHOW_PROGRESS,powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF)
+	SHOW_PROGRESS,powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv)
     
 	LOG_TX = [];
 	LOG_dev_list = [];
@@ -25,7 +25,12 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 	end
 	
 	%Os objetos abaixo cuidam de aspactos físicos de WPT
-	elManager = envListManager(envList,zeros(NTX,1),W,R,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER);
+	if exist('miEnv','var')
+		elManager = envListManager(envList,zeros(NTX,1),W,R,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,miEnv);
+	else
+		elManager = envListManager(envList,zeros(NTX,1),W,R,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER);
+	end
+	
 	Manager = envListManagerBAT(elManager,DEVICE_LIST,STEP,SHOW_PROGRESS);
 	
 	%inicializando a tensão dos aparatos transmissores

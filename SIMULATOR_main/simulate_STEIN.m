@@ -1,8 +1,9 @@
 %W = 2*pi*200000;%200kHz
 %R = [0.025;30];%resistência dos grupos RLC
 %C = [400e-9;200e-9];%capacitância dos grupos RLC
+%miEnv = pi*4e-7;%permissividade magnética do meio
 
-function [t, CC] = simulate_STEIN(R,C,W)
+function [t_TX, CC_TX, t_RX, CC_RX] = simulate_STEIN(R,C,W,miEnv)
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
     %ASPECTOS GERAIS
@@ -11,7 +12,7 @@ function [t, CC] = simulate_STEIN(R,C,W)
     MAX_POWER = 7.5;%W;
     R_MAX = 1e7;   % (ohm)
     TOTAL_TIME = 1000;%segundos de simulação (em tempo virtual)
-	STEP=5; % (s) Aqui basta que esse valor seja inferior ao timeSkip da aplicação,
+	STEP=10; % (s) Aqui basta que esse valor seja inferior ao timeSkip da aplicação,
 	%visto que não há recarga de bateria
 
     %DISPOSITIVO
@@ -36,7 +37,7 @@ function [t, CC] = simulate_STEIN(R,C,W)
     INIT_VEL=0.01;
     MAX_ERR = 0.005;
 
-    SHOW_PROGRESS = true;
+    SHOW_PROGRESS = false;
 
     B_SWIPT = 0.7;%minimum SINR for the message to be undertood
     B_RF = 0.7;%minimum SINR for the message to be undertood
@@ -44,12 +45,16 @@ function [t, CC] = simulate_STEIN(R,C,W)
     N_SWIPT = 0.1;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)
 
-    [~,LOG_dev_list,LOG_app_list] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
+    [LOG_TX,LOG_dev_list,~] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
-        B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
+        B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv);
 
     
-    LOG = endDataAquisition(LOG_dev_list(i));
-    t = LOG.CC(2,:);
-    CC = LOG.CC(1,:);
+    LOG_RX = endDataAquisition(LOG_dev_list(i));
+    t_RX = LOG_RX.CC(2,:);
+    CC_RX = LOG_RX.CC(1,:);
+    
+    LOG_TX = endDataAquisition(LOG_TX);
+    t_TX = LOG_TX.CC(2,:);
+    CC_TX = LOG_TX.CC(1,:);
 end
