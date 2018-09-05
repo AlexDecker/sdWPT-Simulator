@@ -8,7 +8,9 @@ classdef coil
         X
         Y
         Z
-        %Constante de permeabilidade magnética a ser considerada para
+    end
+    properties(Access = public)
+    	%Constante de permeabilidade magnética a ser considerada para
         %a self-inductance (H/m)
         mi
     end

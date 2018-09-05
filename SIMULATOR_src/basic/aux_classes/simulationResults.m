@@ -38,16 +38,27 @@ classdef simulationResults
                 if(isempty(obj.BC))
                     obj.BC = aux;
                 else
-                    if(time>=obj.BC(end,end))
+                    if(time>obj.BC(end,end))
                         %caso esperado
                         obj.BC = [obj.BC,aux];
                     else
-                        %tratamento de excessão
-                        i = find(obj, obj.BC, time);
-                        %os casos em que l log está vazio e em que a inserção é
-                        %no final já são tratados individualmente. No caso em que
-                        %a inserção é no início o tratamento ocorre naturalmente
-                        obj.BC = [obj.BC(:,1:i),aux,obj.BC(:,i+1:end)];
+                    	if(time<obj.BC(end,end))
+		                    %tratamento de excessão
+		                    i = find(obj, obj.BC, time);
+		                    %os casos em que l log está vazio e em que
+		                    %a inserção é no final já são tratados
+		                    %individualmente. No caso em que a inserção
+		                    %é no início o tratamento ocorre naturalmente
+		                    obj.BC = [obj.BC(:,1:i),aux,obj.BC(:,i+1:end)];
+		                else
+		                	%se time for repetido, apenas substitua
+		                	s = size(obj.BC);
+		                	if(s(2)==1)
+		                		obj.BC = aux;
+		                	else
+		                		obj.BC = [obj.BC(:,end-1),aux];
+		                	end
+		                end
                     end
                 end
             end

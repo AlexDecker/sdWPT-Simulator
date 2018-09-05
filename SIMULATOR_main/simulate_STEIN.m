@@ -3,7 +3,7 @@
 %C = [400e-9;200e-9];%capacitância dos grupos RLC
 %miEnv = pi*4e-7;%permissividade magnética do meio
 
-function [t_TX, CC_TX, t_RX, CC_RX] = simulate_STEIN(R,C,W,miEnv)
+function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(R,C,W,miEnv)
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
     %ASPECTOS GERAIS
@@ -55,6 +55,7 @@ function [t_TX, CC_TX, t_RX, CC_RX] = simulate_STEIN(R,C,W,miEnv)
     CC_RX = LOG_RX.CC(1,:);
     
     LOG_TX = endDataAquisition(LOG_TX);
-    t_TX = LOG_TX.CC(2,:);
-    CC_TX = LOG_TX.CC(1,:);
+    t_TX = LOG_TX.BC(3,:);
+    BC_TX1 = LOG_TX.BC(1,:);
+    BC_TX2 = LOG_TX.BC(2,:);
 end

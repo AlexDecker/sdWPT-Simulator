@@ -44,8 +44,8 @@ R1_rx1 = R1_rx2+(R2_rx1-R1_rx2)/(pi*N_rx);%raio interno
 a_rx1 = a_rx2+(R2_rx1-R1_rx2)/(pi*N_rx);%dimensão da volta mais interna da bobina
 b_rx1 = b_rx2+(R2_rx1-R1_rx2)/(pi*N_rx);%dimensão da volta mais interna da bobina
 
-%L_tx = %self-inductance (H)
-%L_rx = %self-inductance (H)
+L_TX = 6.3e-6;%self-inductance (H)
+L_RX = 9.7e-6;%self-inductance (H)
 
 coilPrototype_tx1 = QiTXCoil(R2_tx1,R1_tx1,N_tx,ang_tx,wire_radius_tx,pts_tx);
 coilPrototype_tx2 = QiTXCoil(R2_tx2,R1_tx2,N_tx,ang_tx,wire_radius_tx,pts_tx);
@@ -108,7 +108,24 @@ if(ok)
             disp(['Frame ',num2str(i),' concluido'])
         end
     end
-
+	
+	%adequando os valores de auto-indutância aos que já se tem de antemão
+	
+	mi_tx = L_TX*(envList(1).M(1,1)+envList(1).M(2,2))...
+		/(envList(1).M(1,1)*envList(1).M(2,2));
+		
+	mi_rx = L_RX*(envList(1).M(3,3)+envList(1).M(4,4))...
+		/(envList(1).M(3,3)*envList(1).M(4,4));
+	
+	for i=1:length(envList)
+		for j=1:2
+			envList(i).Coils(j).obj.mi = mi_tx;
+		end
+		for j=3:4
+			envList(i).Coils(j).obj.mi = mi_rx;
+		end
+	end
+	
     if savefile
         save(file,'envList');
     end
