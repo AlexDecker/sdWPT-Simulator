@@ -1,9 +1,12 @@
 %W = 2*pi*200000;%200kHz
 %R = [0.025;30];%resistência dos grupos RLC
 %C = [400e-9;200e-9];%capacitância dos grupos RLC
-%miEnv = pi*4e-7;%permissividade magnética do meio
+%zone1Limit = 0.013;%(m)
+%zone2Limit = 0.015;%(m)
+%miEnv1 = pi*4e-7;%permissividade magnética do meio (zona 1)
+%miEnv2 = pi*4e-7;%permissividade magnética do meio (zona 2)
 
-function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(R,C,W,miEnv)
+function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(R,C,W,zone1Limit,zone2Limit,miEnv1,miEnv2)
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
     %ASPECTOS GERAIS
@@ -23,12 +26,10 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(R,C,W,miEnv)
     DEVICE_LIST = struct('obj',dev);
 
     %APLICAÇÕES
-    powerTX = powerTXApplication_Qi();
-    powerRX = [];
-
-    for i=1:length(R)-NTX
-        powerRX = [powerRX struct('obj',powerRXApplication_Qi(i))];
-    end
+    d0 = 0.005;
+    vel = (0.03-0.005)/TOTAL_TIME;
+    powerTX = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,miEnv1,miEnv2);
+	powerRX = struct('obj',powerRXApplication_Qi(1));
 
     %SIMULADOR
 
@@ -47,10 +48,10 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(R,C,W,miEnv)
 
     [LOG_TX,LOG_dev_list,~] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
-        B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv);
+        B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv1);
 
     
-    LOG_RX = endDataAquisition(LOG_dev_list(i));
+    LOG_RX = endDataAquisition(LOG_dev_list(1));
     t_RX = LOG_RX.CC(2,:);
     CC_RX = LOG_RX.CC(1,:);
     
