@@ -8,33 +8,20 @@
 %"battery_data" e apenas informe o nome do arquivo ao construtor do objeto,
 %sem informar o caminho.
 
-classdef ocvLookupTable
+classdef ocvLookupTable < LookupTable
     
    properties
-       table %tabela nx2 que associa valores de SOC a valores de OCV
    end
    
    methods
-      function obj = ocvLookupTable(file,plotOCV)
-          fileID = fopen(['battery_data/',file],'r');
-          formatSpec = '%f %f';
-          A = fscanf(fileID,formatSpec);
-          fclose(fileID);
+      function obj = ocvLookupTable(file,plotData)
+          obj@LookupTable(['battery_data/',file],false);
           
-          if isempty(A)
-              error('ocvLookupTable: error while loading data');
-          end
-          
-          for x=1:length(A)/2
-              obj.table(x,1) = A(2*(x-1)+1);
-              obj.table(x,2) = A(2*(x-1)+2);
-          end
-          
-          if isIrregular(obj)
+          if ~check(obj)
               error('ocvLookupTable: error: battery data is incompatible with the model');
           end
           
-          if plotOCV
+          if plotData
               ocvPlot(obj);
           end
       end
@@ -45,28 +32,10 @@ classdef ocvLookupTable
           if((SOC>1)||(SOC<0))
               error('ocvLookupTable: error: informed SOC is out of bounds');
           end
-          if SOC==1
-              OCV = obj.table(end,2);
-          else
-              %busca os indices da tabela que são maiores que o valor de
-              %referência
-              i = find(obj.table(:,1)>SOC);
-              %menor indice com SOC maior que a referência
-              Iceil = i(1);
-              %maior índice com SOC menor ou igual à referência
-              Ifloor = i(1)-1;
-              
-              %interpolação linear
-              SOCceil = obj.table(Iceil,1);
-              SOCfloor = obj.table(Ifloor,1);
-              OCVceil = obj.table(Iceil,2);
-              OCVfloor = obj.table(Ifloor,2);
-              factor = (SOC-SOCfloor)/(SOCceil-SOCfloor);
-              OCV = factor*OCVceil + (1-factor)*OCVfloor;
-          end
+          OCV = getYFromX(obj,SOC);
       end
       
-      function flag = isIrregular(obj)
+      function flag = check(obj)
           flag = false;
           if length(obj.table)<2
               flag = true;

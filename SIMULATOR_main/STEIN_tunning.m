@@ -1,13 +1,13 @@
 clear all;
 
-W = 2*pi*110000;%2*pi*linspace(110000,205000,4);%110-205kHz
-R1 = 0.025;
-R2 = 30;
-C1 = 400e-9;
-C2 = 183e-9;%a capacitância paralela é desconsiderada por ser muito baixa e, portanto, gerar uma ponte de alta impedância
-ZONE1 = 0.013;
-ZONE2 = 0.015;
-MIENV1 = pi*4e-7;%linspace(pi*4e-7,50e-7,5);%permissividade magnética do meio nas proximidades do atrator
+W = 2*pi*linspace(110000,205000,3);%110-205kHz
+R1 = 0.025*[1,2,3,4,5];
+R2 = [10,30,40,50];
+C1 = linspace(100e-9,400e-9,4);
+C2 = 183e-9*[0.5,1,1.5,2];%a capacitância paralela é desconsiderada por ser muito baixa e, portanto, gerar uma ponte de alta impedância
+ZONE1 = [0.012,0.014];
+ZONE2 = [0.0145,0.016];
+MIENV1 = linspace(pi*4e-7,pi*16e-7,6);%permissividade magnética do meio nas proximidades do atrator
 MIENV2 = pi*4e-7;
 
 %valor de referência
@@ -18,7 +18,7 @@ data = [];
 
 hold on
 plot(ref_dist,ref_eff,'r');
-
+num=0;
 for c1 = C1
 	for c2 = C2
 		for r1 = R1
@@ -28,8 +28,15 @@ for c1 = C1
 						for miEnv2 = MIENV2
 							for z1 = ZONE1
 								for z2 = ZONE2
-									[t_TX, BC_TX1, BC_TX2, t_RX, CC_RX] = simulate_STEIN([r1;r2],[c1;c2],w,z1,z2,miEnv1,miEnv2);
-									%convertendo tempo em distância
+									params.R = [r1;r2];
+									params.C = [c1;c2];
+									params.W = w;
+									params.zone1Limit = z1;
+									params.zone2Limit = z2;
+									params.miEnv1 = miEnv1;
+									params.miEnv2 = miEnv2;
+									[t_TX, BC_TX1, BC_TX2, t_RX, CC_RX] = simulate_STEIN();%params);
+									convertendo tempo em distância
 									d_TX = ((1000-t_TX)*5 + 30*t_TX)/1000;
 									d_RX = ((1000-t_RX)*5 + 30*t_RX)/1000;
 						
@@ -40,9 +47,12 @@ for c1 = C1
 										i_tx2 = interp1(d_TX,BC_TX2,ref_dist(i));
 										i_rx = interp1(d_RX,CC_RX,ref_dist(i));
 							
-										%eff = abs(r2*i_rx^2)/(abs(r1*i_tx1^2)+abs(r1*i_tx2^2)+abs(r2*i_rx^2));
-										eff = abs(r2*i_rx^2)/(abs(5*(i_tx1+i_tx2)));
-							
+										eff = abs(r2*i_rx^2)/(abs(r1*i_tx1^2)+abs(r1*i_tx2^2)+abs(r2*i_rx^2));
+										
+										%considerando a taxa de êxito de pings e consequentes interrupções
+										t = eff/0.73 + (eff/0.73>1).*(ones(1,length(eff))-eff/0.73);
+										eff = eff.*(eff/t);
+										
 										eff_list = [eff_list,eff];
 										err = err + (eff-ref_eff(i))^2;
 									end
@@ -60,7 +70,8 @@ for c1 = C1
 						
 									disp(['C=[',num2str(c1),',',num2str(c2),'];R=[',num2str(r1),',',num2str(r2),'];W=',num2str(w),';mi1=',num2str(miEnv1),';mi2=',num2str(miEnv2),';err=',num2str(err)]);
 									disp(eff_list);
-						
+									num=num+1;
+									disp(['progresso: ',num2str(100*num/(length(C1)*length(C2)*length(R1)*length(R2)*length(W)*length(MIENV1)*length(MIENV2)*length(ZONE1)*length(ZONE2))),'%']);
 									data=[data,d];
 									plot(ref_dist,eff_list,'b');
 								end

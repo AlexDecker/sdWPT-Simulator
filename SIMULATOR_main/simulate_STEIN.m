@@ -6,7 +6,24 @@
 %miEnv1 = pi*4e-7;%permissividade magnética do meio (zona 1)
 %miEnv2 = pi*4e-7;%permissividade magnética do meio (zona 2)
 
-function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(R,C,W,zone1Limit,zone2Limit,miEnv1,miEnv2)
+function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
+	if exist('params','var')
+		R = params.R;
+		C = params.C;
+		W = params.W;
+		zone1Limit = params.zone1Limit;
+		zone2Limit = params.zone2Limit;
+		miEnv1 = params.miEnv1;
+		miEnv2 = params.miEnv2;
+	else
+		R = [0.0250;50];
+		C = [1.0000e-07;1.8300e-07];
+		W = 6.9115e+05;
+		zone1Limit = 0.013;
+		zone2Limit = 0.015;
+		miEnv1 = 2.7646e-06;
+		miEnv2 = 1.2566e-06;
+	end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
     %ASPECTOS GERAIS
@@ -21,8 +38,9 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(R,C,W,zone1Limit,zo
     %DISPOSITIVO
     maxCurrent = 1.5; % (A)
     efficiency = 0.93; % (eficiência de conversão AC/DC)
-
-    dev = Device(true,maxCurrent,efficiency);
+	
+	currentConverter = CurrentConverter('conversionEff_Qi.txt',false);
+    dev = GenericDeviceWithRealisticACDC(true,maxCurrent,currentConverter);
     DEVICE_LIST = struct('obj',dev);
 
     %APLICAÇÕES
