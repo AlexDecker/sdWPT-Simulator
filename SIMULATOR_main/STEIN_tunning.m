@@ -2,12 +2,12 @@ clear all;
 
 W = 2*pi*linspace(110000,205000,3);%110-205kHz
 R1 = 0.025*[1,2,3,4,5];
-R2 = 30;
-C1 = linspace(100e-9,400e-9,4);
-C2 = 183e-9*[0.5,1,1.5,2];%a capacitância paralela é desconsiderada por ser muito baixa e, portanto, gerar uma ponte de alta impedância
+R2 = [30,35,40];
+C1 = linspace(100e-9,500e-9,6);
+C2 = 183e-9*[0.5,1,1.5,2,2.5];%a capacitância paralela é desconsiderada por ser muito baixa e, portanto, gerar uma ponte de alta impedância
 ZONE1 = 0.014;
 ZONE2 = 0.016;
-MIENV1 = linspace(pi*4e-7,pi*20e-7,6);%permissividade magnética do meio nas proximidades do atrator
+MIENV1 = linspace(pi*4e-7,pi*24e-7,5);%permissividade magnética do meio nas proximidades do atrator
 MIENV2 = pi*4e-7;
 
 %valor de referência
@@ -39,25 +39,39 @@ for r2 = R2
 									%convertendo tempo em distância
 									d_TX = ((1000-t_TX)*5 + 30*t_TX)/1000;
 									d_RX = ((1000-t_RX)*5 + 30*t_RX)/1000;
-						
-									err = 0;
+									
 									eff_list = [];
-									for i=1:3%length(ref_eff)
+									
+									for i=1:length(ref_eff)
 										i_tx1 = interp1(d_TX,BC_TX1,ref_dist(i));
 										i_tx2 = interp1(d_TX,BC_TX2,ref_dist(i));
 										i_rx = interp1(d_RX,CC_RX,ref_dist(i));
 							
 										eff = abs(r2*i_rx^2)/(abs(r1*i_tx1^2)+abs(r1*i_tx2^2)+abs(r2*i_rx^2));
 										
-										%considerando a taxa de êxito de pings e consequentes interrupções
-										t = eff/0.73 + (eff/0.73>1).*(ones(1,length(eff))-eff/0.73);
-										eff = eff.*(eff/t);
-										
 										eff_list = [eff_list,eff];
-										err = err + (eff-ref_eff(i))^2;
 									end
-									d.eff = eff_list;
-									d.err = err;
+									%calculando os erros considerando diferentes taxas de perda
+									best = sum((eff_list-ref_eff).^2);
+									bestA = 0;
+									bestB = 1;
+									for a = -1:0.01:0
+										for b = (-a):0.01:1
+											ef = eff_list.*(a*eff_list+b);
+											if(sum(ef>1)+sum(ef<0)>0)
+												error('reavalie essa formula');
+											end
+											er = sum((ef-ref_eff).^2);
+											if er<best
+												best = er;
+												bestA = a;
+												bestB = b;
+											end
+										end
+									end
+									%registrando melhores resultados
+									d.eff = eff_list.*(bestA*eff_list+bestB);
+									d.err = best;
 									d.c1 = c1;
 									d.c2 = c2;
 									d.r1 = r1;
@@ -67,9 +81,11 @@ for r2 = R2
 									d.z2 = z2;
 									d.miEnv1 = miEnv1;
 									d.miEnv2 = miEnv2;
-						
-									disp(['C=[',num2str(c1),',',num2str(c2),'];R=[',num2str(r1),',',num2str(r2),'];W=',num2str(w),';mi1=',num2str(miEnv1),';mi2=',num2str(miEnv2),';err=',num2str(err)]);
-									disp(eff_list);
+									d.a = bestA;
+									d.b = bestB;
+									
+									disp(['C=[',num2str(c1),',',num2str(c2),'];R=[',num2str(r1),',',num2str(r2),'];W=',num2str(w),';mi1=',num2str(miEnv1),';mi2=',num2str(miEnv2),';a = ',num2str(bestA),';b = ',num2str(bestB),';err=',num2str(d.err)]);
+									disp(d.eff);
 									num=num+1;
 									disp(['progresso: ',num2str(100*num/(length(C1)*length(C2)*length(R1)*length(R2)*length(W)*length(MIENV1)*length(MIENV2)*length(ZONE1)*length(ZONE2))),'%']);
 									data=[data,d];
@@ -82,4 +98,5 @@ for r2 = R2
 			end
 		end
 	end
+	save(['save_data_new_Qi_',num2str(r2),'.mat'],'data');
 end
