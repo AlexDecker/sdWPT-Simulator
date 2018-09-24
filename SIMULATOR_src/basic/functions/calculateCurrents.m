@@ -70,7 +70,7 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
             I = eZ\V;
             
             %cálculo do erros
-            absPerr = abs(V.'*I)-maxPower;%se negativo, diminua a resistência.
+            absPerr = real(I'*V)-maxPower;%se negativo, diminua a resistência.
             %se positivo, aumente a resistência
 			
 			%se todos estão dentro da margem de erro tolerável

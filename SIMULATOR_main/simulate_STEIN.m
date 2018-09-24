@@ -6,6 +6,11 @@
 %miEnv1 = pi*4e-7;%permissividade magnética do meio (zona 1)
 %miEnv2 = pi*4e-7;%permissividade magnética do meio (zona 2)
 
+%Find net parameters such that
+% a: -0.2600
+% b: 1
+
+
 function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
 	if exist('params','var')
 		R = params.R;
@@ -16,12 +21,12 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
 		miEnv1 = params.miEnv1;
 		miEnv2 = params.miEnv2;
 	else
-		R = [0.0250;50];
+		R = [0.0250;35];
 		C = [1.0000e-07;1.8300e-07];
-		W = 6.9115e+05;
-		zone1Limit = 0.013;
-		zone2Limit = 0.015;
-		miEnv1 = 2.7646e-06;
+		W = 9.8960e+05;
+		zone1Limit = 0.014;
+		zone2Limit = 0.016;
+		miEnv1 = 7.5398e-06;
 		miEnv2 = 1.2566e-06;
 	end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
