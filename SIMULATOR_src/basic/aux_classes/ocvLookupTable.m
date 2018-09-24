@@ -9,62 +9,62 @@
 %sem informar o caminho.
 
 classdef ocvLookupTable < LookupTable
-    
-   properties
-   end
-   
-   methods
-      function obj = ocvLookupTable(file,plotData)
-          obj@LookupTable(['battery_data/',file],false);
-          
-          if ~check(obj)
-              error('ocvLookupTable: error: battery data is incompatible with the model');
-          end
-          
-          if plotData
-              ocvPlot(obj);
-          end
-      end
-      
-      %a função abaixo utiliza interpolação linear entre dois pontos
-      %conhecidos para descobrir o desconhecido.
-      function OCV = getOCVFromSOC(obj,SOC)
-          if((SOC>1)||(SOC<0))
-              error('ocvLookupTable: error: informed SOC is out of bounds');
-          end
-          OCV = getYFromX(obj,SOC);
-      end
-      
-      function flag = check(obj)
-          flag = false;
-          if length(obj.table)<2
-              flag = true;
-          end
-          if obj.table(1,1)~=0
-              flag=true;
-          end
-          if obj.table(end,1)~=1
-              flag=true;
-          end
-          if ~flag%só é necessário verificar se já não tiver concluído que
-              %está errado
-              for i=2:length(obj.table)
-                if(obj.table(i-1,1)>=obj.table(i,1))
-                    flag=true;
-                    break;
-                end
-                if(obj.table(i-1,2)>obj.table(i,2))
-                    warningMsg('OCV is usually a monotonically increasing function');
-                end
-              end
-          end
-      end
-      
-      function ocvPlot(obj)
-          figure;
-          plot(obj.table(:,1)*100,obj.table(:,2));
-          xlabel('SOC (%)');
-          ylabel('OCV (V)');
-      end
-   end
+
+	properties
+	end
+
+	methods
+		function obj = ocvLookupTable(file,plotData)
+			obj@LookupTable(['battery_data/',file],false);
+
+			if ~check(obj)
+				error('ocvLookupTable: error: battery data is incompatible with the model');
+			end
+
+			if plotData
+				ocvPlot(obj);
+			end
+		end
+
+		%a função abaixo utiliza interpolação linear entre dois pontos
+		%conhecidos para descobrir o desconhecido.
+		function OCV = getOCVFromSOC(obj,SOC)
+			if((SOC>1)||(SOC<0))
+				error('ocvLookupTable: error: informed SOC is out of bounds');
+			end
+			OCV = getYFromX(obj,SOC);
+		end
+
+		function flag = check(obj)
+			flag = true;
+			if length(obj.table)<2
+				flag = false;
+			end
+			if obj.table(1,1)~=0
+				flag=false;
+			end
+			if obj.table(end,1)~=1
+				flag=false;
+			end
+			if ~flag%só é necessário verificar se já não tiver concluído que
+				%está errado
+				for i=2:length(obj.table)
+					if(obj.table(i-1,1)>=obj.table(i,1))
+						flag=false;
+						break;
+					end
+					if(obj.table(i-1,2)>obj.table(i,2))
+						warningMsg('OCV is usually a monotonically increasing function');
+					end
+				end
+			end
+		end
+
+		function ocvPlot(obj)
+			figure;
+			plot(obj.table(:,1)*100,obj.table(:,2));
+			xlabel('SOC (%)');
+			ylabel('OCV (V)');
+		end
+	end
 end

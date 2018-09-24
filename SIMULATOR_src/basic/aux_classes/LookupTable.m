@@ -62,7 +62,7 @@ classdef LookupTable
       end
       
       function flag = check(obj)
-          flag = (length(obj.table)<2);
+          flag = (length(obj.table)>=2);
       end
       
       function plotData(obj)

@@ -53,7 +53,7 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
     end
     
     I = Z\V;
-    P = abs(V.'*I);
+    P = real(I'*V);%potência real é a parte real da potência complexa (IEEE Std 1459-2010)
     
 	ttl = 10000;
 	
