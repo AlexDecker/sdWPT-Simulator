@@ -4,6 +4,9 @@ classdef powerApplication
         ID
         SEND_OPTIONS
     end
+    properties(Access = protected)
+    	CurrTime %Ultimo momento que se tem conhecimento
+    end 
     properties(Access=public)
         APPLICATION_LOG %retornado pela função Simulate ao término da execução
     end
@@ -27,6 +30,11 @@ classdef powerApplication
     methods(Access=protected)
         %define um timer para um período 'vTime' no futuro
         function netManager = setTimer(obj,netManager,globalTime,vTime)
+        	if(globalTime>obj.CurrTime)
+        		error('powerApplication (setTimer): Inconsistent time value');
+        	else
+        		obj.CurrTime = globalTime;
+        	end
             netManager = setTimer(netManager,obj.ID,globalTime,vTime);
         end
         %define configurações de comunicação
@@ -40,11 +48,21 @@ classdef powerApplication
         end
         %envia uma mensagem 'data' ao dispositivo de id 'dest'
         function netManager = send(obj,netManager,dest,data,dataLen,globalTime)
+        	if(globalTime>obj.CurrTime)
+        		error('powerApplication (send): Inconsistent time value');
+        	else
+        		obj.CurrTime = globalTime;
+        	end
             [~,~,netManager] = send(netManager,obj.ID,dest,data,dataLen,...
                 obj.SEND_OPTIONS,globalTime);
         end
         %envia uma mensagem 'data' a todos os dispositivos do sistema
         function netManager = broadcast(obj,netManager,data,dataLen,globalTime)
+        	if(globalTime>obj.CurrTime)
+        		error('powerApplication (broadcast): Inconsistent time value');
+        	else
+        		obj.CurrTime = globalTime;
+        	end
             netManager = broadcast(netManager,obj.ID,data,dataLen,...
                 obj.SEND_OPTIONS,globalTime);
         end

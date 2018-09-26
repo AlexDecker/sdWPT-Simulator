@@ -110,7 +110,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 				
 				%avalia via SINR se a mensagem deve ser enviada
 				if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z,STEP))
-					[powerRX(owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
+					[powerRX(event.owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
 				end
 			else
 				%evento de timer

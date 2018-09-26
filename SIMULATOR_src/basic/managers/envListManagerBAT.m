@@ -1,26 +1,26 @@
-%Baseado no envListManager, por�m com suporte � recarga de baterias.
+%Baseado no envListManager, porem com suporte a recarga de baterias.
 
 classdef envListManagerBAT
     
     properties
         ENV %envListManager
-        deviceList %lista de dispositivos com interface compat�vel com Device
-        Vlist %lista das tens�es Vt variadas por�m ainda n�o computadas
+        deviceList %lista de dispositivos com interface compativel com Device
+        Vlist %lista das tensoes Vt variadas porem ainda nao computadas
         Tlist %tempos em que cada entrada em Vlist foi adicionada
-        CurrTime %�ltimo momento que se tem conhecimento (por leitura ou escrita)
-        previousRL %RL da �ltima itera��o, guardado por raz�es de efici�ncia
-        step %passo de integra��o
+        CurrTime %Ultimo momento que se tem conhecimento (por leitura ou escrita)
+        previousRL %RL da ultima iteracao, guardado por razoes de eficiencia
+        step %passo de integracao
         first %booleano. indica a primeira vez que as baterias foram atualizadas
 
-        showProgress %se verdadeiro, imprime na tela o progresso da simula��o
-        lastPrint %utilizado para reduzir o n�mero de prints de progresso
+        showProgress %se verdadeiro, imprime na tela o progresso da simulacao
+        lastPrint %utilizado para reduzir o numero de prints de progresso
         
         TRANSMITTER_DATA %simulationResults (TX)
         DEVICE_DATA %lista de simulationResults (RX)
-        nt %n�mero de an�is transmissores
-        nt_groups %n�mero de grupos transmissores
+        nt %numero de aneis transmissores
+        nt_groups %numero de grupos transmissores
 
-        latestCI %os �ltimos valores calculados da corrente em fasores
+        latestCI %os ultimos valores calculados da corrente em fasores
     end
 
     methods

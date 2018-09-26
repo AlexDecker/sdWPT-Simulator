@@ -37,7 +37,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
     MAX_POWER = 7.5;%W;
     R_MAX = 1e7;   % (ohm)
     TOTAL_TIME = 1000;%segundos de simulação (em tempo virtual)
-	STEP=10; % (s) Aqui basta que esse valor seja inferior ao timeSkip da aplicação,
+	STEP=0.1; % (s) Aqui basta que esse valor seja inferior ao timeSkip da aplicação,
 	%visto que não há recarga de bateria
 
     %DISPOSITIVO
@@ -51,8 +51,9 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
     %APLICAÇÕES
     d0 = 0.005;
     vel = (0.03-0.005)/TOTAL_TIME;
-    powerTX = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,miEnv1,miEnv2);
-	powerRX = struct('obj',powerRXApplication_Qi(1));
+    dt = 0.4;
+    powerTX = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,miEnv1,miEnv2,dt);
+	powerRX = struct('obj',powerRXApplication_Qi(1,dt));
 
     %SIMULADOR
 
@@ -61,7 +62,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
     INIT_VEL=0.01;
     MAX_ERR = 0.005;
 
-    SHOW_PROGRESS = false;
+    SHOW_PROGRESS = true;
 
     B_SWIPT = 0.7;%minimum SINR for the message to be undertood
     B_RF = 0.7;%minimum SINR for the message to be undertood

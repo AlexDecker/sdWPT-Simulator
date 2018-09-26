@@ -56,7 +56,7 @@ classdef simulationResults
 		                	if(s(2)==1)
 		                		obj.BC = aux;
 		                	else
-		                		obj.BC = [obj.BC(:,end-1),aux];
+		                		obj.BC = [obj.BC(:,1:s(2)-1),aux];
 		                	end
 		                end
                     end
