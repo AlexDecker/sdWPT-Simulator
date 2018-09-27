@@ -12,6 +12,9 @@ classdef powerTXApplication_Qi < powerTXApplication
         %variação de tempo do timer
         dt
         
+        %tensão de transmissão
+        V
+        
         %state:
         %0 - busca desligado (ao entrar nesse estado, desliga o transmissor e liga o timer. No final do timer, vai
         %para 1)
@@ -26,7 +29,7 @@ classdef powerTXApplication_Qi < powerTXApplication
         okUntil
     end
     methods
-        function obj = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,mi1,mi2,dt)
+        function obj = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,mi1,mi2,dt,V)
             obj@powerTXApplication();%construindo a estrutura referente à superclasse
             obj.d0 = d0;
             obj.vel = vel;
@@ -38,6 +41,7 @@ classdef powerTXApplication_Qi < powerTXApplication
             obj.okUntil = 0;%dummie
             obj.state = -1;%dummie
             obj.dt = dt;
+            obj.V = V;
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -118,7 +122,7 @@ classdef powerTXApplication_Qi < powerTXApplication
         		if(distance<obj.zone2Limit)
         			%zona 2 (proximidade média)
         			WPTManager.ENV.miEnv = (distance-obj.zone1Limit)/(obj.zone2Limit-obj.zone1Limit)*obj.mi2+...
-        				(obj.zone2Limit-distance)/(obj.zone2Limit-obj.zone1Limit)*obj.mi2;
+        				(obj.zone2Limit-distance)/(obj.zone2Limit-obj.zone1Limit)*obj.mi1;
         		else
         			%zona 3 (término da influência do atrator)
         			WPTManager.ENV.miEnv = obj.mi2;
@@ -129,7 +133,7 @@ classdef powerTXApplication_Qi < powerTXApplication
         %encapsulamento das funções básicas do sistema
         
         function WPTManager = turnOn(obj,WPTManager,GlobalTime)
-        	WPTManager = setSourceVoltages(obj,WPTManager,5,GlobalTime);
+        	WPTManager = setSourceVoltages(obj,WPTManager,obj.V,GlobalTime);
         end
         
         function WPTManager = turnOff(obj,WPTManager,GlobalTime)

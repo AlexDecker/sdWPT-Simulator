@@ -52,7 +52,8 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
     d0 = 0.005;
     vel = (0.03-0.005)/TOTAL_TIME;
     dt = 0.4;
-    powerTX = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,miEnv1,miEnv2,dt);
+    V = 19;
+    powerTX = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,miEnv1,miEnv2,dt,V);
 	powerRX = struct('obj',powerRXApplication_Qi(1,dt));
 
     %SIMULADOR
@@ -64,7 +65,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
 
     SHOW_PROGRESS = true;
 
-    B_SWIPT = 0.7;%minimum SINR for the message to be undertood
+    B_SWIPT = 0;%minimum SINR for the message to be undertood
     B_RF = 0.7;%minimum SINR for the message to be undertood
     A_RF = 2;%expoent for free-space path loss (RF only)
     N_SWIPT = 0.1;%Noise for SWIPT (W)

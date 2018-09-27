@@ -208,10 +208,10 @@ classdef envListManagerBAT
             %se a tens�o tiver mudado ou se for a primeira medi��o
             if((abs(CurrTime-obj.CurrTime)>tolerance_val)||(nCol~=1)||(obj.first))
                 [obj,cI] = updateBatteryCharges(obj,CurrTime);
+                obj.latestCI = cI;
             else
                 cI = obj.latestCI;%envie o �ltimo valor calculado
             end
-
             Q = zeros(length(obj.deviceList),1);
             for i=1:length(obj.deviceList)
                 Q(i) = obj.deviceList(i).obj.bat.Q;

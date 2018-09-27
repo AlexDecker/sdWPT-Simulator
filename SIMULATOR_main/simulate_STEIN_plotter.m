@@ -22,7 +22,7 @@ d_RX = ((1000-t_RX)*5 + 30*t_RX)/1000;
 
 eff_list = [];
 
-raio = 40;
+raio = 50;
 
 sBC_TX1 = zeros(length(BC_TX1),1);
 sBC_TX2 = zeros(length(BC_TX2),1);
@@ -48,15 +48,6 @@ sBC_TX2 = sBC_TX2(ceil(linspace(1,length(sBC_TX2), m)));
 
 eff = abs(params.R(2).*sCC_RX.^2)./(abs(params.R(1).*sBC_TX1.^2)+abs(params.R(1).*sBC_TX2.^2)+abs(params.R(2).*sCC_RX.^2));
 
-for i=1:length(ref_eff)
-	%i_tx1 = interp1(d_TX,BC_TX1,ref_dist(i));
-	%i_tx2 = interp1(d_TX,BC_TX2,ref_dist(i));
-	%i_rx = interp1(d_RX,CC_RX,ref_dist(i));
 
-	%eff = abs(params.R(2)*i_rx^2)/(abs(params.R(1)*i_tx1^2)+abs(params.R(1)*i_tx2^2)+abs(params.R(2)*i_rx^2));
-
-	%eff_list = [eff_list,eff];
-end
-
-%plot(ref_dist,eff_list,'b');
+plot(linspace(7.5,22.5,length(eff)),eff,'b');
 
