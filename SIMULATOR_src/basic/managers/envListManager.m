@@ -3,7 +3,7 @@ classdef envListManager
         envList
         Vt_group %vetor coluna com a tens�o ac de cada grupo transmissor (V) 
         R_group %vetor coluna com a resis�ncia de cada grupo Transmissor/Receptor (ohm)
-        w %frequ�ncia ressonante angular (rad/s)
+        w %frequ�ncia operacional angular (rad/s)
         tTime %tempo decorrido do primeiro (time=0) ao �ltimo quadro (s)
         err %erro admiss�vel para a pot�ncia (%)
         maxResistance %teto para qualquer valor de resist�ncia (ohm)

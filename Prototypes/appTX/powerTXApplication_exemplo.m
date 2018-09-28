@@ -38,7 +38,7 @@ classdef powerTXApplication_exemplo < powerTXApplication
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
             [WPTManager,P] = getPower(obj,WPTManager,GlobalTime);
-            if (WPTManager.ENV.maxPower*0.9)<abs(P)
+            if (WPTManager.ENV.maxPower*0.9)<P
                 obj.V = obj.V-obj.dV;
                 obj.dV = obj.iVel;
             else
@@ -59,7 +59,7 @@ classdef powerTXApplication_exemplo < powerTXApplication
 
         function [WPTManager,P] = getPower(obj,WPTManager,GlobalTime)
             [I,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
-            P = obj.V*(obj.vtBaseVector.')*I;
+            P = real(obj.V*I'*obj.vtBaseVector);
         end
     end
 end

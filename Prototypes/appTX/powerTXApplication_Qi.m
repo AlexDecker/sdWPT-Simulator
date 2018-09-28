@@ -2,18 +2,13 @@
 
 classdef powerTXApplication_Qi < powerTXApplication
     properties
-    	d0
-        vel
-        zone1Limit
-        zone2Limit
-        mi1
-        mi2
         
-        %variação de tempo do timer
-        dt
-        
-        %tensão de transmissão
-        V
+        dt%variação de tempo do timer
+        V%tensão de transmissão
+        imax%corrente maxima aceitavel pelo receptor
+        pmax%potencia ativa maxima da fonte
+        dw%variacao de frequencia operacional angular para o ajuste
+        w%frequancia operacional angular atual
         
         %state:
         %0 - busca desligado (ao entrar nesse estado, desliga o transmissor e liga o timer. No final do timer, vai
@@ -29,44 +24,63 @@ classdef powerTXApplication_Qi < powerTXApplication
         okUntil
     end
     methods
-        function obj = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,mi1,mi2,dt,V)
+        function obj = powerTXApplication_Qi(dt,V,pmax,dw)
             obj@powerTXApplication();%construindo a estrutura referente à superclasse
-            obj.d0 = d0;
-            obj.vel = vel;
-            obj.zone1Limit = zone1Limit;
-            obj.zone2Limit = zone2Limit;
-            obj.mi1 = mi1;
-            obj.mi2 = mi2;
             
             obj.okUntil = 0;%dummie
             obj.state = -1;%dummie
             obj.dt = dt;
             obj.V = V;
+            
+            obj.imax = 1.2;%default (A)
+            obj.pmax = pmax;
+            obj.dw = dw;
+            obj.w = 2*pi*4000;%4kHz
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
-        	%SWIPT, 1000bps, 5W (dummie)
-            obj = setSendOptions(obj,0,1000,5);
+        	%SWIPT, 2048bps (segundo o datasheet do CI), 5W (dummie)
+            obj = setSendOptions(obj,0,2048,5);
             
             %se inicia no estado zero
             [obj,WPTManager] = goToStateZero(obj,WPTManager,0);
             
-        	netManager = setTimer(obj,netManager,0,obj.dt*10);%dispara o timer
+        	netManager = setTimer(obj,netManager,0,obj.dt);%dispara o timer
         end
 
         function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
         	switch(obj.state)
         		case 1
-        			%alguém respondeu o ping. Inicie a transmissão propriamente dita
-        			disp('Connection established');
-        			[obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime);
+        			if length(data)==2
+		    			%alguém respondeu o ping. Inicie a transmissão propriamente dita
+		    			obj.imax = data(2);
+		    			[obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime);
+		    			disp('Connection established');
+		    		end
         		case 2
-        			obj.okUntil = GlobalTime+obj.dt; %renova o atestado por mais um ciclo 
+        			obj.okUntil = GlobalTime+obj.dt; %renova o atestado por mais um ciclo
+        			
+        			[It,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
+        			pot = real([sum(It);data(1)]'*[obj.V;0]);%calcula a potencia ativa
+        			
+        			%ajusta a frequência operacional
+        			if pot>=obj.pmax
+        				if obj.w>2*pi*110000
+        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
+        				end
+        			else
+        				if (abs(data(1))<obj.imax)&&(obj.w<2*pi*205000)
+        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+obj.dw);
+        				else
+        					if (abs(data(1))>obj.imax)&&(obj.w>2*pi*110000)
+        						WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
+        					end
+        				end
+        			end
         	end         
         end
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager) 
-        	WPTManager = dealEffectivePermeability(obj,GlobalTime,WPTManager);
         	switch(obj.state)
         		case 0
         			%alternando entre estados 0 e 1
@@ -77,7 +91,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 	        		%alternando entre estados 0 e 1
         			[obj,WPTManager] = goToStateZero(obj,WPTManager,GlobalTime);
         			%chamada para o próximo ciclo
-        			netManager = setTimer(obj,netManager,GlobalTime,obj.dt*10);
+        			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
         		case 2
         			%está transmitindo, mas a mensagem de continuidade de transmissãqo não chegou a tempo
         			if(obj.okUntil<=GlobalTime)
@@ -86,7 +100,7 @@ classdef powerTXApplication_Qi < powerTXApplication
         				[obj,WPTManager] = goToStateZero(obj,WPTManager);
         			end
         			%chamada para o próximo ciclo
-        			netManager = setTimer(obj,netManager,GlobalTime,obj.dt*10);
+        			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
         	end
         end
         
@@ -100,6 +114,7 @@ classdef powerTXApplication_Qi < powerTXApplication
         
         function [obj,WPTManager,netManager] = goToStateOne(obj,WPTManager,netManager,GlobalTime)
         	obj.state = 1;
+        	WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*4000);%4kHz
         	WPTManager = turnOn(obj,WPTManager,GlobalTime);%liga o transmissor de potência
         	netManager = broadcast(obj,netManager,0,32,GlobalTime);%faz um broadcast com seu id (0, 32 bits)
         	%o timer já é disparado automaticamente
@@ -107,28 +122,11 @@ classdef powerTXApplication_Qi < powerTXApplication
         
         function [obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime)
         	obj.state = 2;
+        	WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*110000);%110kHz
         	WPTManager = turnOn(obj,WPTManager,GlobalTime);%liga o transmissor de potência
         	obj.okUntil = GlobalTime + obj.dt;
         end
         
-        %simulação da permeabilidade multi-camada
-        
-        function WPTManager = dealEffectivePermeability(obj,GlobalTime,WPTManager)
-        	distance = obj.d0 + obj.vel*GlobalTime;%estima a distância das bobinas baseado nos parâmetros e no tempo
-        	if(distance<obj.zone1Limit)
-        		%zona 1 (alta proximidade)
-        		WPTManager.ENV.miEnv = obj.mi1;
-        	else
-        		if(distance<obj.zone2Limit)
-        			%zona 2 (proximidade média)
-        			WPTManager.ENV.miEnv = (distance-obj.zone1Limit)/(obj.zone2Limit-obj.zone1Limit)*obj.mi2+...
-        				(obj.zone2Limit-distance)/(obj.zone2Limit-obj.zone1Limit)*obj.mi1;
-        		else
-        			%zona 3 (término da influência do atrator)
-        			WPTManager.ENV.miEnv = obj.mi2;
-        		end
-        	end 
-        end
         
         %encapsulamento das funções básicas do sistema
         

@@ -37,5 +37,13 @@ classdef powerTXApplication < powerApplication
         	end
             WPTManager = setVt(WPTManager, Vt, GlobalTime);
         end
+        %define a frequencia angular operacional
+        function WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,w)
+        	if w<=0
+        		error('powerTXApplication (setOperationalFrequency): w must be positive');
+        	end
+        	[~,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);%dummie, apenas para nao afetar o passado
+        	WPTManager.ENV.w = w;
+        end
     end
 end

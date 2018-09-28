@@ -49,12 +49,11 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
     DEVICE_LIST = struct('obj',dev);
 
     %APLICAÇÕES
-    d0 = 0.005;
-    vel = (0.03-0.005)/TOTAL_TIME;
-    dt = 0.4;
-    V = 19;
-    powerTX = powerTXApplication_Qi(d0,vel,zone1Limit,zone2Limit,miEnv1,miEnv2,dt,V);
-	powerRX = struct('obj',powerRXApplication_Qi(1,dt));
+    dt = 0.4;%segundo o datasheet do CI
+    V = 5;%segundo o datasheet do evkit
+    dw = 5;
+    powerTX = powerTXApplication_Qi(dt,V,MAX_POWER,dw);
+	powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
 
     %SIMULADOR
 
@@ -65,11 +64,11 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
 
     SHOW_PROGRESS = true;
 
-    B_SWIPT = 0;%minimum SINR for the message to be undertood
-    B_RF = 0.7;%minimum SINR for the message to be undertood
-    A_RF = 2;%expoent for free-space path loss (RF only)
+    B_SWIPT = 0.5;%minimum SINR for the message to be undertood
+    B_RF = 0.7;%minimum SINR for the message to be undertood (dummie no caso)
+    A_RF = 2;%expoent for free-space path loss (RF only)(dummie no caso)
     N_SWIPT = 0.1;%Noise for SWIPT (W)
-    N_RF = 0.1;%Noise for RF (W)
+    N_RF = 0.1;%Noise for RF (W)(dummie no caso)
 
     [LOG_TX,LOG_dev_list,~] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...

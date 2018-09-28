@@ -1,12 +1,9 @@
 clear all;
 
 params.R = [0.0250;35];
-params.C = [1.0000e-07;1.8300e-07];
-params.W = 9.8960e+05;
-params.zone1Limit = 0.014;
-params.zone2Limit = 0.016;
-params.miEnv1 = 7.5398e-06;
-params.miEnv2 = 1.2566e-06;
+params.C = [4.02e-07;1.8300e-07];
+params.W = 9.8960e+05;%dummie nesse caso
+params.miEnv = 1.2566e-06;
 
 %valor de referência
 ref_eff = [0.74, 0.715, 0.63, 0.27, 0.14, 0.06, 0];
