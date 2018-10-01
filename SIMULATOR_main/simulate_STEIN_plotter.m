@@ -1,6 +1,6 @@
 clear all;
 
-params.R = [0.0250;35];
+params.R = [0.15;35];%[0.0250;35];
 params.C = [4.02e-07;1.8300e-07];
 params.W = 9.8960e+05;%dummie nesse caso
 params.miEnv = 1.2566e-06;
@@ -12,7 +12,7 @@ ref_dist = [5, 7.50, 10.00, 12.5, 15.0, 17.5, 20.0, 22.5];
 hold on;
 plot(ref_dist,ref_eff,'r');
 
-[t_TX, BC_TX1, BC_TX2, t_RX, CC_RX] = simulate_STEIN();
+[t_TX, BC_TX1, BC_TX2, t_RX, CC_RX, t_W, W] = simulate_STEIN();
 %convertendo tempo em distância
 d_TX = ((1000-t_TX)*5 + 30*t_TX)/1000;
 d_RX = ((1000-t_RX)*5 + 30*t_RX)/1000;
@@ -47,4 +47,5 @@ eff = abs(params.R(2).*sCC_RX.^2)./(abs(params.R(1).*sBC_TX1.^2)+abs(params.R(1)
 
 
 plot(linspace(5,30,length(eff)),eff,'b');
-
+figure;
+plot(t_W,W);

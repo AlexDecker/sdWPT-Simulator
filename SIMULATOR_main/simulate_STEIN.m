@@ -11,7 +11,7 @@
 % b: 1
 
 
-function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
+function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W] = simulate_STEIN(params)
 	if exist('params','var')
 		R = params.R;
 		C = params.C;
@@ -41,7 +41,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
 	%visto que não há recarga de bateria
 
     %DISPOSITIVO
-    maxCurrent = 1.5; % (A)
+    maxCurrent = 0.02; % (A)
     efficiency = 0.93; % (eficiência de conversão AC/DC)
 	
 	currentConverter = CurrentConverter('conversionEff_Qi.txt',false);
@@ -51,7 +51,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
     %APLICAÇÕES
     dt = 0.4;%segundo o datasheet do CI
     V = 5;%segundo o datasheet do evkit
-    dw = 5;
+    dw = 2*pi*5000;
     powerTX = powerTXApplication_Qi(dt,V,MAX_POWER,dw);
 	powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
 
@@ -70,7 +70,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
     N_SWIPT = 0;%2e-11;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)(dummie no caso)
 
-    [LOG_TX,LOG_dev_list,~] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
+    [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
         B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv1);
 
@@ -83,4 +83,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
     t_TX = LOG_TX.BC(3,:);
     BC_TX1 = LOG_TX.BC(1,:);
     BC_TX2 = LOG_TX.BC(2,:);
+    
+    t_W = LOG_app_list(1).DATA(2,:);
+    W = LOG_app_list(1).DATA(1,:);
 end

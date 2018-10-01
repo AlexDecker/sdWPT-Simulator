@@ -45,6 +45,9 @@ classdef powerTXApplication_Qi < powerTXApplication
             %se inicia no estado zero
             [obj,WPTManager] = goToStateZero(obj,WPTManager,0);
             
+            %log will receive w data
+            obj.APPLICATION_LOG.DATA = zeros(2,0);
+            
         	netManager = setTimer(obj,netManager,0,obj.dt);%dispara o timer
         end
 
@@ -82,6 +85,8 @@ classdef powerTXApplication_Qi < powerTXApplication
         					end
         				end
         			end
+                    logW = [obj.w/(2*pi);GlobalTime];
+                    obj.APPLICATION_LOG.DATA = [obj.APPLICATION_LOG.DATA,logW];
         	end
         end
 
