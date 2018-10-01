@@ -57,10 +57,10 @@ function SINR = SINR_SWIPT(WPTManager,message,conflictList,N_SWIPT,t)
         end
         
         %potência do sinal de interesse
-        P = real(curr'*diag(gT)*diag(gR)*Z*diag(gT)*curr);
+        P = calculatePower(curr,Z,gT,gR);
         
         %potência do sinal de interferência
-        I = real(curr'*diag(gI)*diag(gR)*Z*diag(gI)*curr);
+        I = calculatePower(curr,Z,gI,gR);
         
         SINR = P/(I+N_SWIPT);
     else

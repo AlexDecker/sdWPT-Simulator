@@ -6,8 +6,8 @@ params.W = 9.8960e+05;%dummie nesse caso
 params.miEnv = 1.2566e-06;
 
 %valor de referência
-ref_eff = [0.74, 0.715, 0.63, 0.27, 0.14, 0.06, 0];
-ref_dist = [7.50, 10.00, 12.5, 15.0, 17.5, 20.0, 22.5];
+ref_eff = [0.74, 0.74, 0.715, 0.63, 0.27, 0.14, 0.06, 0];
+ref_dist = [5, 7.50, 10.00, 12.5, 15.0, 17.5, 20.0, 22.5];
 
 hold on;
 plot(ref_dist,ref_eff,'r');
@@ -46,5 +46,5 @@ sBC_TX2 = sBC_TX2(ceil(linspace(1,length(sBC_TX2), m)));
 eff = abs(params.R(2).*sCC_RX.^2)./(abs(params.R(1).*sBC_TX1.^2)+abs(params.R(1).*sBC_TX2.^2)+abs(params.R(2).*sCC_RX.^2));
 
 
-plot(linspace(7.5,22.5,length(eff)),eff,'b');
+plot(linspace(5,30,length(eff)),eff,'b');
 

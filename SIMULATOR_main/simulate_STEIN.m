@@ -64,10 +64,10 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX] = simulate_STEIN(params)
 
     SHOW_PROGRESS = true;
 
-    B_SWIPT = 0.5;%minimum SINR for the message to be undertood
+    B_SWIPT = 0.6;%minimum SINR for the message to be undertood
     B_RF = 0.7;%minimum SINR for the message to be undertood (dummie no caso)
     A_RF = 2;%expoent for free-space path loss (RF only)(dummie no caso)
-    N_SWIPT = 0.1;%Noise for SWIPT (W)
+    N_SWIPT = 0;%2e-11;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)(dummie no caso)
 
     [LOG_TX,LOG_dev_list,~] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...

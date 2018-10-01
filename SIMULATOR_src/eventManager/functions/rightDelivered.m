@@ -1,8 +1,10 @@
 function r = rightDelivered(message,messageLists,WPTManager,...
-    B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z,step)
+    B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z)
     %TODO: descontar a energia gasta
     r = true;
     out = false;
+    
+    step = (message.time1-message.time0)/10;
     
     t = message.time0 + step;
     

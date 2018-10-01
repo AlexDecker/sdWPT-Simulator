@@ -126,8 +126,19 @@ classdef envListManagerBAT
             end
             %log-------------------
             I1=I0;%valor default
-            t=t+obj.step;
-            while(t<t1)
+            step = obj.step;
+            
+            while(true)
+                if(t==t1)
+                    break;
+                else
+                    if(t+step>t1)
+                        t = t1;
+                        step = t1-t;
+                    else
+                        t = t+step;
+                    end 
+                end
             	%calcula a resist�ncia equivalente dos consumidores de energia
                 [obj,RL] = calculateAllRL(obj,t,Vt);
                 
@@ -152,7 +163,7 @@ classdef envListManagerBAT
                 %atualiza a carga das baterias de acordo com a corrente atual e o intervalo de tempo t
                 for i=1:length(obj.deviceList)
                     [obj.deviceList(i).obj,obj.DEVICE_DATA(i)] = updateDeviceState(obj.deviceList(i).obj,...
-                    meanI_group(length(Vt)+i), obj.step,obj.DEVICE_DATA(i),t);
+                    meanI_group(length(Vt)+i), step,obj.DEVICE_DATA(i),t);
                 end
                 
                 I0 = I1;
@@ -162,8 +173,6 @@ classdef envListManagerBAT
                     disp(['progress: ',num2str(round(100*t/obj.ENV.tTime)),'%']);
                     obj.lastPrint = round(100*t/obj.ENV.tTime);
                 end
-                
-                t=t+obj.step;
             end
         end
 
@@ -228,8 +237,8 @@ classdef envListManagerBAT
             RS = getRLEstimate(obj.TRANSMITTER_DATA,t);
             RL = [];
             for i=1:length(obj.DEVICE_DATA)
-                curr = [curr,getCurrentEstimate(obj.DEVICE_DATA(i),t)];
-                RL = [RL,getRLEstimate(obj.DEVICE_DATA(i),t)];
+                curr = [curr;getCurrentEstimate(obj.DEVICE_DATA(i),t)];
+                RL = [RL;getRLEstimate(obj.DEVICE_DATA(i),t)];
             end
             
             Z = composeZMatrix(getZ(obj.ENV,obj.CurrTime),...

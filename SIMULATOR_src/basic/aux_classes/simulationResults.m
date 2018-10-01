@@ -174,7 +174,7 @@ classdef simulationResults
         end
         
         function r = getRLEstimate(obj,time)
-            I = estimate(obj, obj.RL, time);
+            r = estimate(obj, obj.RL, time);
         end
     end
     
@@ -226,17 +226,21 @@ classdef simulationResults
             nLines = s(1);
             nCols = s(2);
             if(nCols==0)
-                warningMsg('(SimulationResults) estimation may be inaccurate');
+                warningMsg('(SimulationResults) estimation may be inaccurate (not enough data)');
                 v = 0;
             else
                 i = find(obj, log, time);
                 if(i==0)
                     %se o momento for anterior ao mais antigo já registrado
-                    warningMsg('(SimulationResults) estimation may be inaccurate');
+                    if(time<log(end,1))
+                        warningMsg('(SimulationResults) estimation may be inaccurate (past)');
+                    end
                     v = log(1:nLines-1,1);
                 else
                     if(i==nCols)
-                        warningMsg('(SimulationResults) estimation may be inaccurate');
+                        if(time>log(end,end))
+                            warningMsg('(SimulationResults) estimation may be inaccurate (future)');
+                        end
                         v = log(1:nLines-1,i);
                     else
                         v0 = log(1:nLines-1,i);
