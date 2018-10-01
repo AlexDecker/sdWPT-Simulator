@@ -64,17 +64,19 @@ classdef powerTXApplication_Qi < powerTXApplication
         			pot = real([sum(It);data(1)]'*[obj.V;0]);%calcula a potencia ativa
         			
         			%ajusta a frequência operacional
+                    %(como a frequencia ressonante eh proxima de 100 KHz, quanto maior a frequencia, menor
+                    %a potencia recebida)
         			if pot>=obj.pmax
-        				if obj.w>2*pi*110000
-        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
-                            obj.w = obj.w-obj.dw;
+        				if obj.w<2*pi*205000
+        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+obj.dw);
+                            obj.w = obj.w+obj.dw;
         				end
         			else
-        				if (abs(data(1))<obj.imax)&&(obj.w<2*pi*205000)
+        				if (abs(data(1))>obj.imax)&&(obj.w<2*pi*205000)
         					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+obj.dw);
                             obj.w = obj.w+obj.dw;
         				else
-        					if (abs(data(1))>obj.imax)&&(obj.w>2*pi*110000)
+        					if (abs(data(1))<obj.imax)&&(obj.w>2*pi*110000)
         						WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
                                 obj.w = obj.w-obj.dw;
         					end
@@ -119,9 +121,7 @@ classdef powerTXApplication_Qi < powerTXApplication
         	obj.state = 1;
         	WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*4000);%4kHz
             obj.w = 2*pi*4000;
-        	WPTManager = turnOn(obj,WPTManager,GlobalTime);%liga o transmissor de potência
-        	netManager = broadcast(obj,netManager,0,32,GlobalTime);%faz um broadcast com seu id (0, 32 bits)
-        	%o timer já é disparado automaticamente
+        	WPTManager = turnOn(obj,WPTManager,GlobalTime);%liga o transmissor de potência (ping analogico)
         end
         
         function [obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime)
