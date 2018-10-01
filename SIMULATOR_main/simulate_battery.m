@@ -9,13 +9,13 @@ function simulate_battery(version)
 	R = [1.5 1.5]'; %resistência fixa dos RLCs (default)
 	C = [-1 -1]';%capacitância dos RLCs (usar a do arquivo .mat)
 	MAX_POWER = 300; %W
-	TOTAL_TIME = 6000; %segundos de simulação (em tempo virtual)
+	TOTAL_TIME = 12600; %segundos de simulação (em tempo virtual)
 	
 	%bateria
 	fase1Limit = 0.7;          % (70%)
 	limitToBegin = 0.9;       % (90%)
-	constantCurrent_min = 0.5; % (A)
-	constantCurrent_max = 1.3;   % (A)
+	constantCurrent_min = 0.01; % (A)
+	constantCurrent_max = 0.51;   % (A)
 	constantVoltage = 4.2;     % (V)
 
 	Rc = -1;      % (ohm. -1=calcular automaticamente)
@@ -33,7 +33,7 @@ function simulate_battery(version)
 	power_sd = 0;
 	minV = 2.3;     % (V)
 	minVTO = 3.3;   % (V)
-	err = 0.05;     % (5%)
+	err = 0.0001;     % (5%)
 	efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
 
 	dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);

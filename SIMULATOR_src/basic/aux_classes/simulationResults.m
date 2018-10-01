@@ -132,17 +132,17 @@ classdef simulationResults
                 figure;
                 hold on;
                 yyaxis left
-                plot(obj.CC(2,:)/3600,obj.CC(1,:));
-                plot(obj.IE(2,:)/3600,obj.IE(1,:));
-                plot(obj.DC(2,:)/3600,obj.DC(1,:));
-                plot(obj.VB(2,:)/3600,obj.VB(1,:));
-                ylabel('(A) / (V)')
+                plot(obj.VB(2,:)/60,obj.VB(1,:));
+                ylabel('(V)');
                 yyaxis right
-                plot(obj.SOC(2,:)/3600,obj.SOC(1,:)*100);
-                legend('Charge Current','Expected Current',...
-                'Discharge Current','Battery Voltage','SOC');
-                xlabel('Time (h)')
-                ylabel('(%)')
+                plot(obj.CC(2,:)/60,obj.CC(1,:));
+                plot(obj.IE(2,:)/60,obj.IE(1,:));
+                plot(obj.DC(2,:)/60,obj.DC(1,:));
+                plot(obj.SOC(2,:)/60,obj.SOC(1,:));
+                legend('Battery Voltage','Charge Current','Expected Current',...
+                'Discharge Current','SOC');
+                xlabel('Time (min)')
+                ylabel('(A)/(0-1)')
                 title(['Battery Chart for device ', num2str(obj.device_index)]);
             end
         end
