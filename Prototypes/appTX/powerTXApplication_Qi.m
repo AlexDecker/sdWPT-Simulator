@@ -67,17 +67,20 @@ classdef powerTXApplication_Qi < powerTXApplication
         			if pot>=obj.pmax
         				if obj.w>2*pi*110000
         					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
+                            obj.w = obj.w-obj.dw;
         				end
         			else
         				if (abs(data(1))<obj.imax)&&(obj.w<2*pi*205000)
         					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+obj.dw);
+                            obj.w = obj.w+obj.dw;
         				else
         					if (abs(data(1))>obj.imax)&&(obj.w>2*pi*110000)
         						WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
+                                obj.w = obj.w-obj.dw;
         					end
         				end
         			end
-        	end         
+        	end
         end
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager) 
@@ -115,6 +118,7 @@ classdef powerTXApplication_Qi < powerTXApplication
         function [obj,WPTManager,netManager] = goToStateOne(obj,WPTManager,netManager,GlobalTime)
         	obj.state = 1;
         	WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*4000);%4kHz
+            obj.w = 2*pi*4000;
         	WPTManager = turnOn(obj,WPTManager,GlobalTime);%liga o transmissor de potência
         	netManager = broadcast(obj,netManager,0,32,GlobalTime);%faz um broadcast com seu id (0, 32 bits)
         	%o timer já é disparado automaticamente
@@ -123,6 +127,7 @@ classdef powerTXApplication_Qi < powerTXApplication
         function [obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime)
         	obj.state = 2;
         	WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*110000);%110kHz
+            obj.w = 2*pi*110000;
         	WPTManager = turnOn(obj,WPTManager,GlobalTime);%liga o transmissor de potência
         	obj.okUntil = GlobalTime + obj.dt;
         end
