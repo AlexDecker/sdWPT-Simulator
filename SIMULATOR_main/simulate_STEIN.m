@@ -1,38 +1,17 @@
-%W = 2*pi*200000;%200kHz
-%R = [0.025;30];%resistência dos grupos RLC
-%C = [400e-9;200e-9];%capacitância dos grupos RLC
-%zone1Limit = 0.013;%(m)
-%zone2Limit = 0.015;%(m)
-%miEnv1 = pi*4e-7;%permissividade magnética do meio (zona 1)
-%miEnv2 = pi*4e-7;%permissividade magnética do meio (zona 2)
-
-%Find net parameters such that
-% a: -0.2600
-% b: 1
-
-
 function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W] = simulate_STEIN(params)
 	if exist('params','var')
 		R = params.R;
-		C = params.C;
-		W = params.W;
-		zone1Limit = params.zone1Limit;
-		zone2Limit = params.zone2Limit;
-		miEnv1 = params.miEnv1;
-		miEnv2 = params.miEnv2;
+		miEnv = params.miEnv;
 	else
 		R = [0.0250;35];
-		C = [1.0000e-07;1.8300e-07];
-		W = 9.8960e+05;
-		zone1Limit = 0.014;
-		zone2Limit = 0.016;
-		miEnv1 = 7.5398e-06;
-		miEnv2 = 1.2566e-06;
+		miEnv = 1.256627e-06;
 	end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
     %ASPECTOS GERAIS
     NTX = 1; %número de grupos transmissores
+    C = [4.02e-07;2.7237e-07];%for 2*pi*100kHz angular ressonanting frequency
+    W = 2*pi*4000;%dummie
     
     MAX_POWER = 7.5;%W;
     R_MAX = 1e7;   % (ohm)
@@ -41,7 +20,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W] = simulate_STEIN(params)
 	%visto que não há recarga de bateria
 
     %DISPOSITIVO
-    maxCurrent = 0.02; % (A)
+    maxCurrent = 0.03; % (A)
     efficiency = 0.93; % (eficiência de conversão AC/DC)
 	
 	currentConverter = CurrentConverter('conversionEff_Qi.txt',false);
@@ -70,9 +49,9 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W] = simulate_STEIN(params)
     N_SWIPT = 0;%2e-11;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)(dummie no caso)
 
-    [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate('STEIN_ENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
-        IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
-        B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv1);
+    [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate('STEIN_ENV.mat',NTX,R,C,W,...
+    	TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,...
+    	STEP,SHOW_PROGRESS,powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv);
 
     
     LOG_RX = endDataAquisition(LOG_dev_list(1));

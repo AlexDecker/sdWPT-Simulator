@@ -70,21 +70,22 @@ classdef powerTXApplication_Qi < powerTXApplication
                     %(como a frequencia ressonante eh proxima de 100 KHz, quanto maior a frequencia, menor
                     %a potencia recebida)
         			if pot>=obj.pmax
-        				if obj.w<2*pi*205000
-        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+obj.dw);
-                            obj.w = obj.w+obj.dw;
+        				if obj.w>2*pi*110000
+        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
+                            obj.w = obj.w-obj.dw;
         				end
         			else
-        				if (abs(data(1))>obj.imax)&&(obj.w<2*pi*205000)
-        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+obj.dw);
-                            obj.w = obj.w+obj.dw;
+        				if (abs(data(1))>obj.imax)&&(obj.w>2*pi*110000)
+        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
+                    		obj.w = obj.w-obj.dw;
         				else
-        					if (abs(data(1))<obj.imax)&&(obj.w>2*pi*110000)
-        						WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
-                                obj.w = obj.w-obj.dw;
+        					if (abs(data(1))<obj.imax)&&(obj.w<2*pi*205000)
+								WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+obj.dw);
+								obj.w = obj.w+obj.dw;
         					end
         				end
         			end
+        			
                     logW = [obj.w/(2*pi);GlobalTime];
                     obj.APPLICATION_LOG.DATA = [obj.APPLICATION_LOG.DATA,logW];
         	end
