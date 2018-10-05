@@ -2,9 +2,11 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W] = simulate_STEIN(params)
 	if exist('params','var')
 		R = params.R;
 		miEnv = params.miEnv;
+		maxCurrent = params.maxCurrent;
 	else
 		R = [0.0250;35];
 		miEnv = 1.256627e-06;
+		maxCurrent = 1.5; % (A)
 	end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -20,7 +22,6 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W] = simulate_STEIN(params)
 	%visto que não há recarga de bateria
 
     %DISPOSITIVO
-    maxCurrent = 0.03; % (A)
     efficiency = 0.93; % (eficiência de conversão AC/DC)
 	
 	currentConverter = CurrentConverter('conversionEff_Qi.txt',false);
@@ -30,7 +31,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W] = simulate_STEIN(params)
     %APLICAÇÕES
     dt = 0.4;%segundo o datasheet do CI
     V = 5;%segundo o datasheet do evkit
-    dw = 2*pi*5000;
+    dw = 2*pi*1000;
     powerTX = powerTXApplication_Qi(dt,V,MAX_POWER,dw);
 	powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
 

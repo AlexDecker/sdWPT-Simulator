@@ -22,6 +22,12 @@ classdef powerTXApplication_Qi < powerTXApplication
         %marca o momento em que o sistema irá para o estado 0 caso não receba outra mensagem pedindo a continuidade
         %da transmissão
         okUntil
+        
+        %imax-i da última rodada
+        lastVar
+        
+        %indica o sentido da variação da frequência operacional na ultima rodada (-1,1)
+        ddw
     end
     methods
         function obj = powerTXApplication_Qi(dt,V,pmax,dw)
@@ -36,6 +42,9 @@ classdef powerTXApplication_Qi < powerTXApplication
             obj.pmax = pmax;
             obj.dw = dw;
             obj.w = 2*pi*4000;%4kHz
+            
+            obj.lastVar = 0;
+            obj.ddw = 1;
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -69,23 +78,50 @@ classdef powerTXApplication_Qi < powerTXApplication
         			%ajusta a frequência operacional
                     %(como a frequencia ressonante eh proxima de 100 KHz, quanto maior a frequencia, menor
                     %a potencia recebida)
-        			if pot>=obj.pmax
-        				if obj.w>2*pi*110000
-        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
-                            obj.w = obj.w-obj.dw;
-        				end
-        			else
-        				if (abs(data(1))>obj.imax)&&(obj.w>2*pi*110000)
-        					WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w-obj.dw);
-                    		obj.w = obj.w-obj.dw;
-        				else
-        					if (abs(data(1))<obj.imax)&&(obj.w<2*pi*205000)
-								WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+obj.dw);
-								obj.w = obj.w+obj.dw;
-        					end
-        				end
-        			end
-        			
+					
+					ddw = 0;
+					variation = obj.imax-abs(data(1));
+					
+    				if (variation<0)||(pot>=obj.pmax) %reduza a potência transferida
+    					if obj.lastVar>0 %se passou pelo ótimo
+    						ddw = -obj.ddw;%volte
+    					else
+    						if obj.lastVar<0
+    							if abs(obj.lastVar)>abs(variation) %se a aproximacao melhorou
+    								ddw = obj.ddw;%prossiga
+    							else
+    								ddw = obj.ddw;%va pelo outro lado
+    							end
+    						else %se nao ha informacao
+    							ddw = 1;%comece de alguma direcao
+    						end
+    					end
+    				else
+    					if (variation>0) %aumente a potência transferida
+							if obj.lastVar<0 %se passou pelo ótimo
+								ddw = -obj.ddw;%volte
+							else
+								if obj.lastVar>0
+									if abs(obj.lastVar)>abs(variation) %se a aproximacao melhorou
+										ddw = obj.ddw;%prossiga
+									else
+										ddw = obj.ddw;%va pelo outro lado
+									end
+								else %se nao ha informacao
+									ddw = 1;%comece de alguma direcao
+								end
+							end
+    					end
+    				end
+    				
+    				if (obj.w+ddw*obj.dw>=2*pi*110000) && (obj.w+ddw*obj.dw<=2*pi*205000)
+		    			WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+ddw*obj.dw);
+		            	obj.w = obj.w+ddw*obj.dw;
+                	end
+                	
+                	obj.lastVar = variation;
+                	obj.ddw = ddw;
+                	
                     logW = [obj.w/(2*pi);GlobalTime];
                     obj.APPLICATION_LOG.DATA = [obj.APPLICATION_LOG.DATA,logW];
         	end
@@ -136,6 +172,8 @@ classdef powerTXApplication_Qi < powerTXApplication
             obj.w = 2*pi*110000;
         	WPTManager = turnOn(obj,WPTManager,GlobalTime);%liga o transmissor de potência
         	obj.okUntil = GlobalTime + obj.dt;
+        	obj.lastVar = 0;
+            obj.ddw = 1;
         end
         
         
