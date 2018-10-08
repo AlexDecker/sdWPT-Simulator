@@ -26,8 +26,8 @@ classdef powerRXApplication_Qi < powerRXApplication
         	if(abs(I)>0)%se existir transmissão de energia
         		%envia sua corrente (mensagem de continuidade)
 		    	netManager = send(obj,netManager,0,[I,obj.imax],128,GlobalTime);
-		    	netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
 		    end
+			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
         end
 
     end

@@ -28,9 +28,12 @@ classdef powerTXApplication_Qi < powerTXApplication
         
         %indica o sentido da variação da frequência operacional na ultima rodada (-1,1)
         ddw
+		
+		%probabilidade de uma mensagem ser perdida por conta de perturbações na movimentação das bobinas
+		endProb
     end
     methods
-        function obj = powerTXApplication_Qi(dt,V,pmax,dw)
+        function obj = powerTXApplication_Qi(dt,V,pmax,dw,endProb)
             obj@powerTXApplication();%construindo a estrutura referente à superclasse
             
             obj.okUntil = 0;%dummie
@@ -45,6 +48,8 @@ classdef powerTXApplication_Qi < powerTXApplication
             
             obj.lastVar = 0;
             obj.ddw = 1;
+			
+			obj.endProb = endProb;
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -55,7 +60,7 @@ classdef powerTXApplication_Qi < powerTXApplication
             [obj,WPTManager] = goToStateZero(obj,WPTManager,0);
             
             %log will receive w data
-            obj.APPLICATION_LOG.DATA = zeros(2,0);
+            obj.APPLICATION_LOG.DATA = zeros(3,0);
             
         	netManager = setTimer(obj,netManager,0,obj.dt);%dispara o timer
         end
@@ -70,60 +75,62 @@ classdef powerTXApplication_Qi < powerTXApplication
 		    			disp('Connection established');
 		    		end
         		case 2
-        			obj.okUntil = GlobalTime+obj.dt; %renova o atestado por mais um ciclo
-        			
-        			[It,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
-        			pot = real([sum(It);data(1)]'*[obj.V;0]);%calcula a potencia ativa
-        			
-        			%ajusta a frequência operacional
-                    %(como a frequencia ressonante eh proxima de 100 KHz, quanto maior a frequencia, menor
-                    %a potencia recebida)
-					
-					ddw = 0;
-					variation = obj.imax-abs(data(1));
-					
-    				if (variation<0)||(pot>=obj.pmax) %reduza a potência transferida
-    					if obj.lastVar>0 %se passou pelo ótimo
-    						ddw = -obj.ddw;%volte
-    					else
-    						if obj.lastVar<0
-    							if abs(obj.lastVar)>abs(variation) %se a aproximacao melhorou
-    								ddw = obj.ddw;%prossiga
-    							else
-    								ddw = obj.ddw;%va pelo outro lado
-    							end
-    						else %se nao ha informacao
-    							ddw = 1;%comece de alguma direcao
-    						end
-    					end
-    				else
-    					if (variation>0) %aumente a potência transferida
-							if obj.lastVar<0 %se passou pelo ótimo
+					if rand>=obj.endProb
+						obj.okUntil = GlobalTime+obj.dt; %renova o atestado por mais um ciclo
+						
+						[It,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
+						pot = real([sum(It);data(1)]'*[obj.V;0]);%calcula a potencia ativa
+						
+						%ajusta a frequência operacional
+						%(como a frequencia ressonante eh proxima de 100 KHz, quanto maior a frequencia, menor
+						%a potencia recebida)
+						
+						ddw = 0;
+						variation = obj.imax-abs(data(1));
+						
+						if (variation<0)||(pot>=obj.pmax) %reduza a potência transferida
+							if obj.lastVar>0 %se passou pelo ótimo
 								ddw = -obj.ddw;%volte
 							else
-								if obj.lastVar>0
+								if obj.lastVar<0
 									if abs(obj.lastVar)>abs(variation) %se a aproximacao melhorou
 										ddw = obj.ddw;%prossiga
 									else
-										ddw = obj.ddw;%va pelo outro lado
+										ddw = -obj.ddw;%va pelo outro lado
 									end
 								else %se nao ha informacao
 									ddw = 1;%comece de alguma direcao
 								end
 							end
-    					end
-    				end
-    				
-    				if (obj.w+ddw*obj.dw>=2*pi*110000) && (obj.w+ddw*obj.dw<=2*pi*205000)
-		    			WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+ddw*obj.dw);
-		            	obj.w = obj.w+ddw*obj.dw;
-                	end
-                	
-                	obj.lastVar = variation;
-                	obj.ddw = ddw;
-                	
-                    logW = [obj.w/(2*pi);GlobalTime];
-                    obj.APPLICATION_LOG.DATA = [obj.APPLICATION_LOG.DATA,logW];
+						else
+							if (variation>0) %aumente a potência transferida
+								if obj.lastVar<0 %se passou pelo ótimo
+									ddw = -obj.ddw;%volte
+								else
+									if obj.lastVar>0
+										if abs(obj.lastVar)>abs(variation) %se a aproximacao melhorou
+											ddw = obj.ddw;%prossiga
+										else
+											ddw = -obj.ddw;%va pelo outro lado
+										end
+									else %se nao ha informacao
+										ddw = 1;%comece de alguma direcao
+									end
+								end
+							end
+						end
+						
+						if (obj.w+ddw*obj.dw>=2*pi*110000) && (obj.w+ddw*obj.dw<=2*pi*205000)
+							WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w+ddw*obj.dw);
+							obj.w = obj.w+ddw*obj.dw;
+						end
+						
+						obj.lastVar = variation;
+						obj.ddw = ddw;
+						
+						logW = [obj.w/(2*pi);abs(data(1));GlobalTime];
+						obj.APPLICATION_LOG.DATA = [obj.APPLICATION_LOG.DATA,logW];
+					end
         	end
         end
 
@@ -132,23 +139,19 @@ classdef powerTXApplication_Qi < powerTXApplication
         		case 0
         			%alternando entre estados 0 e 1
         			[obj,WPTManager,netManager] = goToStateOne(obj,WPTManager,netManager,GlobalTime);
-        			%chamada para o próximo ciclo
-        			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
         		case 1
 	        		%alternando entre estados 0 e 1
         			[obj,WPTManager] = goToStateZero(obj,WPTManager,GlobalTime);
-        			%chamada para o próximo ciclo
-        			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
         		case 2
         			%está transmitindo, mas a mensagem de continuidade de transmissãqo não chegou a tempo
         			if(obj.okUntil<=GlobalTime)
         				%desligue a transmissão e volte a buscar
         				disp('Connection lost');
-        				[obj,WPTManager] = goToStateZero(obj,WPTManager);
+        				[obj,WPTManager] = goToStateZero(obj,WPTManager,GlobalTime);
         			end
-        			%chamada para o próximo ciclo
-        			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
         	end
+			%chamada para o próximo ciclo
+        	netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
         end
         
         %tratamento individual de cada estado (ao entrar)
