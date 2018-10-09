@@ -37,5 +37,9 @@ for i=1:n
 	eff(i,:) = (abs(params.R(2).*sCC_RX.^2)./(abs(params.R(1).*sBC_TX1.^2)+abs(params.R(1).*sBC_TX2.^2)+abs(params.R(2).*sCC_RX.^2)))';
 end
 
-errorbar(linspace(d_min,d_max,m),mean(eff),std(eff),'b');
+if n==1
+	plot(linspace(d_min,d_max,m),eff,'b');
+else
+	errorbar(linspace(d_min,d_max,m),mean(eff),std(eff),'b');
+end
 ylim([0 inf]);
