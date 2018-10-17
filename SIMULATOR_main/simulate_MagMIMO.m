@@ -6,11 +6,11 @@ function simulate_MagMIMO(version,envFile)
     %ASPECTOS GERAIS
     NTX = 6; %number of transmitting coils
     NRX = 1; %number of receiving devices
-    W = 1e6; %fixed operational frequency
+    W = 2*pi*1e6; %fixed operational frequency
     R = 0.5*ones(NTX+NRX,1);%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
     MAX_POWER = 20;%W, considering active power
-    TOTAL_TIME = 6000;%max seconds of simulation (virtual time)
+    TOTAL_TIME = 10000;%max seconds of simulation (virtual time)
 
     %BATTERY (iPhone 4s battery. We didn't find some values, so LIR18650 was used
     %as refernce for these)
@@ -43,12 +43,11 @@ function simulate_MagMIMO(version,envFile)
     DEVICE_LIST = struct('obj',dev);
 
     %APPLICATIONS
-	VOLTAGE = 3*ones(NTX,1);
-    powerTX = powerTXApplication_dummie(VOLTAGE);
+    powerTX = powerTXApplication_MagMIMO(3*ones(NTX,1));
     powerRX = [];
 
     for i=1:NRX
-        powerRX = [powerRX struct('obj',powerRXApplication(i))];
+        powerRX = [powerRX struct('obj',powerRXApplication_MagMIMO(i))];
     end
 
     %SIMULADOR

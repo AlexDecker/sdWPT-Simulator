@@ -19,14 +19,13 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     C = [4.02e-07;2.7237e-07];%for 2*pi*100kHz angular ressonanting frequency
     W = 2*pi*4000;%dummie
     
-    MAX_POWER = 7.5;%W;
+    MAX_POWER = 5;%W;
     R_MAX = 1e7;   % (ohm)
     TOTAL_TIME = 1000;%segundos de simulação (em tempo virtual)
 	STEP = 0.1; % (s) Aqui basta que esse valor seja inferior ao timeSkip da aplicação,
 	%visto que não há recarga de bateria
 
     %DISPOSITIVO
-    efficiency = 0.93; % (eficiência de conversão AC/DC)
 	
 	currentConverter = CurrentConverter('conversionEff_Qi.txt',false);
     dev = GenericDeviceWithRealisticACDC(true,maxCurrent,currentConverter);
