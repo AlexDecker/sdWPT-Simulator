@@ -34,8 +34,6 @@ N_rx = 25;%número de espiras
 wire_radius = 0.001;%espessura do fio
 pts = 750;%resolução de cada bobina
 
-shift = 4*R2_tx+4*stx;%distância entre os conjuntos de 6 bobinas tradicionais
-
 coilPrototypeRX = SpiralPlanarCoil(R2_rx,R1_rx,N_rx,wire_radius,pts);
 coilPrototypeTX = SpiralPlanarCoil(R2_tx,R1_tx,N_tx,wire_radius,pts);
 
@@ -94,7 +92,7 @@ end
 if(ok)
     if evalMutualCoupling
         %o primeiro é o único que precisa ser completamente calculado
-        disp('Iniciando o primeiro quadro');
+        disp('Starting the first frame');
         envList(1) = evalM(envList(1),-ones(length(envList(1).Coils)));
         
         %não é necessário recalcular a indutância entre as bobinas transmissoras
@@ -104,10 +102,10 @@ if(ok)
         M0 = M0-diag(diag(M0))+diag(diag(envList(1).M));
         
         %calculado o resto
-        disp('Iniciando as demais bobinas');
+        disp('Calculating the rest of the frames');
         parfor(i=2:length(envList),nthreads)
             envList(i) = evalM(envList(i),M0);
-            disp(['Frame ',num2str(i),' concluido'])
+            disp(['Frame ',num2str(i),' concluded'])
         end
     end
 
