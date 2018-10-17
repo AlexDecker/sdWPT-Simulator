@@ -61,6 +61,7 @@ classdef envListManagerBAT
         %verifica se os par�metros est�o em ordem
         function r=check(obj)
             r=(obj.step>0)&&check(obj.ENV);
+            r=r&&(length(obj.ENV.R_group)==obj.nt_groups + length(obj.deviceList));
             for i=1:length(obj.deviceList)
                 r = r && check(obj.deviceList(i).obj);
             end

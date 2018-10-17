@@ -91,13 +91,15 @@ classdef Environment
 		        	miVector(i) = obj.Coils(i).obj.mi;
 		        end
 		    end
-            L = (obj.groupMarking*obj.C_group ~= -1).*diag(obj.M);
+            L = (obj.groupMarking*obj.C_group ~= -1).*diag(obj.M); %if C=-1, resonance
             
             Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)));...%indut�ncias m�tua
                 + (1i)*obj.w*diag(miVector.*L);%auto-indut�ncia
             
+            %compose the final matrix (if C=-1, resonance)
             Z = composeZMatrix(Z,...
-            	obj.R_group-(1i)./(obj.w*obj.C_group),obj.groupMarking);
+            	obj.R_group-(obj.C_group ~= -1).*(1i)./(obj.w*obj.C_group),...
+            	obj.groupMarking);
         end
     end
 end
