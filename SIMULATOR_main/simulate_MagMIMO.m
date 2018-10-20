@@ -43,11 +43,15 @@ function simulate_MagMIMO(version,envFile)
     DEVICE_LIST = struct('obj',dev);
 
     %APPLICATIONS
-    powerTX = powerTXApplication_MagMIMO(3*ones(NTX,1));
+	referenceVoltage = 5;
+	interval1 = 1;
+	interval2 = 10;
+	interval3 = 10;
+    powerTX = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2);
     powerRX = [];
 
     for i=1:NRX
-        powerRX = [powerRX struct('obj',powerRXApplication_MagMIMO(i))];
+        powerRX = [powerRX struct('obj',powerRXApplication(i,interval3))];
     end
 
     %SIMULADOR
