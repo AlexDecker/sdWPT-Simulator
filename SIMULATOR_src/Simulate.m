@@ -1,4 +1,4 @@
-function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,...
+function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER,DEVICE_LIST,STEP,...
 	SHOW_PROGRESS,powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv)
     
 	LOG_TX = [];
@@ -26,9 +26,9 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 	
 	%Os objetos abaixo cuidam de aspactos físicos de WPT
 	if exist('miEnv','var')
-		elManager = envListManager(envList,zeros(NTX,1),W,R,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,miEnv);
+		elManager = envListManager(envList,zeros(NTX,1),W,R,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER,miEnv);
 	else
-		elManager = envListManager(envList,zeros(NTX,1),W,R,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER);
+		elManager = envListManager(envList,zeros(NTX,1),W,R,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER);
 	end
 	
 	Manager = envListManagerBAT(elManager,DEVICE_LIST,STEP,SHOW_PROGRESS);
@@ -88,6 +88,8 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 				if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z))
 					%função de tratamento de mensagens do destinatário
 					[powerTX, network, Manager] = handleMessage(powerTX,event.data,GlobalTime,network,Manager);
+				else
+					warningMsg('Dropped message: ',['from powerRX id ',num2str(event.creator),' to powerTX']);
 				end
 			else                
 				%se for um evento de timer
@@ -114,6 +116,12 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 				%avalia via SINR se a mensagem deve ser enviada
 				if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z))
 					[powerRX(event.owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
+				else
+					if event.creator==0
+						warningMsg('Dropped message: ',['from powerTX to powerRX id ',num2str(event.owner)]);
+					else
+						warningMsg('Dropped message: ',['from powerRX id ',num2str(event.creator),' to powerRX id ',num2str(event.owner)]);
+					end
 				end
 			else
 				%evento de timer

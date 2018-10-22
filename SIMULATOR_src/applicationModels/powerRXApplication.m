@@ -29,7 +29,7 @@ classdef powerRXApplication < powerApplication
             I = cI_groups(WPTManager.nt_groups+obj.ID);
         end
         %obtém a corrente de recarga, a corrente de descarga e a tensão da bateria
-        function [Ir,Id,Vb,WPTManager] = getBatteryParams(obj,WPTManager,GlobalTime)
+        function [Ir,Id,Vb,RL,WPTManager] = getBatteryParams(obj,WPTManager,GlobalTime)
         	if(GlobalTime>obj.CurrTime)
         		error('powerRXApplication (getBatteryParams): Inconsistent time value');
         	else
@@ -41,6 +41,7 @@ classdef powerRXApplication < powerApplication
             Ir = WPTManager.deviceList(obj.ID).obj.chargeCurrent;
             Id = WPTManager.deviceList(obj.ID).obj.dischargeCurrent;
             Vb = WPTManager.deviceList(obj.ID).obj.Vbatt;
+			RL = WPTManager.previousRL(obj.ID);
         end
     end
 end

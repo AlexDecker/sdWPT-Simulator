@@ -125,8 +125,8 @@ classdef networkManager
             end
             
             %busca o próximo exento dentre os de mensagens RF
-            for i = 1:length(obj.msgSWIPTEventLists)
-                e = nextEvent(obj.msgSWIPTEventLists(i));
+            for i = 1:length(obj.msgRFEventLists)
+                e = nextEvent(obj.msgRFEventLists(i));
                 if(~isempty(e))
                     if(isempty(event))
                         event = e;

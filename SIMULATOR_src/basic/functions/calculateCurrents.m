@@ -14,11 +14,12 @@
 %dfactor e maior ou igual a 1
 %dfactor: fator de decremento para a busca de RS
 %iVel: velocidade inicial para a busca de RS no espaço se soluções
-%maxPower: potência máxima da fonte de tensão (W)
+%maxActPower: maximum active power for the voltage source (W)
+%maxAppPower: maximum apparent power for the voltage source (W)
 %groupMarking: groupMarking(i,j) = {1 caso i pertença ao grupo j e 0 caso contrário}.
 
 function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,ifactor,...
-    dfactor,iVel,maxPower,groupMarking)
+    dfactor,iVel,maxActPower,maxAppPower,groupMarking)
 
     s = size(Z);
     s2 = size(groupMarking);
@@ -34,8 +35,9 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
     if (s(1)~=s(2))||(nt>=n)||(nt_groups>=n_groups)||(err<0)||(err>1)||(length(err)~=1)...
             ||(ifactor>dfactor)||(dfactor<=1)||(length(ifactor)~=1)||(length(dfactor)~=1)...
             ||(iVel<=0)||(length(iVel)~=1)||(length(RL_group)~=nr_groups)||(sum(RL_group<0)>0)...
-            ||(length(RS0)~=1)||(length(maxResistance)~=1)||(length(maxPower)~=1)...
-            ||(maxPower<=0)||(~checkGroupMarking(groupMarking))
+            ||(length(RS0)~=1)||(length(maxResistance)~=1)||(length(maxActPower)~=1)...
+            ||(length(maxAppPower)~=1)||(maxActPower<=0)||(maxAppPower<=0)...
+			||(~checkGroupMarking(groupMarking))
         error('calculateCurrents: parameter error');
     end
     
@@ -53,11 +55,12 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
     end
     
     I = Z\V;
-    P = real(I'*V);%potência real é a parte real da potência complexa (IEEE Std 1459-2010)
+    P_act = real(I'*V);%the active power is the real part of the complex power (IEEE Std 1459-2010)
+	P_app = abs(I'*V);%the apparent power is the absolute value of the complex power (IEEE Std 1459-2010)
     
 	ttl = 10000;
 	
-    if P-maxPower<err*maxPower %operação normal
+    if (P_act-maxActPower<err*maxActPower)&&(P_app-maxAppPower<err*maxAppPower) %operação normal
         RS = 0;
         eZ = Z;
     else %condição de saturação         
@@ -70,21 +73,37 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
             I = eZ\V;
             
             %cálculo do erros
-            absPerr = real(I'*V)-maxPower;%se negativo, diminua a resistência.
+			%se negativo, diminua a resistência.
             %se positivo, aumente a resistência
+            absPerr_act = real(I'*V)-maxActPower;
+			absPerr_app = abs(I'*V)-maxAppPower;
 			
-			%se todos estão dentro da margem de erro tolerável
-            cond1 = (abs(absPerr)<err*maxPower); 
-
-            cond2 = (absPerr<0); %deve diminuir a resistência
-            cond3 = (RS==0); %já abaixou a resistência ao mínimo
-
-            cond4 = (absPerr>0); %deve aumentar a resistência
-            cond5 = (RS==maxResistance); %já aumentou a resistência ao máximo
+			if maxActPower<maxAppPower
+				%if the active power restriction is more restrictive, try to converge to it.
+				absPerr = absPerr_act;
+				
+				cond0 = (abs(absPerr_act)<err*maxActPower); 
+				cond1 = (absPerr_app<err*maxAppPower);
+				
+				cond2 = (absPerr_act<0); %deve diminuir a resistência
+				cond4 = (absPerr_act>0); %deve aumentar a resistência
+			else
+				%otherwise, try to converge to the max apparent power
+				absPerr = absPerr_app;
+				
+				cond0 = (absPerr_act<err*maxActPower); 
+				cond1 = (abs(absPerr_app)<err*maxAppPower);
+				
+				cond2 = (absPerr_app<0); %deve diminuir a resistência
+				cond4 = (absPerr_app>0); %deve aumentar a resistência
+			end
+			
+			cond3 = (RS==0); %já abaixou a resistência ao mínimo
+			cond5 = (RS==maxResistance); %já aumentou a resistência ao máximo
             
             %condição de parada: resultado aceitável ou deve variar e não
             %consegue
-            if  cond1 || (cond2 && cond3) || (cond4 && cond5)
+            if  (cond0 && cond1) || (cond2 && cond3) || (cond4 && cond5)
                 break;
             end
 			
@@ -129,6 +148,8 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
                 RS=maxResistance;
             end
         end
-		warningMsg('the source is satured',[': asked for ',num2str(P),' W, but the source provided ',num2str(abs(V.'*I)),' W']);
+		warningMsg('the source is satured',[': asked for ',num2str(P_act),' W of active power and ',num2str(P_app),...
+			' W of apparent power, but the source provided ',num2str(real(V.'*I)),' W of active power and ',...
+			num2str(abs(V.'*I)),' W of apparent power.']);
     end
 end

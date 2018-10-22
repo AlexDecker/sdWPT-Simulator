@@ -128,7 +128,7 @@ classdef simulationResults
         end
 
         function plotBatteryChart(obj)
-            if ~obj.running
+            if ~obj.running && obj.device_index~=0
                 figure;
                 hold on;
                 yyaxis left
@@ -148,7 +148,7 @@ classdef simulationResults
         end
 
         function plotBatteryChart2010(obj)
-            if ~obj.running
+            if ~obj.running && obj.device_index~=0
                 figure;
                 hold on;
                 plot(obj.CC(2,:)/3600,obj.CC(1,:),'r');
@@ -166,6 +166,24 @@ classdef simulationResults
                 xlabel('Time (h)')
                 ylabel('(%)')
                 title(['SOC Chart for device ', num2str(obj.device_index)]);
+            end
+        end
+		
+		function plotRLChart(obj)
+            if ~obj.running
+				if  obj.device_index~=0 && length(obj.RL)==length(obj.SOC)
+					figure;
+					plot(obj.SOC(1,:)*100,obj.RL(1,:));
+					xlabel('SOC (%)')
+					ylabel('Resistance (ohms)')
+					title(['Load Resistance Chart for device ', num2str(obj.device_index)]);
+				end
+				
+				figure;
+                plot(obj.RL(end,:)/3600,obj.RL(1:end-1,:)');
+                xlabel('Time (h)')
+                ylabel('Resistance (ohms)')
+                title(['Load Resistance Chart for device ', num2str(obj.device_index)]);
             end
         end
         

@@ -9,7 +9,8 @@ function simulate_MagMIMO(version,envFile)
     W = 2*pi*1e6; %fixed operational frequency
     R = 0.5*ones(NTX+NRX,1);%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
-    MAX_POWER = 20;%W, considering active power
+    MAX_ACT_POWER = 20;%W, considering active power
+	MAX_APP_POWER = 2000;%W, considering apparent power
     TOTAL_TIME = 10000;%max seconds of simulation (virtual time)
 
     %BATTERY (iPhone 4s battery. We didn't find some values, so LIR18650 was used
@@ -47,11 +48,12 @@ function simulate_MagMIMO(version,envFile)
 	interval1 = 1;
 	interval2 = 10;
 	interval3 = 10;
-    powerTX = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2);
+    powerTX = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2, ...
+		MAX_ACT_POWER, MAX_APP_POWER);
     powerRX = [];
 
     for i=1:NRX
-        powerRX = [powerRX struct('obj',powerRXApplication(i,interval3))];
+        powerRX = [powerRX struct('obj',powerRXApplication_MagMIMO(i,interval3))];
     end
 
     %SIMULADOR
@@ -70,18 +72,19 @@ function simulate_MagMIMO(version,envFile)
     N_RF = 0.1;%Noise for RF (W)
 
     [~,LOG_dev_list,LOG_app_list] = Simulate(envFile,NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
-        IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
-        B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
+        IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
+		powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
     %VISUALIZATION
         
     for i=1:length(LOG_dev_list)
         LOG = endDataAquisition(LOG_dev_list(i));
         if(strcmp(version, '2010a'))
-            plotBatteryChart2010(LOG);%use isso se estiver no R2010
+            plotBatteryChart2010(LOG);
         else
-            plotBatteryChart(LOG); %use isso se estiver no R2017
+            plotBatteryChart(LOG);
         end
+		plotRLChart(LOG);
     end
 end
 

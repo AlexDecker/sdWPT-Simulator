@@ -5,7 +5,7 @@
 %ruído.
 function SINR = SINR_RF(WPTManager,message,conflictList,A_RF,N_RF,t)
     pos = getCenterPositions(WPTManager.ENV,t);
-    d = abs(pos(message.creator+1,:)-pos(message.owner+1,:));
+    d = norm(pos(message.creator+1,:)-pos(message.owner+1,:));
     P = message.options.power/(d^A_RF);
     %calculando a interferência
     I = 0;
@@ -15,7 +15,7 @@ function SINR = SINR_RF(WPTManager,message,conflictList,A_RF,N_RF,t)
         %em 1
         if((conflictList(i).options.type==message.options.type)...
         && (conflictList(i).time0<t)&&(conflictList(i).time1>t))
-            d = abs(pos(conflictList(i).creator+1,:)...
+            d = norm(pos(conflictList(i).creator+1,:)...
                 -pos(message.owner+1,:));
             I = I + conflictList(i).options.power/(d^A_RF);
         end

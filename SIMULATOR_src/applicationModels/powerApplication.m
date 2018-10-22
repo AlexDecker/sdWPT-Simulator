@@ -14,7 +14,7 @@ classdef powerApplication
         function obj = powerApplication(ID)
             obj.ID = ID;
             obj.APPLICATION_LOG = applicationLOG();
-            setSendOptions(obj,0,1000,0);
+            obj = setSendOptions(obj,0,1000,0);
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)

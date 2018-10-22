@@ -19,7 +19,8 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     C = [4.02e-07;2.7237e-07];%for 2*pi*100kHz angular ressonanting frequency
     W = 2*pi*4000;%dummie
     
-    MAX_POWER = 5;%W;
+    MAX_ACT_POWER = 5;%W
+	MAX_APP_POWER = inf;%W
     R_MAX = 1e7;   % (ohm)
     TOTAL_TIME = 1000;%segundos de simulação (em tempo virtual)
 	STEP = 0.1; % (s) Aqui basta que esse valor seja inferior ao timeSkip da aplicação,
@@ -54,8 +55,9 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     N_RF = 0.1;%Noise for RF (W)(dummie no caso)
 
     [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENVIRONMENT,NTX,R,C,W,...
-    	TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_POWER,DEVICE_LIST,...
-    	STEP,SHOW_PROGRESS,powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv);
+    	TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,...
+		MAX_APP_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
+		B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv);
 
     
     LOG_RX = endDataAquisition(LOG_dev_list(1));

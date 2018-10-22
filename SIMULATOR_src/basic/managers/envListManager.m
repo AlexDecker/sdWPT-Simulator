@@ -10,14 +10,15 @@ classdef envListManager
         ifactor %> 1 e < dfactor, usado na busca por RS
         dfactor
         iVel %velocidade inical para a busca de RS
-        maxPower %pot�ncia m�xima da fonte dos transmissores
+        maxActPower %maximum active power for the voltage source
+		maxAppPower %maximum apparent power for the voltage source (limits the current)
         mostRecentZ %valor mais recente de Z utilizado 
 		miEnv %constante de permeabilidade magn�tica do meio
         RS %ponto de partida para a busca do pr�ximo vetor RS
     end
     methods
         function obj = envListManager(envList,Vt_group,w,R_group,tTime,err,...
-            maxResistance,ifactor,dfactor,iVel,maxPower,miEnv)
+            maxResistance,ifactor,dfactor,iVel,maxActPower,maxAppPower,miEnv)
             obj.envList = envList;
             obj.Vt_group = Vt_group;
             obj.w = w;
@@ -29,7 +30,8 @@ classdef envListManager
             obj.ifactor=ifactor;
             obj.dfactor=dfactor;
             obj.iVel=iVel;
-            obj.maxPower=maxPower;
+			obj.maxActPower = maxActPower;
+			obj.maxAppPower = maxAppPower;
             if exist('miEnv','var')
                 obj.miEnv = miEnv;
             else
@@ -87,10 +89,11 @@ classdef envListManager
             end
                 
             if (length(obj.ifactor)~=1)||(length(obj.dfactor)~=1)|| ...
-                (length(obj.iVel)~=1)||(length(obj.maxPower)~=1)|| ...
-                (obj.iVel<=0)||(obj.maxPower<=0)||(length(obj.maxResistance)~=1)||...
-                (obj.maxResistance<=0)
-                warningMsg('ifactor, dfactor, iVel, maxPower and maxResistance must be real positive scalars.');
+                (length(obj.iVel)~=1)||(length(obj.maxActPower)~=1)|| ...
+                (length(obj.maxAppPower)~=1)||(obj.iVel<=0)||...
+				(obj.maxActPower<=0)||(obj.maxAppPower<=0)||...
+				(length(obj.maxResistance)~=1)||(obj.maxResistance<=0)				
+                warningMsg('ifactor, dfactor, iVel, maxActPower, maxAppPower and maxResistance must be real positive scalars.');
                 r = false;
             end
         end
@@ -160,7 +163,7 @@ classdef envListManager
             Z = getZ(obj,time);
             [obj.mostRecentZ,obj.RS,I]=calculateCurrents(obj.Vt_group,Z,RL_group,...
                 obj.RS,obj.err,obj.maxResistance,obj.ifactor,obj.dfactor,...
-                obj.iVel,obj.maxPower,getGroupMarking(obj));
+                obj.iVel,obj.maxActPower,obj.maxAppPower,getGroupMarking(obj));
             TRANSMITTER_DATA = logRLData(TRANSMITTER_DATA,obj.RS,time);
         end
     end

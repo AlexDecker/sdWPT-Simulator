@@ -9,7 +9,7 @@ classdef powerRXApplication_MagMIMO < powerRXApplication
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
-	        %SWIPT, 2048bps, 5W (dummie)
+	        %SWIPT configurations, 300bps (fig 8 of the paper), 5W (dummie)
             obj = setSendOptions(obj,0,2048,5);
             netManager = setTimer(obj,netManager,0,obj.interval);
         end
@@ -18,8 +18,10 @@ classdef powerRXApplication_MagMIMO < powerRXApplication
         end
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
-        	[I,WPTManager] = getI(obj,WPTManager,GlobalTime);
-        	netManager = send(obj,netManager,0,[],128,GlobalTime);
+			%send perodically the resistance of the load to the power transmitter
+        	[~,~,~,RL,WPTManager] = getBatteryParams(obj,WPTManager,GlobalTime);
+			%message assumed to have 32 bits
+        	netManager = send(obj,netManager,0,RL,32,GlobalTime);
 			netManager = setTimer(obj,netManager,GlobalTime,obj.interval);
         end
 
