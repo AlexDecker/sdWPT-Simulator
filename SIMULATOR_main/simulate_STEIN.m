@@ -36,7 +36,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     dt = 0.4;%segundo o datasheet do CI
     V = 5;%segundo o datasheet do evkit
     dw = 2*pi*1000;%1000
-    powerTX = powerTXApplication_Qi(dt,V,MAX_POWER,dw,ENDPROB);
+    powerTX = powerTXApplication_Qi(dt,V,MAX_ACT_POWER,dw,ENDPROB);
 	powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
 
     %SIMULADOR
