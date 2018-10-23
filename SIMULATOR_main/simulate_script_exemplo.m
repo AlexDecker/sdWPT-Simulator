@@ -1,6 +1,8 @@
 %version: 2010a ou 2017a
+%This script is a simple demonstration of the simulator as a whole. It implements a
+%simple adaptative beamforming transmitter that recognizes the existance of eventual
+%receivers around.
 function simulate_script_exemplo(version)
-    %SCRIPT PARA TESTAR E EXEMPLIFICAR O SIMULADOR COMO UM TODO
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
     %ASPECTOS GERAIS

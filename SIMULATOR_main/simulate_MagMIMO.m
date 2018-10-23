@@ -1,5 +1,6 @@
-%version: 2010a ou 2017a
-function simulate_MagMIMO(version,envFile)
+%returns the active power temporal series for the power receiver and the SOC temporal
+%series
+function [P_RX, T_RX, SOC, TSOC] = simulate_MagMIMO(envFile)
     %SIMULATION SCRIPT FOR MAGMIMO (SEE DOCS)
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -31,10 +32,10 @@ function simulate_MagMIMO(version,envFile)
                   limitToBegin,false);
 
     %DEVICE (revisar)
-    power_m = 0.5; % (W)
-    power_sd = 0.001;
-    minV = 2.3;     % (V)
-    minVTO = 3.3;   % (V)
+    power_m = 0.7; % (W, regular iPhone 4s idle power consumption)
+    power_sd = 0;
+    minV = 2.0;     % (V)
+    minVTO = 3.0;   % (V)
     err = 0.05;     % (5%)
     efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
 
@@ -68,23 +69,29 @@ function simulate_MagMIMO(version,envFile)
     B_SWIPT = 0.5;%minimum SINR for the message to be undertood
     B_RF = 0.5;%minimum SINR for the message to be undertood
     A_RF = 2;%expoent for free-space path loss (RF only)
-    N_SWIPT = 0.1;%Noise for SWIPT (W)
+    N_SWIPT = 0;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)
 
     [~,LOG_dev_list,LOG_app_list] = Simulate(envFile,NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
 		powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
-    %VISUALIZATION
-        
+    %SIMULATION RESULTS
+    P_RX = zeros(length(LOG_dev_list),1);%active power received
+    TP_RX = zeros(length(LOG_dev_list),1);%time for the vector above
+    
+    SOC = zeros(length(LOG_dev_list),1);
+    TSOC = zeros(length(LOG_dev_list),1);%time for the vector above
     for i=1:length(LOG_dev_list)
         LOG = endDataAquisition(LOG_dev_list(i));
-        if(strcmp(version, '2010a'))
-            plotBatteryChart2010(LOG);
-        else
-            plotBatteryChart(LOG);
-        end
+        
 		plotRLChart(LOG);
+		
+		P_RX(i,:) = R(NTX+i)*LOG_RX.CC(1,:).^2;
+		T_RX(i,:) = LOG_RX.CC(2,:);
+		
+		SOC(i,:) = LOG_RX.SOC(1,:);
+		TSOC(i,:) = LOG_RX.SOC(2,:);
     end
 end
 
