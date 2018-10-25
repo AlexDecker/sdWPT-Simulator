@@ -211,12 +211,13 @@ classdef networkManager
             if(GlobalTime<obj.currTime)
                 error('(NetworkManager) Internal error - new GlobalTime value not expected');
             end
+            
         end
 
         %Network functions
 
         function [time0,time1,obj] = send(obj,myId,dest,data,dataLen,options,globalTime)
-            if((dest>obj.np)||(dest<0)||(myId>obj.np)||(myId<0)||(dataLen<=0)||(myId==dest))
+            if((dest>obj.np)||(dest<-1)||(myId>obj.np)||(myId<0)||(dataLen<=0)||(myId==dest))
                 warningMsg('(NetworkManager) parameter out of bounds');
                 return;
             end
@@ -279,48 +280,8 @@ classdef networkManager
                 obj.currTime = globalTime;
             end
             
-            latency = dataLen/options.baudRate;
-            
-            %envia uma mensagem para cada dispositivo excetuando o transmissor
-            for i=0:obj.np
-                if(i~=myId)
-                    switch(options.type)
-                        case 0
-                            %é somado 1 pois os identificadores se iniciam em 0 e no matlab a
-                            %indexação se inicia em 1
-                            time0 = mostLateTime(obj.msgSWIPTEventLists(myId+1));
-                            %não comece uma nova transmissão enquanto o transmissor estiver
-                            %ocupado
-                            if(time0<globalTime)
-                                time0 = globalTime;
-                            end
-                            %cria o evento
-                            event = genericEvent(obj.newEventId,true,time0,time0+...
-                                latency,i,myId,data,options);
-                            %adiciona o novo evento na fila de saída do transmissor
-                            %correspondente
-                            obj.msgSWIPTEventLists(myId+1) = addEvent(...
-                                obj.msgSWIPTEventLists(myId+1),event);
-                        otherwise
-                            %é somado 1 pois os identificadores se iniciam em 0 e no matlab a
-                            %indexação se inicia em 1
-                            time0 = mostLateTime(obj.msgRFEventLists(myId+1));
-                            %não comece uma nova transmissão enquanto o transmissor estiver
-                            %ocupado
-                            if(time0<globalTime)
-                                time0 = globalTime;
-                            end
-                            %cria o evento
-                            event = genericEvent(obj.newEventId,true,time0,time0+...
-                                latency,i,myId,data,options);
-                            %adiciona o novo evento na fila de saída do transmissor
-                            %correspondente
-                            obj.msgRFEventLists(myId+1) = addEvent(...
-                                obj.msgRFEventLists(myId+1),event);
-                    end
-                    obj.newEventId = obj.newEventId + 1;
-                end
-            end
+            %-1 é o endereço de broadcast
+            [~,~,obj] = send(obj,myId,-1,data,dataLen,options,globalTime);
         end
     end
 end

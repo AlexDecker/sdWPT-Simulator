@@ -1,7 +1,9 @@
 %version: 2010a ou 2017a
 %This script is a simple demonstration of the simulator as a whole. It implements a
 %simple adaptative beamforming transmitter that recognizes the existance of eventual
-%receivers around.
+%receivers around. All response messages are expected to collide. However, only the
+%message sent by device 2 will have a unfavorable SINR and therefore the device will
+%not be recognized
 function simulate_script_exemplo(version)
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -67,7 +69,7 @@ function simulate_script_exemplo(version)
 
     SHOW_PROGRESS = true;
 
-    B_SWIPT = 0.0000000001;%minimum SINR for the message to be undertood
+    B_SWIPT = 0.5;%minimum SINR for the message to be undertood
     B_RF = 0.5;%minimum SINR for the message to be undertood
     A_RF = 2;%expoent for free-space path loss (RF only)
     N_SWIPT = 0.1;%Noise for SWIPT (W)
