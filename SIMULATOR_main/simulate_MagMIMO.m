@@ -77,21 +77,21 @@ function [P_RX, T_RX, SOC, TSOC] = simulate_MagMIMO(envFile)
 		powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
     %SIMULATION RESULTS
-    P_RX = zeros(length(LOG_dev_list),1);%active power received
-    TP_RX = zeros(length(LOG_dev_list),1);%time for the vector above
+    P_RX = [];%active power received
+    T_RX = [];%time for the vector above
     
-    SOC = zeros(length(LOG_dev_list),1);
-    TSOC = zeros(length(LOG_dev_list),1);%time for the vector above
+    SOC = [];
+    TSOC = [];%time for the vector above
     for i=1:length(LOG_dev_list)
         LOG = endDataAquisition(LOG_dev_list(i));
         
-		plotRLChart(LOG);
+		%plotRLChart(LOG);
 		
-		P_RX(i,:) = R(NTX+i)*LOG_RX.CC(1,:).^2;
-		T_RX(i,:) = LOG_RX.CC(2,:);
+		P_RX = [P_RX, struct('vals', R(NTX+i)*LOG.CC(1,:).^2)];
+		T_RX = [T_RX, struct('vals', LOG.CC(2,:))];
 		
-		SOC(i,:) = LOG_RX.SOC(1,:);
-		TSOC(i,:) = LOG_RX.SOC(2,:);
+		SOC  = [SOC, struct('vals', LOG.SOC(1,:))];
+		TSOC = [TSOC, struct('vals', LOG.SOC(2,:))];
     end
 end
 
