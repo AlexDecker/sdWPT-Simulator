@@ -18,14 +18,16 @@
 classdef linearBattery
 
     properties
-        Rc %resistência interna da bateria durante a carga (ohm). -1 para ser calculado automaticamente
-        Rd %resistência interna da bateria durante a descarga (ohm). -1 para ser calculado automaticamente
+        Rc %resistência interna da bateria durante a carga (ohm).
+        %-1 para ser calculado automaticamente
+        Rd %resistência interna da bateria durante a descarga (ohm).
+        %-1 para ser calculado automaticamente
 
         ocvTable %tabela OCVxSOC
-
-        Q %carga atual
+		
+		Q %carga atual
         Qmax %carga máxima (As)
-
+		
         Rmax %maior resistência equivalente que a bateria pode assumir
 
         fase1Limit %SOC a partir do qual a fase 2 se inicia
@@ -41,10 +43,12 @@ classdef linearBattery
         function obj = linearBattery(file,Rc,Rd,Q0,Qmax,Rmax,fase1Limit,...
             constantCurrent_min,constantCurrent_max,constantVoltage,...
             limitToBegin, plotOCV)
-            obj.ocvTable = ocvLookupTable(file,plotOCV);
-            obj.Rd = Rd;
+            
             obj.Q = Q0;
             obj.Qmax = Qmax;
+            
+            obj.ocvTable = ocvLookupTable(file,plotOCV);
+            obj.Rd = Rd;
             obj.Rmax = Rmax;
             obj.fase1Limit = fase1Limit;
             obj.constantCurrent_min = constantCurrent_min;
@@ -92,6 +96,7 @@ classdef linearBattery
 
         %verifica se os parâmetros estão em ordem
         function r=check(obj)
+            
             r = (obj.Q>=0)&&(obj.Q<=obj.Qmax)&&(obj.Rmax>0)&&...
             (obj.fase1Limit>0)&&(obj.fase1Limit<1)&&...
             (obj.constantCurrent_min>0)&&...
@@ -173,6 +178,11 @@ classdef linearBattery
                 discharge_current = discharge_power/V;
                 V0 = V;
             end
+        end
+        
+        %returns the actual load resistance. -1 for adaptative calculation
+        function RL = getRL(obj)
+        	RL = -1;
         end
 
         %atualiza carga baseado na corrente (A) fornecida pelo carregador e na

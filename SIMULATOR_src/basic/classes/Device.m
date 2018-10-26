@@ -23,27 +23,33 @@ classdef Device
             obj.Vbatt = 0;
         end
 
-        %apenas o protótipo
+        %only the prototype
         function r=check(obj)
             r=(length(obj.working)==1)&&(length(obj.maxCurrent)==1)...
             	&&(length(obj.efficiency)==1)&&(obj.maxCurrent>0)...
             	&&(obj.efficiency>0)&&(obj.efficiency<=1);
         end
 
-        %retorna a corrente esperada de acordo com o procedimento de
-        %carregamento da bateria (protótipo)
+        %returns the current expected according to the charging procedure
+        %of the battery (prototype)
         function [obj,Ie] = expectedCurrent(obj)
             Ie = Inf;
         end
+        
+        %rerturns the static value for the actual load resistance.
+        %if -1, calculateRL will estimate it. (prototype)
+        function RL = getRL(obj)
+        	RL = -1;
+        end
 
-        %-avgChargeCurrent_ac (A, phasor): média da corrente de entrada no intervalo de tempo
-        %-timeVariation (s): intervalo de tempo
+        %-avgChargeCurrent_ac (A, phasor): mean input current for the time interval
+        %-timeVariation (s): time interval
         function [obj,DEVICE_DATA] = updateDeviceState(obj, avgChargeCurrent_ac, timeVariation, DEVICE_DATA, time)
             
-            %converte a corrente para DC
+            %AC to DC
             avgChargeCurrent_dc = obj.efficiency * abs(avgChargeCurrent_ac);
             
-            %limita a corrente para não danificar a bateria
+            %limits the current in order to not damage the battery
             if(avgChargeCurrent_dc>obj.maxCurrent)
                 avgChargeCurrent_dc = obj.maxCurrent;
                 warningMsg('Very high current');

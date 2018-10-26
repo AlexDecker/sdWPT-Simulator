@@ -42,6 +42,12 @@ classdef genericDeviceWithBattery < Device
         function [obj,Ie] = expectedCurrent(obj)
             [obj.bat,Ie] = expectedCurrent(obj.bat);
         end
+        
+        %rerturns the static value for the actual load resistance.
+        %if -1, calculateRL will estimate it.
+        function RL = getRL(obj)
+        	RL = getRL(obj.bat);
+        end
 
         %-avgChargeCurrent_ac (A, phasor): média da corrente de entrada no intervalo de tempo
         %-timeVariation (s): intervalo de tempo

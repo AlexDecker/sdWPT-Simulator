@@ -18,9 +18,10 @@
 %dfactor: fator de decremento para a busca de RL
 %iVel: velocidade inicial para a busca de RL no espaço se soluções
 %groupMarking: groupMarking(i,j) = {1 caso i pertença ao grupo j e 0 caso contrário}.
+%staticRL_group: the already known values. -1 for unknown values
 
 function [RL_group,It,Ir]=calculateRLMatrix(Vt_group,Z,Ie_group,RL0_group,err,maxRL,...
-	ifactor,dfactor,iVel,groupMarking)
+	ifactor,dfactor,iVel,groupMarking,staticRL_group)
 	
     %verificações dos parâmetros
     s = size(Z);
@@ -37,7 +38,8 @@ function [RL_group,It,Ir]=calculateRLMatrix(Vt_group,Z,Ie_group,RL0_group,err,ma
             (length(Ie_group)~=length(RL0_group))||(err<0)||(err>1)||...
             (ifactor>dfactor)||(dfactor<=1)||(iVel<=0)||...
             (length(RL0_group)~=nr_groups)||(sum(RL0_group<0)>0)||...
-			(maxRL<=0)||(~checkGroupMarking(groupMarking))
+			(maxRL<=0)||(~checkGroupMarking(groupMarking))||...
+			(length(staticRL_group)~=length(RL0_group))
         error('calculateRLMatrix: parameter error');
     end
     
@@ -53,9 +55,13 @@ function [RL_group,It,Ir]=calculateRLMatrix(Vt_group,Z,Ie_group,RL0_group,err,ma
     %passando de espaço de grupo para espaço de anel RLC
     V = groupMarking*[Vt_group;zeros(nr_groups,1)];
     
-    RL_group = RL0_group;
-    deltaRL = 0*RL0_group;%matriz de 0 com o tamanho de RL0_group
+    %using the already calculated values and the previously calculated (if static==-1)
+    RL_group = RL0_group+(staticRL_group~=-1).*(staticRL_group-RL0_group);
+    
+    %variation vector (starts with 0's)
+    deltaRL = 0*RL0_group;
 	
+	%time to leave
 	ttl = 10000;
     
     while true
@@ -67,13 +73,14 @@ function [RL_group,It,Ir]=calculateRLMatrix(Vt_group,Z,Ie_group,RL0_group,err,ma
         
         I_groups = groupMarking'*I;%corrente principal de cada grupo de anéis
         
-        %cálculo dos erros
-        absIerr = abs(I_groups(nt+1:end))-abs(Ie_group);%se negativo, aumente a corrente
-        %(diminua a resistência). Se positivo, diminua a corrente
-        %(aumente a resistência)
+        %error calculation
+        absIerr = abs(I_groups(nt+1:end))-abs(Ie_group);%if negative, increase the current
+        %(decrease the resistance). If positive, decrease the current
+        %(increase the resistance)
         
-        %se todos estão dentro da margem de erro tolerável
-        cond1 = (abs(absIerr)<err*abs(Ie_group)); 
+        %if all values are inside the tolerable margin of error
+        %(the already calculated values are disconsidered)
+        cond1 = (staticRL_group~=-1)|(abs(absIerr)<err*abs(Ie_group)); 
         
         cond2 = (absIerr<0); %os que devem diminuir a resistência
         cond3 = (RL_group==0); %os que já abaixaram a resistência ao mínimo
@@ -97,42 +104,46 @@ function [RL_group,It,Ir]=calculateRLMatrix(Vt_group,Z,Ie_group,RL0_group,err,ma
 		end
         
         for i=1:length(RL_group)
-            %definindo a nova variação de RL
-            if(absIerr(i)<0)%deltaRL deve ser negativo
-                if(deltaRL(i)<0)%aumente o módulo da variação
-                    deltaRL(i) = deltaRL(i)*ifactor;
-                else
-                	%passou da solução, diminua o módulo da variação e troque o sinal
-                    if(deltaRL(i)>0)
-                        deltaRL(i) = -deltaRL(i)/dfactor;
-                    else%recomece (ou comece) da velocidade mínima
-                        deltaRL(i) = -iVel;
-                    end
-                end
-            else
-                if(absIerr(i)>0)%deltaRL deve ser positivo
-                	%passou da solução, diminua o módulo da variação e troque o sinal
-                	if(deltaRL(i)<0)
-                       deltaRL(i) = -deltaRL(i)/dfactor;
-                    else
-                        if(deltaRL(i)>0)%aumente o módulo da variação
-                            deltaRL(i) = deltaRL(i)*ifactor;
-                        else%recomece (ou comece) da velocidade mínima
-                            deltaRL(i) = iVel;
-                        end
-                    end 
-                else%deltaRL deve ser nulo
-                    deltaRL(i)=0;
-                end
-            end
-            
-            RL_group(i) = RL_group(i)+deltaRL(i);
+        	if(staticRL_group(i)==-1)
+        		%if applicable
+        		
+		        %defining the new variation of RL
+		        if(absIerr(i)<0)%deltaRL must be negative
+		            if(deltaRL(i)<0)%increase the absolute value of the variation
+		                deltaRL(i) = deltaRL(i)*ifactor;
+		            else
+		            	%decrease the absolute value of the variation and switch the signal 
+		                if(deltaRL(i)>0)
+		                    deltaRL(i) = -deltaRL(i)/dfactor;
+		                else%restart (or start) from the minimal velocity
+		                    deltaRL(i) = -iVel;
+		                end
+		            end
+		        else
+		            if(absIerr(i)>0)%deltaRL must be positive
+		            	%decrease the absolute value of the variation and switch the signal 
+		            	if(deltaRL(i)<0)
+		                   deltaRL(i) = -deltaRL(i)/dfactor;
+		                else
+		                    if(deltaRL(i)>0)%increase the absolute value of the variation
+		                        deltaRL(i) = deltaRL(i)*ifactor;
+		                    else%restart (or start) from the minimal velocity
+		                        deltaRL(i) = iVel;
+		                    end
+		                end 
+		            else%deltaRL deve ser nulo
+		                deltaRL(i)=0;
+		            end
+		        end
+		        
+		        RL_group(i) = RL_group(i)+deltaRL(i);
 			
-            if RL_group(i)<0 %resistência apenas positiva
-                RL_group(i)=0;
-            end
-            if RL_group(i)>maxRL %resistência limitada superiormente
-                RL_group(i)=maxRL;
+		        if RL_group(i)<0 %positive resistance restriction
+		            RL_group(i)=0;
+		        end
+		        if RL_group(i)>maxRL %maximum resistance restriction
+		            RL_group(i)=maxRL;
+		        end
             end
         end
     end

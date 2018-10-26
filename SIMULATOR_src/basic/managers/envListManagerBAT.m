@@ -90,17 +90,29 @@ classdef envListManagerBAT
         %calcula o vetor de resist�ncias que abstrai os dispositivos
         %receptores do sistema
         function [obj,RL] = calculateAllRL(obj,time,Vt)
-            Ie = zeros(length(obj.deviceList),1);%corrente esperada
+        	
+        	%expected current
+            Ie = zeros(length(obj.deviceList),1);
+            
+            %if the battery already has a RL definition, it informs the correct value here.
+            %if not, -1
+            staticRL = zeros(length(obj.deviceList),1);
             for i=1:length(obj.deviceList)
+            	
+            	staticRL(i) = getRL(obj.deviceList(i).obj);
+            	
                 [obj.deviceList(i).obj,Ie(i)] = expectedCurrent(obj.deviceList(i).obj); 
                 %LOG%%%%%%%%%%%%%%%%%%%%%%%%%%
                 obj.DEVICE_DATA(i) = logIEData(obj.DEVICE_DATA(i),Ie(i),time);
                 %LOG%%%%%%%%%%%%%%%%%%%%%%%%%%
             end
-            Z = getZ(obj.ENV,time);%matriz de imped�ncia atual
+            Z = getZ(obj.ENV,time);%actual impedance matrix
+            
+            %calculate adaptatively the unknown values
             [RL,~,~]=calculateRLMatrix(Vt,Z,Ie,obj.previousRL,...
             obj.ENV.err,obj.ENV.maxResistance,obj.ENV.ifactor,...
-            obj.ENV.dfactor,obj.ENV.iVel,getGroupMarking(obj.ENV));
+            obj.ENV.dfactor,obj.ENV.iVel,getGroupMarking(obj.ENV),...
+            staticRL);
 
             %LOG%%%%%%%%%%%%%%%%%%%%%%%%%%
             for i=1:length(obj.deviceList)
