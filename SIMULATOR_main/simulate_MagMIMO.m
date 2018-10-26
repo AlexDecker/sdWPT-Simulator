@@ -1,6 +1,6 @@
 %returns the active power temporal series for the power receiver and the SOC temporal
 %series
-function [P_RX, T_RX, SOC, TSOC] = simulate_MagMIMO(envFile)
+function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     %SIMULATION SCRIPT FOR MAGMIMO (SEE DOCS)
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -8,7 +8,7 @@ function [P_RX, T_RX, SOC, TSOC] = simulate_MagMIMO(envFile)
     NTX = 6; %number of transmitting coils
     NRX = 1; %number of receiving devices
     W = 2*pi*1e6; %fixed operational frequency
-    R = 0.5*ones(NTX+NRX,1);%internal resistance of the RLC rings (obtained via fitting)
+    R = 0.05*ones(NTX+NRX,1);%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
     MAX_ACT_POWER = 20;%W, considering active power
 	MAX_APP_POWER = 2000;%W, considering apparent power
@@ -27,10 +27,14 @@ function [P_RX, T_RX, SOC, TSOC] = simulate_MagMIMO(envFile)
     Q0 = 0;       % initial charge (As)
     Qmax = 5148;  % (As), equivalent to 1430 mAH (iPhone 4s battery)
 
-    bat = linearBattery('Li_Ion_Battery_LIR18650.txt',Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,...
-                  constantCurrent_min,constantCurrent_max,constantVoltage,...
-                  limitToBegin,false);
-
+    %bat = linearBattery('Li_Ion_Battery_LIR18650.txt',Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,...
+    %              constantCurrent_min,constantCurrent_max,constantVoltage,...
+    %              limitToBegin,false);
+	
+	bat = magMIMOLinearBattery('magMIMOLinearBattery_data.txt','Li_Ion_Battery_LIR18650.txt',...
+				Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,constantCurrent_min,constantCurrent_max,...
+				constantVoltage,limitToBegin,false);
+	
     %DEVICE (revisar)
     power_m = 0.7; % (W, regular iPhone 4s idle power consumption)
     power_sd = 0;
@@ -82,6 +86,9 @@ function [P_RX, T_RX, SOC, TSOC] = simulate_MagMIMO(envFile)
     
     SOC = [];
     TSOC = [];%time for the vector above
+    
+    RL = [];
+    TRL = [];%time for the vector above
     for i=1:length(LOG_dev_list)
         LOG = endDataAquisition(LOG_dev_list(i));
         
@@ -92,6 +99,9 @@ function [P_RX, T_RX, SOC, TSOC] = simulate_MagMIMO(envFile)
 		
 		SOC  = [SOC, struct('vals', LOG.SOC(1,:))];
 		TSOC = [TSOC, struct('vals', LOG.SOC(2,:))];
+		
+		RL  = [RL, struct('vals', LOG.RL(1,:))];
+		TRL = [TRL, struct('vals', LOG.RL(2,:))];
     end
 end
 

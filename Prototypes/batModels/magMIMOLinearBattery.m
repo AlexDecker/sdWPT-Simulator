@@ -20,7 +20,7 @@ classdef magMIMOLinearBattery < linearBattery
 
         %verify if the parameters are ok
         function r=check(obj)
-            r = obj@check(obj) && check(obj.rlLookupTable);
+            r = check@linearBattery(obj) && check(obj.rlLookupTable);
         end
 		
 		%in this modeling, there is not notion of phases
