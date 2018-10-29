@@ -8,7 +8,7 @@ ylabel('RL (ohms)')
 title('Load Resistance Progression');
 
 figure;
-plot(SOC.vals(1:min(length(SOC.vals),length(RL.vals)))/3600,...
+plot(SOC.vals(1:min(length(SOC.vals),length(RL.vals)))*100,...
 	RL.vals(1:min(length(SOC.vals),length(RL.vals))));
 xlabel('SOC (%)')
 ylabel('RL (ohms)')
@@ -26,12 +26,12 @@ plot(TSOC.vals/3600,100*SOC.vals);
 plot(TSOC.vals/3600,100*SOC.vals);
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist40.mat');
 plot(TSOC.vals/3600,100*SOC.vals);]
-
+%}
 xlabel('Time (h)')
 ylabel('(%)')
-legend('10 cm','20 cm','30 cm','40 cm');
+%legend('10 cm','20 cm','30 cm','40 cm');
 title('SOC Progression');
-
+%{
 figure;
 hold on;
 [P_RX, T_RX, ~, ~, ~, ~] = simulate_MagMIMO('envMIMOOrient02.mat');

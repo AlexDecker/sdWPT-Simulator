@@ -19,6 +19,7 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 		RL %load resistance, got from messages form the power receiver
 		
 		ZT %impedance sub-matrix for the transmitting elements
+		Rt %internal resistance of the transmitting RLCs
 		
 		P_active %maximum active power to be spent
 		P_apparent %maximum apparent power (limits the maximum current)
@@ -29,11 +30,14 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 			obj.interval1 = interval1;
 			obj.interval2 = interval2;
 			obj.rV = referenceVoltage;
-			obj.RL = 0;%dummie
-			obj.m = [];%magnetic channel
-			obj.ZT = [];
 			obj.P_active = P_active;
 			obj.P_apparent = P_apparent;
+			
+			%dummie values
+			obj.RL = 0;
+			obj.m = [];
+			obj.ZT = [];
+			obj.Rt = 0;
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -43,13 +47,14 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 			%pre-parametrized)
 			Z = getCompleteLastZMatrix(WPTManager);
 			obj.ZT = Z(1:WPTManager.nt,1:WPTManager.nt);
+			obj.Rt = mean(diag(obj.ZT));
 			%setting a dummie first magnetic channel vector
 			obj.m = zeros(WPTManager.nt,1);
         	%appy the reference voltage for the next measurements
 			WPTManager = setSourceVoltages(obj,WPTManager,[obj.rV;zeros(WPTManager.nt-1,1)],0);
 			%keep the voltage to measure the results next round
 			netManager = setTimer(obj,netManager,0,obj.interval1);
-			target = 2;
+			obj.target = 2;
         end
 
         function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
@@ -63,13 +68,11 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 				if obj.target>1
 					[It,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
 					Isi = It(obj.target-1);
-					%equation of the paper
-					signal = -1;%CUIDADO!!!!!!!!!!!!!!!!!!!
 					%equation 12 of the paper
-					obj.m = (1i)*signal*sqrt((obj.rV/Isi-obj.Rt)/obj.RL);
+					obj.m(obj.target-1) = -(1i)*sqrt((obj.rV/Isi-obj.Rt)/obj.RL);
 				end
 				%set voltage for the measurement of target
-				if target==WPTManager.nt+1
+				if obj.target==WPTManager.nt+1
 					%no more target, next is simply stage 2
 					%calculate the optimum values
 					I = calculateBeamformingCurrents(obj);
@@ -79,15 +82,17 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 					%keep the calculated voltage to charge the device
 					netManager = setTimer(obj,netManager,GlobalTime,obj.interval2);
 					%next stage will be 1 again
-					target = 1;
+					obj.target = 1;
 				else
 					%appy the reference voltage for the next measurements
-					WPTManager = setSourceVoltages(obj,WPTManager,[zeros(target-1,1);obj.rV;zeros(WPTManager.nt-target,1)],GlobalTime);
+					WPTManager = setSourceVoltages(obj,WPTManager,...
+						[zeros(obj.target-1,1);obj.rV;zeros(WPTManager.nt-obj.target,1)],GlobalTime);
 					%keep the voltage to measure the results next round
 					netManager = setTimer(obj,netManager,GlobalTime,obj.interval1);
-					target = target + 1;
+					obj.target = obj.target + 1;
 				end
 			else
+				netManager = setTimer(obj,netManager,GlobalTime,obj.interval2);
 				warningMsg('Inconsistant data about the load resistance. Nothing to be done.');
 			end
         end
@@ -96,13 +101,12 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 		function I = calculateBeamformingCurrents(obj)
 			%equation 8 of the paper
 			beta = obj.m'./sum(abs(obj.m).^2);
-			%obtaining complete Z matriz (assuming that the inner impedance of the receiver is purely resistive (resonance state)
-			Z = [ZT				obj.m*obj.RL;
-				obj.m.'*obj.RL	obj.RL];
+			%voltage considering only the base vector for the current
+			Vbeta = voltagesFromCurrents(obj,beta);
 			%limiting the active power spent
-			k1 = sqrt(obj.P_active/real(beta'*Z'*beta));
+			k1 = sqrt(obj.P_active/real(beta'*Vbeta));
 			%limiting the applarent power
-			k2 = sqrt(obj.P_apparent/abs(beta'*Z'*beta));
+			k2 = sqrt(obj.P_apparent/abs(beta'*Vbeta));
 			%using the most limiting constant
 			if k1<k2
 				I = k1*beta;
@@ -111,9 +115,10 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 			end
 		end
 		
+		%ESSA EQUAÇÃO ESTÁ MUITO ESTRANHA, DEMANDA I_L!!!!!
 		function V = voltagesFromCurrents(obj,I)
 			%equation 13 of the paper
-			V = [ZT, obj.m*obj.RL]*I;
+			V = [obj.ZT, obj.m*obj.RL]*I;
 		end
     end
 end
