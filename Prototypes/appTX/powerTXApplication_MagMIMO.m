@@ -37,7 +37,7 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 			obj.RL = 0;
 			obj.m = [];
 			obj.ZT = [];
-			obj.Rt = 0;
+			obj.Rt = 0;		
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -76,7 +76,8 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 					%no more target, next is simply stage 2
 					%calculate the optimum values
 					I = calculateBeamformingCurrents(obj);
-					V = voltagesFromCurrents(obj,I);
+					IL = calculateIL(obj,I);
+					V = voltagesFromCurrents(obj,I,IL);
 					%appy the calculated voltages
 					WPTManager = setSourceVoltages(obj,WPTManager,V,GlobalTime);
 					%keep the calculated voltage to charge the device
@@ -100,9 +101,9 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 		%utils---------------------------------------
 		function I = calculateBeamformingCurrents(obj)
 			%equation 8 of the paper
-			beta = obj.m'./sum(abs(obj.m).^2);
+			beta = obj.m./sum(abs(obj.m).^2);
 			%voltage considering only the base vector for the current
-			Vbeta = voltagesFromCurrents(obj,beta);
+			Vbeta = voltagesFromCurrents(obj,beta,calculateIL(obj,beta));
 			%limiting the active power spent
 			k1 = sqrt(obj.P_active/real(beta'*Vbeta));
 			%limiting the applarent power
@@ -115,10 +116,13 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 			end
 		end
 		
-		%ESSA EQUAÇÃO ESTÁ MUITO ESTRANHA, DEMANDA I_L!!!!!
-		function V = voltagesFromCurrents(obj,I)
+		function V = voltagesFromCurrents(obj,I,IL)
 			%equation 13 of the paper
-			V = [obj.ZT, obj.m*obj.RL]*I;
+			V = [obj.ZT, obj.m*obj.RL]*[I;IL];
+		end
+		
+		function IL = calculateIL(obj,I)
+			IL = -(obj.m.')*I;
 		end
     end
 end
