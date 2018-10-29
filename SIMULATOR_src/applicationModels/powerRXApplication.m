@@ -37,7 +37,7 @@ classdef powerRXApplication < powerApplication
         	end	
         		
             [~,~,~,~,WPTManager] = getSystemState(WPTManager,GlobalTime);
-            
+			
             Ir = WPTManager.deviceList(obj.ID).obj.chargeCurrent;
             Id = WPTManager.deviceList(obj.ID).obj.dischargeCurrent;
             Vb = WPTManager.deviceList(obj.ID).obj.Vbatt;

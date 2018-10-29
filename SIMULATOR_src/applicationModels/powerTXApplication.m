@@ -45,5 +45,18 @@ classdef powerTXApplication < powerApplication
         	[~,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);%dummie, apenas para nao afetar o passado
         	WPTManager.ENV.w = w;
         end
+		%define the resistance of the RLC circuits (column vector)
+        function WPTManager = setResistance(obj,WPTManager,GlobalTime,R)
+			s = size(R);
+        	if (s(1)~=WPTManager.nt_groups)||(s(2)~=1)
+        		error('powerTXApplication (setResistance): R must be a nt_groups-sized column vector');
+			else
+				if(sum(R<=0)>0)
+					error('powerTXApplication (setResistance): R must be positive');
+				end
+        	end
+        	[~,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);%dummie, only in order to not modify the past
+        	WPTManager.ENV.R_group(1:WPTManager.nt_groups) = R;
+        end
     end
 end

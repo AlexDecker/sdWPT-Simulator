@@ -78,6 +78,8 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 					I = calculateBeamformingCurrents(obj);
 					IL = calculateIL(obj,I);
 					V = voltagesFromCurrents(obj,I,IL);
+					%close all circuits
+					WPTManager = setResistance(obj,WPTManager,GlobalTime,obj.Rt*ones(WPTManager.nt,1));
 					%appy the calculated voltages
 					WPTManager = setSourceVoltages(obj,WPTManager,V,GlobalTime);
 					%keep the calculated voltage to charge the device
@@ -88,6 +90,10 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 					%appy the reference voltage for the next measurements
 					WPTManager = setSourceVoltages(obj,WPTManager,...
 						[zeros(obj.target-1,1);obj.rV;zeros(WPTManager.nt-obj.target,1)],GlobalTime);
+					%open all circuits but the target
+					WPTManager = setResistance(obj,WPTManager,GlobalTime,...
+						[WPTManager.ENV.maxResistance*ones(obj.target-1,1);obj.Rt;...
+						WPTManager.ENV.maxResistance*ones(WPTManager.nt-obj.target,1)]);
 					%keep the voltage to measure the results next round
 					netManager = setTimer(obj,netManager,GlobalTime,obj.interval1);
 					obj.target = obj.target + 1;
@@ -116,9 +122,9 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 			end
 		end
 		
-		function V = voltagesFromCurrents(obj,I,IL)
+		function Vt = voltagesFromCurrents(obj,I,IL)
 			%equation 13 of the paper
-			V = [obj.ZT, obj.m*obj.RL]*[I;IL];
+			Vt = [obj.ZT, obj.m*obj.RL]*[I;IL];
 		end
 		
 		function IL = calculateIL(obj,I)

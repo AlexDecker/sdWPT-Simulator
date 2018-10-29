@@ -10,7 +10,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     W = 2*pi*1e6; %fixed operational frequency
     R = 0.05*ones(NTX+NRX,1);%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
-    MAX_ACT_POWER = 20;%W, considering active power
+    MAX_ACT_POWER = 100;%W, considering active power
 	MAX_APP_POWER = 2000;%W, considering apparent power
     TOTAL_TIME = 10000;%max seconds of simulation (virtual time)
 
@@ -49,12 +49,13 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     DEVICE_LIST = struct('obj',dev);
 
     %APPLICATIONS
+	MAX_POWER = 20;
 	referenceVoltage = 5;
 	interval1 = 1;
 	interval2 = 10;
 	interval3 = 1;
     powerTX = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2, ...
-		MAX_ACT_POWER, MAX_APP_POWER);
+		MAX_POWER, MAX_APP_POWER);
 	
     powerRX = [];
 
