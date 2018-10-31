@@ -104,7 +104,7 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 					obj.target = obj.target + 1;
 				end
 			else
-				netManager = setTimer(obj,netManager,GlobalTime,obj.interval2);
+				netManager = setTimer(obj,netManager,GlobalTime,obj.interval1);
 				warningMsg('Inconsistant data about the load resistance. Nothing to be done.');
 			end
         end

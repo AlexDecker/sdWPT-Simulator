@@ -69,6 +69,21 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 			break;
 		end
 		
+		if(powerTX.END_SIMULATION)
+			disp('Simulation finished by powerTX');
+			break;
+		end
+		
+		END_SIMULATION = false;
+		for i=1:length(powerRX)
+			END_SIMULATION = END_SIMULATION || powerRX(i).obj.END_SIMULATION;
+		end
+		
+		if(END_SIMULATION)
+			disp('Simulation finished by powerRX');
+			break;
+		end
+		
         %Resultados desta execução para fins de log (acesso direto a medições, com onisciência)
 		[~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);%atualiza o sistema a cada evento
         

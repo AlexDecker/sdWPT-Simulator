@@ -3,6 +3,7 @@ classdef powerApplication
     properties(SetAccess = private, GetAccess = public)
         ID
         SEND_OPTIONS
+        END_SIMULATION
     end
     properties(Access = protected)
     	CurrTime %Ultimo momento que se tem conhecimento
@@ -12,6 +13,7 @@ classdef powerApplication
     end
     methods(Access=public)
         function obj = powerApplication(ID)
+        	obj.END_SIMULATION = false;
             obj.ID = ID;
             obj.APPLICATION_LOG = applicationLOG();
             obj = setSendOptions(obj,0,1000,0);
@@ -24,6 +26,10 @@ classdef powerApplication
         end
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
+        end
+        
+        function obj = endSimulation(obj)
+        	obj.END_SIMULATION = true;
         end
     end
     %Funções auxiliares

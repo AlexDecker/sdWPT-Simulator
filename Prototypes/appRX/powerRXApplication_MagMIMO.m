@@ -27,6 +27,10 @@ classdef powerRXApplication_MagMIMO < powerRXApplication
 			%message assumed to have 32 bits
         	netManager = send(obj,netManager,0,RL+obj.Rr,32,GlobalTime);
 			netManager = setTimer(obj,netManager,GlobalTime,obj.interval);
+			%if it is fully charged, end the simulation
+			if (getSOC(WPTManager.deviceList(obj.ID).obj.bat)==1)
+				obj = endSimulation(obj);
+			end
         end
 
     end
