@@ -129,11 +129,11 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 		
 		function Vt = voltagesFromCurrents(obj,I,IL)
 			%equation 13 of the paper
-			Vt = [obj.ZT, obj.m*obj.RL]*[I;IL];
+			Vt = [obj.ZT, -obj.m*obj.RL]*[I;IL];
 		end
 		
 		function IL = calculateIL(obj,I)
-			IL = -(obj.m.')*I;
+			IL = (obj.m.')*I;
 		end
     end
 end

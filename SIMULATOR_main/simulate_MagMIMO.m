@@ -56,8 +56,8 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
 	referenceVoltage = 2;
 	
 	interval1 = 1;
-	interval2 = 10;
-	interval3 = 1;
+	interval2 = 30;%specified at paper
+	interval3 = 300;%every 5 min (specified at paper)
     powerTX = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2, ...
 		MAX_POWER, MAX_APP_POWER);
 	

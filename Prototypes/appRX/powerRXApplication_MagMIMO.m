@@ -15,7 +15,7 @@ classdef powerRXApplication_MagMIMO < powerRXApplication
 			Z = getCompleteLastZMatrix(WPTManager);
 			obj.Rr = Z(end,end)-RL;
             obj = setSendOptions(obj,0,2048,5);
-            netManager = setTimer(obj,netManager,0,obj.interval);
+            netManager = setTimer(obj,netManager,0,1);
         end
 
         function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
