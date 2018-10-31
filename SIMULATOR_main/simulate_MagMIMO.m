@@ -8,7 +8,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     NTX = 6; %number of transmitting coils
     NRX = 1; %number of receiving devices
     W = 2*pi*1e6; %fixed operational frequency
-    R = 0.05*ones(NTX+NRX,1);%internal resistance of the RLC rings (obtained via fitting)
+    R = 0.1*ones(NTX+NRX,1);%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
     MAX_ACT_POWER = 100;%W, considering active power
 	MAX_APP_POWER = 2000;%W, considering apparent power
@@ -35,7 +35,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
 				Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,constantCurrent_min,constantCurrent_max,...
 				constantVoltage,limitToBegin,false);
 	
-    %DEVICE (revisar)
+    %DEVICE
     power_m = 0.7; % (W, regular iPhone 4s idle power consumption)
     power_sd = 0;
     minV = 2.0;     % (V)
@@ -49,8 +49,12 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     DEVICE_LIST = struct('obj',dev);
 
     %APPLICATIONS
+    
 	MAX_POWER = 20;
-	referenceVoltage = 5;
+	
+	%be careful: a saturation condition caused by this can decrease the efficiency of the algorithm
+	referenceVoltage = 2;
+	
 	interval1 = 1;
 	interval2 = 10;
 	interval3 = 1;

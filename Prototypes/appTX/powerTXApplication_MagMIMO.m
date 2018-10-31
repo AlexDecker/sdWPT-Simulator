@@ -63,6 +63,11 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
         end
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
+        	if target==7
+        		disp('Charging...');
+        	else
+        		disp(['Target: ',num2str(obj.target)]);
+        	end
 			if obj.RL>0
 				%measure current for target-1
 				if obj.target>1
