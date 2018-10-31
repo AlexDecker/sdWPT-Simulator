@@ -31,7 +31,7 @@ classdef LookupTable
           end
           
           if plotData
-              plotData(obj);
+              plotDataSet(obj);
           end
       end
       
@@ -65,7 +65,7 @@ classdef LookupTable
           flag = (length(obj.table)>=2);
       end
       
-      function plotData(obj)
+      function plotDataSet(obj)
           figure;
           plot(obj.table(:,1),obj.table(:,2));
           xlabel('X');
