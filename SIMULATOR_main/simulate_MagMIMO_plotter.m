@@ -22,7 +22,7 @@ plot(TSOC.vals/3600,100*SOC.vals);
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist30.mat');
 plot(TSOC.vals/3600,100*SOC.vals);
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist40.mat');
-plot(TSOC.vals/3600,100*SOC.vals);]
+plot(TSOC.vals/3600,100*SOC.vals);
 xlabel('Time (h)')
 ylabel('(%)')
 legend('10 cm','20 cm','30 cm','40 cm');
