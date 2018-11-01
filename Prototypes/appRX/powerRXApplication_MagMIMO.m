@@ -28,8 +28,13 @@ classdef powerRXApplication_MagMIMO < powerRXApplication
         	netManager = send(obj,netManager,0,RL+obj.Rr,32,GlobalTime);
 			netManager = setTimer(obj,netManager,GlobalTime,obj.interval);
 			%if it is fully charged, end the simulation
-			if (getSOC(WPTManager.deviceList(obj.ID).obj.bat)==1)
+			SOC = getSOC(WPTManager.deviceList(obj.ID).obj.bat);
+			if (SOC==1)
 				obj = endSimulation(obj);
+			else
+				disp(['MagMIMO progress: ',num2str(100*SOC),...
+					'%.(',num2str(GlobalTime/3600),'h of virtual time)']);
+				disp(['Expected finishing time: ',num2str(GlobalTime/(3600*SOC)),'h']);
 			end
         end
 

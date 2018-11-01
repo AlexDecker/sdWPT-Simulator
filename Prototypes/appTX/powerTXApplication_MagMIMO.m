@@ -69,12 +69,17 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
         		disp(['Target: ',num2str(obj.target)]);
         	end
 			if obj.RL>0
+				%only for test purposes
+				if obj.target==1
+					WPTManager = Z_TEST(obj, WPTManager);
+				end
+				%----------------------
 				%measure current for target-1
 				if obj.target>1
 					[It,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
 					Isi = It(obj.target-1);
 					%equation 12 of the paper
-					obj.m(obj.target-1) = -(1i)*sqrt((obj.rV/Isi-obj.Rt)/obj.RL);
+					obj.m(obj.target-1) = (1i)*sqrt((obj.rV/Isi-obj.Rt)/obj.RL);
 				end
 				%set voltage for the measurement of target
 				if obj.target==WPTManager.nt+1
@@ -134,6 +139,15 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 		
 		function IL = calculateIL(obj,I)
 			IL = (obj.m.')*I;
+		end
+		
+		%test function, for debug purposes, compares the estimated impedance matrix and the real one
+		function WPTManager = Z_TEST(obj, WPTManager)
+			Z = [obj.ZT, -obj.m*obj.RL;
+				-obj.m.'*obj.RL, obj.RL];
+			rZ = getCompleteLastZMatrix(WPTManager);
+			difZ = abs(Z-rZ);
+			disp(['Z-estimation mean square error: ',num2str(100*mean(mean(difZ))/mean(mean(abs(rZ)))),'%']);
 		end
     end
 end

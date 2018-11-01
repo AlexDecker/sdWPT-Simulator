@@ -183,7 +183,7 @@ classdef envListManagerBAT
                 
                 %visualiza��o do progresso
                 if obj.showProgress && (obj.lastPrint ~= round(100*t/obj.ENV.tTime))
-                    disp(['progress: ',num2str(round(100*t/obj.ENV.tTime)),'%']);
+                    disp(['progress (until totalTime): ',num2str(round(100*t/obj.ENV.tTime)),'%']);
                     obj.lastPrint = round(100*t/obj.ENV.tTime);
                 end
             end
