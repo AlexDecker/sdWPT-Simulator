@@ -6,41 +6,43 @@ function simulate_battery(version)
 	
 	NTX = 1;
 	W = 3769.911; %600Hz
-	R = [1.5 1.5]'; %resistência fixa dos RLCs (default)
+	R = [0.7 0.7]'; %resistência fixa dos RLCs (default)
 	C = [-1 -1]';%capacitância dos RLCs (usar a do arquivo .mat)
-	MAX_ACT_POWER = 300; %W
+	MAX_ACT_POWER = inf; %W
 	MAX_APP_POWER = inf; %W
-	TOTAL_TIME = 12600; %segundos de simulação (em tempo virtual)
+	TOTAL_TIME = 12600; %simulation time in seconds (virtual time)
 	
-	%bateria
-	fase1Limit = 0.7;          % (70%)
-	limitToBegin = 0.9;       % (90%)
-	constantCurrent_min = 0.01; % (A)
-	constantCurrent_max = 0.51;   % (A)
+	%battery
+	fase1Limit = 0.85;          % (85%)
+	limitToBegin = 0.9;       % (90%, dummie for this use case)
+	constantCurrent_min = 0.01; % (A, dummie for this use case)
+	constantCurrent_max = 1.3;   % (A, from datasheet)
 	constantVoltage = 4.2;     % (V)
 
-	Rc = -1;      % (ohm. -1=calcular automaticamente)
-	Rd = -1;       % (ohm. -1=calcular automaticamente)
+	Rc = -1;      % (ohm, -1=automatic calculation)
+	Rd = -1;       % (ohm. -1=automatic calculation)
 	R_MAX = 1e7;   % (ohm)
-	Q0 = 0;       % (As)
-	Qmax = 4320;  % (As), que equivale a 1200 mAh
+	Q0 = 0;       % (As, starting as dead battery)
+	Qmax = 2600/1000*3600;  % (As, equivalent to 2600mAh)
 
 	bat = linearBattery('Li_Ion_Battery_LIR18650.txt',Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,...
 		          constantCurrent_min,constantCurrent_max,constantVoltage,...
 		          limitToBegin,false);
 	
-	%consumidor de energia desativado
+	%disable additional energy consumption
 	power_m = 0; % (W)
 	power_sd = 0;
 	minV = 2.3;     % (V)
 	minVTO = 3.3;   % (V)
-	err = 0.0001;     % (5%)
+	err = 0.01;     % (1%)
+	
+	%conversion efficiency
 	efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
 
 	dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
 	DEVICE_LIST = struct('obj',dev);
 
-	%APLICAÇÕES
+	%APPLICATIONS
 	VOLTAGE = 20;
     powerTX = powerTXApplication_dummie(VOLTAGE);
     powerRX = [];
@@ -49,7 +51,7 @@ function simulate_battery(version)
         powerRX = [powerRX struct('obj',powerRXApplication(i))];
     end
 
-    %SIMULADOR
+    %SIMULATOR
 
     IFACTOR=1.5;
     DFACTOR=2;
@@ -69,14 +71,14 @@ function simulate_battery(version)
         IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
 		powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
-    %VISUALIZAÇÃO DOS RESULTADOS
+    %VISUALISATION
         
     for i=1:length(LOG_dev_list)
         LOG = endDataAquisition(LOG_dev_list(i));
-        if(strcmp(version, '2010a'))
-            plotBatteryChart2010(LOG);%use isso se estiver no R2010
+        if(strcmp(version, 'R2010a'))
+            plotBatteryChart2010(LOG);
         else
-            plotBatteryChart(LOG); %use isso se estiver no R2017
+            plotBatteryChart(LOG);
         end
     end
 end

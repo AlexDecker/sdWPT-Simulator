@@ -1,6 +1,6 @@
 clear all;
 
-
+%{
 [~, ~, SOC, TSOC, RL, TRL] = simulate_MagMIMO('envMIMODist10.mat');
 figure;
 plot(TRL.vals/3600,RL.vals);
@@ -14,25 +14,25 @@ plot(SOC.vals(1:min(length(SOC.vals),length(RL.vals)))*100,...
 xlabel('SOC (%)')
 ylabel('RL (ohms)')
 title('Load Resistance vs SOC');
-
+%}
 figure;
 hold on;
+%{
 plot(TSOC.vals/3600,100*SOC.vals);
-
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist20.mat');
 plot(TSOC.vals/3600,100*SOC.vals);
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist30.mat');
 plot(TSOC.vals/3600,100*SOC.vals);
-
+%}
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist40.mat');
 plot(TSOC.vals/3600,100*SOC.vals);
 
 xlabel('Time (h)')
 ylabel('(%)')
-legend('10 cm','20 cm','30 cm','40 cm');
+%legend('10 cm','20 cm','30 cm','40 cm');
 title('SOC Progression');
 
-
+%{
 figure;
 hold on;
 [P_RX, T_RX, ~, ~, ~, ~] = simulate_MagMIMO('envMIMOOrient02.mat');
@@ -51,4 +51,4 @@ xlabel('Orientation (deg)')
 ylabel('(W)')
 legend('2 cm','10 cm','20 cm','40 cm');
 title('Power Received vs Orientation of RX');
-
+%}

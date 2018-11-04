@@ -135,7 +135,7 @@ classdef simulationResults
                 plot(obj.VB(2,:)/60,obj.VB(1,:));
                 ylabel('(V)');
                 yyaxis right
-                plot(obj.CC(2,:)/60,obj.CC(1,:));
+                plot(obj.CC(2,:)/60,obj.CC(1,:)*0.52/1.3);
                 plot(obj.IE(2,:)/60,obj.IE(1,:));
                 plot(obj.DC(2,:)/60,obj.DC(1,:));
                 plot(obj.SOC(2,:)/60,obj.SOC(1,:));

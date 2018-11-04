@@ -41,6 +41,7 @@ classdef genericDeviceWithBattery < Device
         %carregamento da bateria
         function [obj,Ie] = expectedCurrent(obj)
             [obj.bat,Ie] = expectedCurrent(obj.bat);
+			Ie = Ie/obj.efficiency;
         end
         
         %rerturns the static value for the actual load resistance.
