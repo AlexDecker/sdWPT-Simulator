@@ -8,10 +8,10 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     NTX = 6; %number of transmitting coils
     NRX = 1; %number of receiving devices
     W = 2*pi*1e6; %fixed operational frequency
-    R = [0.025*ones(NTX,1);0.5*ones(NRX,1)];%internal resistance of the RLC rings (obtained via fitting)
+    R = [0.05*ones(NTX,1);25*ones(NRX,1)];%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
-    MAX_ACT_POWER = 100;%W, considering active power
-	MAX_APP_POWER = 2000;%W, considering apparent power
+    MAX_ACT_POWER = inf;%W, considering active power
+	MAX_APP_POWER = inf;%W, considering apparent power
     TOTAL_TIME = 100000;%max seconds of simulation (virtual time)
 
     %BATTERY (iPhone 4s battery. We didn't find some values, so LIR18650 was used
@@ -19,7 +19,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     fase1Limit = 0.7;          % (70%)
     limitToBegin = 0.93;       % (93%)
     constantCurrent_min = 0.1; % (A)
-    constantCurrent_max = 1.2;   % (A)
+    constantCurrent_max = 100;   % (A)
     constantVoltage = 4.2;     % (V)
     Rc = -1;      % (ohm. -1=calculate automatically)
     Rd = -1;       % (ohm. -1=calculate automatically)
@@ -55,7 +55,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
 	%be careful: a saturation condition caused by this can decrease the efficiency of the algorithm
 	referenceVoltage = 1;
 	
-	interval1 = 1;
+	interval1 = 0.4;
 	interval2 = 30;%specified at paper
 	interval3 = 300;%every 5 min (specified at paper)
     powerTX = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2, ...
