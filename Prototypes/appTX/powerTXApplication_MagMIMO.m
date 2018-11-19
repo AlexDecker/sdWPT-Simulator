@@ -144,7 +144,7 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 		%test function, for debug purposes, compares the estimated impedance matrix and the real one
 		function WPTManager = Z_TEST(obj, WPTManager)
 			Z = [obj.ZT, -obj.m*obj.RL;
-				-obj.m.'*obj.RL, obj.RL];
+				-obj.m.'*obj.RL, obj.RL]
 			rZ = getCompleteLastZMatrix(WPTManager);
 			difZ = abs(Z-rZ);
 			disp(['Z-estimation mean square error: ',num2str(100*mean(mean(difZ))/mean(mean(abs(rZ)))),'%']);
