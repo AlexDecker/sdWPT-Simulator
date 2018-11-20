@@ -64,7 +64,12 @@ classdef genericDeviceWithBattery < Device
             end
             
             %gera uma potência dentro da distribuição especificada
-            P = normrnd(obj.power_m,obj.power_sd);
+            if(obj.power_sd>0)
+            	P = normrnd(obj.power_m,obj.power_sd);
+            else
+            	%if you don't want to intall statistics package, set power_ds=0
+            	P = obj.power_m;
+            end
 
             V=0;
             if obj.working %de o dispositivo está ligado
