@@ -1,5 +1,6 @@
 function warningMsg(Msg,Complement)
     global lastMsg;
+    
     if(strcmp(lastMsg,Msg)==0)
 		if exist('Complement','var')
 			disp(['!!! Warning: ',Msg,Complement]);

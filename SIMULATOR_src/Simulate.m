@@ -147,7 +147,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 				[~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);
 				Z = getCompleteLastZMatrix(Manager);
 				
-				if(event.creator==0)
+				if(event.creator==0)%created by powerTX
 					%apenas um alerta para fins de realismo
 					for i=1:length(powerRX)
 						if(powerTX.SEND_OPTIONS.baudRate~=powerRX(i).obj.SEND_OPTIONS.baudRate)
@@ -164,9 +164,9 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 							warningMsg('Dropped broadcast message: ',['from powerTX to powerRX id ',num2str(event.owner)]);
 						end
 					end
-				else
+				else%created by powerRX
 					%apenas um alerta para fins de realismo
-					if(powerRX(event.creator).obj.SEND_OPTIONS.baudRate~=powerTX.obj.SEND_OPTIONS.baudRate)
+					if(powerRX(event.creator).obj.SEND_OPTIONS.baudRate~=powerTX.SEND_OPTIONS.baudRate)
 						warningMsg('BaudRate values do not match');
 					end
 					for i=1:length(powerRX)
@@ -177,7 +177,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 					event.owner = 0;
 					%avalia via SINR se a mensagem deve ser enviada
 					if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z))
-						[powerRX(event.owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
+						[powerTX, network, Manager] = handleMessage(powerTX,event.data,GlobalTime,network,Manager);
 					else
 						warningMsg('Dropped broadcast message: ',['from powerRX id ',num2str(event.creator),' to powerTX']);
 					end
