@@ -6,7 +6,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 	LOG_app_list = [];
 	GlobalTime = 0;
 	
-	%Gera um envList baseado no arquivo especificado
+	%generates an environment list based on the informed file
 	load(ENV_LIST_FILE);
 	if exist('envList','var')
 		if ~verifyEnvList(envList)
@@ -16,7 +16,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 		error('EnvList not found.');
 	end
 	
-	%insere novos valores de capacitância caso desejado
+	%insert new capacitance values if wanted. -1 if you want to disable this functionality
 	if(length(envList(1).C_group)~=length(C))
 		error('C dimension and the number of groups must agree');
 	end
@@ -24,7 +24,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 		envList(i).C_group = envList(i).C_group + (C~=-1).*(C-envList(i).C_group);
 	end
 	
-	%Os objetos abaixo cuidam de aspactos físicos de WPT
+	%The objects below manages the physical aspects of WPT
 	if exist('miEnv','var')
 		elManager = envListManager(envList,zeros(NTX,1),W,R,TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER,miEnv);
 	else
@@ -33,20 +33,20 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 	
 	Manager = envListManagerBAT(elManager,DEVICE_LIST,STEP,SHOW_PROGRESS);
 	
-	%inicializando a tensão dos aparatos transmissores
+	%initializing the voltage across the TX coils
 	Manager = setVt(Manager, zeros(NTX,1), 0);
 	
-	%O objeto abaixo cuida dos aspectos eventos em redes e timers
+	%The object below manages network and timing envents
 	network = networkManager(length(envList(1).R_group)-NTX);
 	
 	if(powerTX.ID~=0)
-		%ID=0 indica que é uma aplicação de TX
+		%ID=0 means the application is attached to the transmitting device
 		error('powerTX is not a powerTXApplication');
 	end
-	%É executada a função de inicialização do TX
+	%Initializing the application of TX device
 	[powerTX,network,Manager] = init(powerTX,network,Manager);
 	
-	%São executadas as funções de inicialização dos RX
+	%Initializing the other applications
 	for i=1:length(powerRX);
 		if(powerRX(i).obj.ID~=i)
 			error('ID of powerRX(i) must be equals to its index in powerRX vector');
@@ -55,14 +55,16 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 	end
 	
 	while(true)
-		%enquanto ainda existirem eventos agendados
+		%while there are still events to handle
 		if (emptyEnventList(network))
 			disp('No more events to compute');
 			break;
 		end
 		
-		%atualiza o tempo global, as mensagens que eventualmente conflitem com o evento, o evento em si e o gerenciador de eventos
+		%updates the global timer, get the messages that conflicts with the event of interest and get the event itself
 		[GlobalTime, conflictingMsgs, event, network] = nextEvent(network);
+		
+		%other termination conditions
 		
 		if(GlobalTime>TOTAL_TIME)
 			disp('TOTAL_TIME achieved');
@@ -84,14 +86,14 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 			break;
 		end
 		
-        %Resultados desta execução para fins de log (acesso direto a medições, com onisciência)
-		[~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);%atualiza o sistema a cada evento
+        %Get some measurements for logging purposes (the measurements are inserted into the log objects inside Manager
+		[~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);
         
-		if(event.owner==0)%TX
+		if(event.owner==0)%the destinatary is TX
 			if(event.isMsg)
-				%se for uma mensagem
+				%if the event is a message
                 
-				%apenas um alerta para fins de realismo
+				%only an alert for realism purposes
 				if(powerTX.SEND_OPTIONS.baudRate~=powerRX(event.creator).obj.SEND_OPTIONS.baudRate)
 					warningMsg('BaudRate values do not match');
 				end
@@ -99,23 +101,23 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 				[~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);
 				Z = getCompleteLastZMatrix(Manager);
 				
-				%avalia via SINR se a mensagem deve ser enviada
+				%evaluates via SINR if the message is meant to be sent
 				if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z))
-					%função de tratamento de mensagens do destinatário
+					%callback the handler function of the message receiver
 					[powerTX, network, Manager] = handleMessage(powerTX,event.data,GlobalTime,network,Manager);
 				else
 					warningMsg('Dropped message: ',['from powerRX id ',num2str(event.creator),' to powerTX']);
 				end
 			else                
-				%se for um evento de timer
+				%if it is a time event
 				[powerTX, network, Manager] = handleTimer(powerTX,GlobalTime,network,Manager);
 			end
 		else
-			if(event.owner~=-1)%RX
+			if(event.owner~=-1)%The destinatary is RX
 				if(event.isMsg)
-					%se for uma mensagem
+					%if the event is a message
 				
-					%apenas um alerta para fins de realismo
+					%only an alert for realism purposes
 					if(event.creator==0)
 						if(powerTX.SEND_OPTIONS.baudRate~=powerRX(event.owner).obj.SEND_OPTIONS.baudRate)
 							warningMsg('BaudRate values do not match');
@@ -129,7 +131,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 					[~,~,~,~,Manager] = getSystemState(Manager,GlobalTime);
 					Z = getCompleteLastZMatrix(Manager);
 				
-					%avalia via SINR se a mensagem deve ser enviada
+					%evaluates via SINR if the message is meant to be sent
 					if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z))
 						[powerRX(event.owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
 					else
@@ -140,7 +142,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 						end
 					end
 				else
-					%evento de timer
+					%if it is a time event
 					[powerRX(event.owner).obj, network, Manager] = handleTimer(powerRX(event.owner).obj,GlobalTime,network,Manager);
 				end
 			else %broadcast (always a message)
@@ -148,7 +150,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 				Z = getCompleteLastZMatrix(Manager);
 				
 				if(event.creator==0)%created by powerTX
-					%apenas um alerta para fins de realismo
+					%only an alert for realism purposes
 					for i=1:length(powerRX)
 						if(powerTX.SEND_OPTIONS.baudRate~=powerRX(i).obj.SEND_OPTIONS.baudRate)
 							warningMsg('BaudRate values do not match');
@@ -157,7 +159,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 					
 					for i=1:length(powerRX)
 						event.owner = i;
-						%avalia via SINR se a mensagem deve ser enviada
+						%evaluates via SINR if the message is meant to be sent
 						if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z))
 							[powerRX(event.owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
 						else
@@ -165,7 +167,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 						end
 					end
 				else%created by powerRX
-					%apenas um alerta para fins de realismo
+					%only an alert for realism purposes
 					if(powerRX(event.creator).obj.SEND_OPTIONS.baudRate~=powerTX.SEND_OPTIONS.baudRate)
 						warningMsg('BaudRate values do not match');
 					end
@@ -175,29 +177,31 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 						end
 					end
 					event.owner = 0;
-					%avalia via SINR se a mensagem deve ser enviada
+					%evaluates via SINR if the message is meant to be sent
 					if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z))
 						[powerTX, network, Manager] = handleMessage(powerTX,event.data,GlobalTime,network,Manager);
 					else
 						warningMsg('Dropped broadcast message: ',['from powerRX id ',num2str(event.creator),' to powerTX']);
 					end
 					for i=1:length(powerRX)
-						event.owner = i;
-						%avalia via SINR se a mensagem deve ser enviada
-						if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z)&&(event.creator~=i))
-							[powerRX(event.owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
-						else
-							warningMsg('Dropped broadcast message: ',['from powerRX id ',num2str(event.creator),' to powerRX id ',num2str(event.owner)]);
+						if(event.creator~=i)%do not send the message to itself
+							event.owner = i;
+							%evaluates via SINR if the message is meant to be sent
+							if(rightDelivered(event,conflictingMsgs,Manager,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,Z))
+								[powerRX(event.owner).obj, network, Manager] = handleMessage(powerRX(event.owner).obj,event.data,GlobalTime,network,Manager);
+							else
+								warningMsg('Dropped broadcast message: ',['from powerRX id ',num2str(event.creator),' to powerRX id ',num2str(event.owner)]);
+							end
 						end
 					end
 				end
 			end
 		end
 		
-		cleanWarningMsg();%permite que mensagens se acumulem apenas a cada evento
+		cleanWarningMsg();%avoids a warning message flooding
 	end
 	
-	%recolhendo os logs
+	%harvesting logs
 	
 	LOG_TX = Manager.TRANSMITTER_DATA;
 	
