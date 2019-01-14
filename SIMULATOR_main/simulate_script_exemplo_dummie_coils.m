@@ -2,6 +2,8 @@
 
 clear all;
 
+noWarnings();%comente se quiser warnings
+
 %MANTENHA ISSO ATUALIZADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 NRX = 3; %número de dispositivos transmissores
 TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)

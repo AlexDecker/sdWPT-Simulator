@@ -1,5 +1,5 @@
-%permite que as mensagens de debug se acumulem
+%it allows the warning messages to repeat
 function cleanWarningMsg()
-    global lastMsg;
-    lastMsg='';
+    global LAST_MSG;
+    LAST_MSG = '';
 end
