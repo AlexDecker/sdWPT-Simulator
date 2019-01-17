@@ -73,7 +73,6 @@ classdef Environment
                         if(M(j,i)~=-1)
                             M(i,j)=M(j,i);
                         else
-                            disp('Iniciando calculo de acoplamento');
                             M(i,j)=evalMutualInductance(obj.Coils(i).obj, obj.Coils(j).obj);
                         end
                     end

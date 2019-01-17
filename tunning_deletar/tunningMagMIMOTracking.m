@@ -45,29 +45,41 @@ groupListTX = [group1;group2;group3;group4;group5;group6];
 
 env = Environment(groupListTX,w,mi);
 
+disp('Calculando base...');
+
 %calcule a submatriz dos transmissores
 env = evalM(env,eye(6)-ones(6,6));
 
 %base de cálculo para a matriz M
 M0 = [env.M,-ones(6,1);
 	 -ones(1,6), 0];
+
+disp('Base concluída');
 	 
 %distâncias
 D = [0.1,0.2,0.3,0.4];
 
+%dados de log serão dumpados aqui
 data = [];
 
-disp('Calculando o resto');
+disp('Calculando o resto...');
 
 for R1_rx = linspace(0,sqrt(Area/pi)-2*wire_radius_rx,10)
-	disp(['R1_rx: ',num2str(R1_rx)]);
-	for N_rx = linspace(1,(sqrt(Area/pi)-R1_rx)/(2*wire_radius_rx),10)
-		disp(['N_rx: ',num2str(N_rx)]);
+	%delimitando o espaço de variação do número de voltas
+	N_limits = 1:1:((sqrt(Area/pi)-R1_rx)/(2*wire_radius_rx));
+	if(length(N_limits)>10)
+		N_limits = linspace(1,(sqrt(Area/pi)-R1_rx)/(2*wire_radius_rx),10);
+	end
+	for N_rx = N_limits
 		R2_rx = 2*wire_radius_rx*N_rx+R1_rx;
-		for A_rx = linspace(0,(Area-pi*R2_rx^2)/(2*R2_rx),10)
+		for A_rx = linspace(0,(Area-pi*R2_rx^2)/(2*R2_rx),5)
 			B_rx = (Area - pi*R2_rx^2-2*R2_rx*A_rx)/(2*R2_rx+A_rx);
-			disp(['A_rx:',num2str(A_rx),' B_rx:',num2str(B_rx), ' Area:',...
+			%apenas para acompanhar a evolução dos cálculos
+			disp(['R1_rx: ',num2str(R1_rx),' N_rx: ',num2str(N_rx),...
+				' A_rx:',num2str(A_rx),' B_rx:',num2str(B_rx), ' Area:',...
 				num2str(2*R2_rx*(A_rx+B_rx)+A_rx*B_rx+pi*R2_rx^2)]);
+			
+			%lista vazia de matrizes de acoplamento
 			M = [];
 			
 			%cria o novo protótipo de bobina receptora
