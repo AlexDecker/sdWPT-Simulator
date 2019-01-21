@@ -36,12 +36,6 @@ classdef powerRXApplication_MagMIMO < powerRXApplication
 					'%.(',num2str(GlobalTime/3600),'h of virtual time)']);
 				disp(['Expected finishing time: ',num2str(GlobalTime/(3600*SOC)),'h']);
 			end
-			%%DELETAR ISSO!!!!!!!!!!
-			[I,WPTManager] = getI(obj,WPTManager,GlobalTime);
-			disp('comparacao com o modelo simplificado');
-			disp(0.95*abs(I));
-			disp(0.95*sqrt(0.8143*20/(0.05*(25+RL)^2)));
-			disp('///////////');
         end
 
     end

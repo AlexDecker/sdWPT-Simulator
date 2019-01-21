@@ -1,4 +1,4 @@
-%abstrai o ambiente em determinado momento.
+%abstracts the environment at a given time moment
 classdef Environment
     properties
         Coils
@@ -7,20 +7,19 @@ classdef Environment
         R_group
         C_group
         w
-        miEnv %constante de permeabilidade magn�tica do meio
+        miEnv %magnetic permeability of the medium
     end
     methods
-	    %Argumentos:
-	    %w - frequ�ncia angular do sinal da fonte de tens�o
-	    %miEnv - constante de permeabilidade magn�tica do meio (H/m)
-	    %groups - cada elemento desse vetor corresponde a um dos circuitos do sistema, que � um
-	    %anel RLC atrelado com um n�mero arbitr�rio de bobinas em paralelo
-        %Estrutura esperada para groups:
-        %groups(i) - Lista de estruras
-        %	.coils(j) - Lista de estruturas
-        %		.obj  - Objeto coil (esse n�vel a mais permite coils de diferentes classes)
-        %	.R - Valor da resist�ncia (real positiva ou -1)
-        %	.C - Valor da capacit�ncia (real positiva)
+	    %Parameters:
+	    %w - Operational angular frequency of the source's signal
+	    %miEnv - magnetic permeability of the medium (H/m)
+	    %groups - each element of this vector corresponds to one of the system's circuit, which 		%is composed by a RLC ring attached to an arbitrary number of parallel coils
+        %Expected structure for the groups:
+        %groups(i) - List of structs
+        %	.coils(j) - List of structs
+        %		.obj  - coil object
+        %	.R - Resistance value (real positive or -1)
+        %	.C - Capacitance value (real positive)
         function obj = Environment(groups,w,miEnv)
         	obj.w = w;
             obj.miEnv = miEnv;
@@ -54,8 +53,8 @@ classdef Environment
             end
         end
 		
-		%encontra os �ndices da primeira e da �ltima bobina de determinado grupo. A numera��o
-		%dos grupos se inicia em 1.
+		%find the indices for the beggining and the end of a given group. The numeration of
+		%the groups starts at 1
 		function [c0,c1] = getGroupLimits(obj,g)
 			if(g==1)
 				c0=1;
@@ -65,7 +64,7 @@ classdef Environment
 			c1=sum(sum(obj.groupMarking(:,1:g)));
 		end
 		
-        %Os valores desconhecidos de M devem vir com valor -1.
+        %Unknown values of M must be specified as -1.
         function obj = evalM(obj,M)
             for i = 1:length(M)
                 for j = 1:length(M)
@@ -92,8 +91,8 @@ classdef Environment
 		    end
             L = (obj.groupMarking*obj.C_group ~= -1).*diag(obj.M); %if C=-1, resonance
             
-            Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)));...%indut�ncias m�tua
-                + (1i)*obj.w*diag(miVector.*L);%auto-indut�ncia
+            Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)));...%mutual inductance
+                + (1i)*obj.w*diag(miVector.*L);%self-inductance
             
             %compose the final matrix (if C=-1, resonance)
             Z = composeZMatrix(Z,...
