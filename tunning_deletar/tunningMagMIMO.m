@@ -24,21 +24,24 @@ rlLookupTable = LookupTable('magMIMOLinearBattery_data.txt',false);
 %tensão em função da carga
 vbLookupTable = LookupTable('Li_Ion_Battery_LIR18650.txt',false);
 
-%hold on;
+hold on;
 E = [];%dados de log
 minErr = inf;%erro mínimo conhecido até o momento
 
 for d=1:length(data)%instância (design da bobina receptora)
 	%para o controle das instâncias a serem utilizadas
-	if((data(d).N_rx>1)&&(data(d).A_rx<0.075)&&(data(d).B_rx<0.075))
+	if((data(d).N_rx<21)&&(data(d).N_rx>20)&&(data(d).A_rx<0.075)&&(data(d).B_rx<0.075))
+	%if((data(d).B_rx<0.051863)&&(data(d).B_rx>0.051859)&&(data(d).R1_rx>0.055362)&&(data(d).R1_rx<0.055366))
 		disp(['Iniciando nova instância: R1_rx=',num2str(data(d).R1_rx),...
 			' N_rx=',num2str(data(d).N_rx),...
 			' A_rx=',num2str(data(d).A_rx),...
 			' B_rx=',num2str(data(d).B_rx)]);
-		for Rr = [2,5,10,20,25,30]%resistência do ressonador no receptor
+		for Rr = 30%linspace(25,40,4)%[2,5,10,20,25,30]%resistência do ressonador no receptor
 		%resistência de cada ressonador transmissor
-			for Rt = [0.01,0.025,0.05,0.075,0.1,0.25,0.5]
+			for Rt = 1.667%linspace(1.5,1.8,4)%[0.01,0.025,0.05,0.075,0.1,0.25,0.5]
 				err = [0,0,0,0];%erro (para cada distância)
+				%tempos de término
+				ft = [];
 				for i=1:4%para cada distância
 					%calculando a matriz de impedância
 					Z = -(1i)*w*u*data(d).M(i).obj + diag([Rt*ones(6,1);Rr]);
@@ -56,7 +59,8 @@ for d=1:length(data)%instância (design da bobina receptora)
 					ttl=20;
 					%tempo desde o início dessa simulação
 					t = 0.4/3600;
-					
+					%contagem de tempo de simulação
+					timeCount = 0;
 					fase=0;
 					while true
 						%obtem a resistência equivalente do circuito da bateria
@@ -119,6 +123,7 @@ for d=1:length(data)%instância (design da bobina receptora)
 							break;
 						end
 						t = t-step;
+						timeCount = timeCount+step;
 					end
 					%se o loop foi rompido pelo ttl<0, o teste foi muito desastroso para ser
 					%considerado
@@ -130,11 +135,11 @@ for d=1:length(data)%instância (design da bobina receptora)
 							*linspace(0,step*(length(Q)-1),length(Q));
 						err(i) = mean(err_parc.^2);
 					end
-					
+					ft = [ft, timeCount];
 					%plot(cFactor(i)*linspace(0,step*(length(Q)-1),length(Q)),100*Q/Qmax);
 					%plot(linspace(0,step*(length(RL)-1),length(RL)),RL);
-					%plot(linspace(0,step*(length(Q)-1),length(Q)),100*Q/Qmax);
-					%plot(linspace(0,1/coef_ref(i),2),100*coef_ref(i)*linspace(0,1/coef_ref(i),2),'g');
+					plot(linspace(0,step*(length(Q)-1),length(Q)),100*Q/Qmax);
+					plot(linspace(0,1/coef_ref(i),2),100*coef_ref(i)*linspace(0,1/coef_ref(i),2),'g');
 				end
 				%log
 				e.Rt = Rt;
@@ -147,6 +152,9 @@ for d=1:length(data)%instância (design da bobina receptora)
 					minErr = e.err;
 				end
 				disp(['MIN ERR: ', num2str(minErr)]);
+				if ~isempty(ft)
+					disp((ft-ft(1))*(1/coef_ref(end)-1/coef_ref(1))/(ft(end)-ft(1))+1/coef_ref(1));
+				end
 			end
 		end
 	end
