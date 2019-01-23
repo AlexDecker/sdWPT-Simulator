@@ -35,31 +35,33 @@ prob = ones(length(data),1);
 bests = inf*ones(length(data),1);
 
 %rr que gerou o melhor resultado
-rrbests = 0.05*ones(length(data),1);
+rrbests = 0.01*ones(length(data),1);
 
 %rt que gerou o melhor resultado
-rtbests = 30*ones(length(data),1);
+rtbests = 20*ones(length(data),1);
 
 while(true)
 	%escolhendo uma instância a ser utilizada
+	disp('Escolhendo novos parâmetros...');
 	d = sum(rand>=cumsum(prob/sum(prob)))+1;
 	%para o controle das instâncias a serem utilizadas
 	if((data(d).N_rx>1)&&(data(d).A_rx<0.075)&&(data(d).B_rx<0.075))
 		%escolhendo os parâmetros
 		Rr = 0;
-		while(Rr<=0)
-			Rr = rrbests(d)+(rand-0.5)*min(bests(d),1)/10;
+		while(Rr==0)
+			Rr = abs(rrbests(d)+randn*5*min(bests(d),1)^4);
 		end
 		Rt = 0;
-		while(Rt<=0)
-			Rt = rtbests(d)+(rand-0.5)*min(bests(d),1);
+		while(Rt==0)
+			Rt = abs(rtbests(d)+randn*0.5*min(bests(d),1)^4);
 		end
-		disp(['Iniciando nova instância: R1_rx=',num2str(data(d).R1_rx),...
+		disp(['Iniciando nova instância (',num2str(d),...
+			'): R1_rx=',num2str(data(d).R1_rx),...
 			' N_rx=',num2str(data(d).N_rx),...
 			' A_rx=',num2str(data(d).A_rx),...
 			' B_rx=',num2str(data(d).B_rx),...
-			' Rr_rx=',num2str(Rr),...
-			' Rr_tx=',num2str(Rt)]);
+			' Rrx=',num2str(Rr),...
+			' Rtx=',num2str(Rt)]);
 		
 		err = [0,0,0,0];%erro (para cada distância)
 		%tempos de término
@@ -77,8 +79,10 @@ while(true)
 			%carga atual (inicialmente morta)
 			q=0;
 			%tempo máximo de simulação em horas
-			ttl=10;
+			ttl=20;
 			%tempo desde o início dessa simulação
+			tempos = 0;
+			%tempo restante nessa fase
 			t = 0.4/3600;
 			fase=0;
 			while true
@@ -99,6 +103,7 @@ while(true)
 						fase = fase+1;
 						if fase==6
 							t = 30/3600;
+							step = 5/3600;
 						else
 							t = 0.4/3600;
 						end
@@ -118,6 +123,7 @@ while(true)
 					if t<=0
 						fase = 0;
 						t = 0.4/3600;
+						step = 0.2/3600;
 					end
 				end
 				IL = [IL;Il];
@@ -129,7 +135,6 @@ while(true)
 				end
 				%incrementando a carga
 				q = q+eff*(abs(Il)-Id)*step;
-				%q/Qmax%DISP
 				%limitando a carga a 100%
 				if q>=Qmax
 					Q = [Q;Qmax];
@@ -143,15 +148,16 @@ while(true)
 					break;
 				end
 				t = t-step;
+				tempos = tempos+step;
 			end
 			%se o loop foi rompido pelo ttl<0, o teste foi muito desastroso para ser
 			%considerado
 			if ttl<0
 				err(i) = inf;
+				break;
 			else
 				%calculando o erro em relação ao referencial adotado
-				err_parc = (Q.')/Qmax-coef_ref(i)...
-					*linspace(0,step*(length(Q)-1),length(Q));
+				err_parc = (Q.')/Qmax-coef_ref(i)*tempos;
 				err(i) = mean(err_parc.^2);
 			end
 			disp('ok');
@@ -167,10 +173,13 @@ while(true)
 		e.d = d;
 		E = [E,e];
 		%atualizando o vetor de 'probabilidades'
-		prob(d) = prob(d)*max(min((minErr/e.err),1),0)^0.1;
-		if(prob(d)<=0)
-			prob = prob+prob(d)+0.1;
+		if(minErr<e.err)
+			prob(d) = prob(d)*0.999;
+		elseif(e.err<minErr)
+			prob(d) = prob(d)*1.001;
 		end
+		disp(['Nova probabilidade não normalizada:',num2str(prob(d))]);
+		disp(['PREV ERR: ', num2str(bests(d))]);
 		%verificando se melhorou para essa instância
 		if e.err<bests(d)
 			rrbest(d) = Rr;
@@ -181,7 +190,13 @@ while(true)
 				minErr = e.err;
 			end
 		end
+		
+		disp(['ERR: ', num2str(e.err)]);
 		disp(['MIN ERR: ', num2str(minErr)]);
+		
+		sProb = sort(prob);
+		disp(sProb(1:5)');
+		disp(sProb(length(sProb)-4:end)');
 	end
 end
 
