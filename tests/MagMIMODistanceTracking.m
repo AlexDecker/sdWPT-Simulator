@@ -23,11 +23,11 @@ function M = MagMIMODistanceTracking(savefile, plotAnimation, evalMutualCoupling
 	R1_tx = R2_tx-4*N_tx*wire_radius_tx;%raio interno
 	
 	%Dimensões das bobinas receptoras
-	R1_rx = 0;%inner radius, tunned
-	N_rx = 9.7187;%number of turns, tunned
+	R1_rx = 0.027682;%inner radius, tunned
+	N_rx = 55.25;%number of turns, tunned
 	wire_radius_rx = 0.00079375;%wire radius (m) diam = 1/16''
 	R2_rx = R1_rx+2*N_rx*wire_radius_rx;%external radius
-	A_rx=1.5961;B_rx=0;%inner rectangle dimensions, tunned
+	A_rx=0;B_rx=0.035398;%inner rectangle dimensions, tunned
 
 	pts = 750;%resolução de cada bobina
 

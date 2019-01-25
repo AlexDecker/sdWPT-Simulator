@@ -8,7 +8,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     NTX = 6; %number of transmitting coils
     NRX = 1; %number of receiving devices
     W = 2*pi*1e6; %fixed operational frequency
-    R = [0.0750*ones(NTX,1);20*ones(NRX,1)];%internal resistance of the RLC rings (obtained via fitting)
+    R = [6*ones(NTX,1);27*ones(NRX,1)];%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
     MAX_ACT_POWER = inf;%W, considering active power
 	MAX_APP_POWER = inf;%W, considering apparent power
@@ -16,7 +16,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
 
     %BATTERY (iPhone 4s battery. We didn't find some values, so LIR18650 was used
     %as refernce for these)
-    fase1Limit = 0.7;          % (70%)
+    fase1Limit = 0.9;          % (90%, according to the disturb point at Rl curve)
     limitToBegin = 0.93;       % (93%)
     constantCurrent_min = 0.1; % (A)
     constantCurrent_max = 100;   % (A)
@@ -36,7 +36,8 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
 				constantVoltage,limitToBegin,false);
 	
     %DEVICE
-    power_m = 0.7; % (W, regular iPhone 4s idle power consumption)
+    %power_m = 0.7; % (W, regular iPhone 4s idle power consumption)
+    power_m = 0.72;
     power_sd = 0;
     minV = 2.0;     % (V)
     minVTO = 3.0;   % (V)

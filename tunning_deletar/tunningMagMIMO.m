@@ -13,7 +13,7 @@ sPower = 0.7;
 minVTO = 3;
 
 %referência para a inclinação média das curvas de carregamento em função de tempo
-coef_ref = [1/2.5;1/3.5;1/4.8;1/8.8];
+ref = [2.5;3.5;4.8;8.8];
 
 %carregando os dados de acoplamento do sistema
 %data(instância).M(índice relativo à distância).obj -> matriz de acoplamento
@@ -24,7 +24,6 @@ rlLookupTable = LookupTable('magMIMOLinearBattery_data.txt',false);
 %tensão em função da carga
 vbLookupTable = LookupTable('Li_Ion_Battery_LIR18650.txt',false);
 
-%hold on;
 E = [];%dados de log
 minErr = inf;%erro mínimo conhecido até o momento
 
@@ -70,18 +69,12 @@ while(true)
 			Z = -(1i)*w*u*data(d).M(i).obj + diag([Rt*ones(6,1);Rr]);
 			%vetor de qualidade de canal*Rl
 			m_Rl = (1i)*w*u*data(d).M(i).obj(1:6,7);
-			%lista com a progressão da carga
-			Q = [];
-			%lista com a progressão da resistência equivalente do circuito da bateria
-			RL = [];
-			%lista com a progressão da corrente no anel receptor
-			IL = [];
 			%carga atual (inicialmente morta)
 			q=0;
 			%tempo máximo de simulação em horas
-			ttl=20;
+			ttl=30;
 			%tempo desde o início dessa simulação
-			tempos = 0;
+			tempo = 0;
 			%tempo restante nessa fase
 			t = 0.4/3600;
 			fase=0;
@@ -89,7 +82,6 @@ while(true)
 				%obtem a resistência equivalente do circuito da bateria
 				%(dado o estado atual)
 				Rl = getYFromX(rlLookupTable,q/Qmax);
-				RL = [RL;Rl];
 				%obtém a tensão da bateria dado o estado atual
 				Vb = getYFromX(vbLookupTable,q/Qmax);
 				%vetor de qualidade de canal
@@ -126,7 +118,6 @@ while(true)
 						step = 0.2/3600;
 					end
 				end
-				IL = [IL;Il];
 				%corrente de descarga
 				if Vb>=minVTO
 					Id = sPower/Vb;
@@ -137,10 +128,7 @@ while(true)
 				q = q+eff*(abs(Il)-Id)*step;
 				%limitando a carga a 100%
 				if q>=Qmax
-					Q = [Q;Qmax];
 					break;
-				else
-					Q = [Q;q];
 				end
 				%controle de tempo
 				ttl = ttl-step;
@@ -148,7 +136,7 @@ while(true)
 					break;
 				end
 				t = t-step;
-				tempos = tempos+step;
+				tempo = tempo+step;
 			end
 			%se o loop foi rompido pelo ttl<0, o teste foi muito desastroso para ser
 			%considerado
@@ -157,14 +145,9 @@ while(true)
 				break;
 			else
 				%calculando o erro em relação ao referencial adotado
-				err_parc = (Q.')/Qmax-coef_ref(i)*tempos;
-				err(i) = mean(err_parc.^2);
+				err(i) = mean((ref(i)-tempo)^2);
 			end
-			disp('ok');
-			%plot(cFactor(i)*linspace(0,step*(length(Q)-1),length(Q)),100*Q/Qmax);
-			%plot(linspace(0,step*(length(RL)-1),length(RL)),RL);
-			%plot(linspace(0,step*(length(Q)-1),length(Q)),100*Q/Qmax);
-			%plot(linspace(0,1/coef_ref(i),2),100*coef_ref(i)*linspace(0,1/coef_ref(i),2),'g');
+			disp(['ok: ',num2str(tempo)]);
 		end
 		%log
 		e.Rt = Rt;
@@ -172,13 +155,6 @@ while(true)
 		e.err = sum(err);
 		e.d = d;
 		E = [E,e];
-		%atualizando o vetor de 'probabilidades'
-		if(minErr<e.err)
-			prob(d) = prob(d)*0.999;
-		elseif(e.err<minErr)
-			prob(d) = prob(d)*1.001;
-		end
-		disp(['Nova probabilidade não normalizada:',num2str(prob(d))]);
 		disp(['PREV ERR: ', num2str(bests(d))]);
 		%verificando se melhorou para essa instância
 		if e.err<bests(d)
@@ -190,6 +166,14 @@ while(true)
 				minErr = e.err;
 			end
 		end
+		
+		%atualizando o vetor de 'probabilidades'
+		if(minErr<bests(d))
+			prob(d) = prob(d)*0.999;
+		elseif(bests(d)<=minErr)
+			prob(d) = prob(d)*1.001;
+		end
+		disp(['Nova probabilidade não normalizada:',num2str(prob(d))]);
 		
 		disp(['ERR: ', num2str(e.err)]);
 		disp(['MIN ERR: ', num2str(minErr)]);
