@@ -1,16 +1,7 @@
 clear all;
 
-dir1 = 'Coil1Center/';
-dir2 = 'Coil1Corner/';
-dir3 = 'Coil1LilGap5A/';
-dir4 = 'Coil1Mid/';
-dir5 = 'Coil1LilGap/';
-dir6 = 'Coil1Diag/';
-
-dir = dir6;
-
 disp('Starting 10cm...');
-[~, ~, SOC, TSOC, RL, TRL] = simulate_MagMIMO([dir,'envMIMODist10.mat']);
+[~, ~, SOC, TSOC, RL, TRL] = simulate_MagMIMO('envMIMODist10.mat');
 disp('Finished...');
 
 figure;
@@ -33,18 +24,18 @@ hold on;
 plot(TSOC.vals/3600,100*SOC.vals);
 
 disp('Starting 20cm...');
-[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO([dir,'envMIMODist20.mat']);
+[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist20.mat');
 disp('Finished...');
 plot(TSOC.vals/3600,100*SOC.vals);
 
 
 disp('Starting 30cm...');
-[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO([dir,'envMIMODist30.mat']);
+[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist30.mat');
 disp('Finished...');
 
 plot(TSOC.vals/3600,100*SOC.vals);
 disp('Starting 40cm...');
-[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO([dir,'envMIMODist40.mat']);
+[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist40.mat');
 disp('Finished...');
 plot(TSOC.vals/3600,100*SOC.vals);
 
@@ -58,24 +49,3 @@ xlabel('Time (h)')
 ylabel('(%)')
 legend('10 cm','20 cm','30 cm','40 cm');
 title('SOC Progression');
-
-%{
-figure;
-hold on;
-[P_RX, T_RX, ~, ~, ~, ~] = simulate_MagMIMO('envMIMOOrient02.mat');
-Orientation = (90/max(T_RX.vals))*T_RX.vals;
-plot(Orientation,P_RX.vals);
-[P_RX, T_RX, ~, ~, ~, ~] = simulate_MagMIMO('envMIMOOrient10.mat');
-Orientation = (90/max(T_RX.vals))*T_RX.vals;
-plot(Orientation,P_RX.vals);
-[P_RX, T_RX, ~, ~, ~, ~] = simulate_MagMIMO('envMIMOOrient20.mat');
-Orientation = (90/max(T_RX.vals))*T_RX.vals;
-plot(Orientation,P_RX.vals);
-[P_RX, T_RX, ~, ~, ~, ~] = simulate_MagMIMO('envMIMOOrient40.mat');
-Orientation = (90/max(T_RX.vals))*T_RX.vals;
-plot(Orientation,P_RX.vals);
-xlabel('Orientation (deg)')
-ylabel('(W)')
-legend('2 cm','10 cm','20 cm','40 cm');
-title('Power Received vs Orientation of RX');
-%}

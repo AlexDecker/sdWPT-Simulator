@@ -74,12 +74,12 @@ function STEINTracking(savefile,plotAnimation,evalMutualCoupling,file,maxV,maxR)
 		rand('seed',0);
 	end
 	for i=2:nFrames
-		dtx = unifrnd(-maxV,maxV);
-		dty = unifrnd(-maxV,maxV);
-		dtz = unifrnd(-maxV,maxV)+dV;
+		dtx = 2*rand*maxV-maxV;
+		dty = 2*rand*maxV-maxV;
+		dtz = 2*rand*maxV-maxV+dV;
 		
-		drx = unifrnd(-maxR,maxR);
-		dry = unifrnd(-maxR,maxR);
+		drx = 2*rand*maxR-maxR;
+		dry = 2*rand*maxR-maxR;
 		
 		c1 = translateCoil(envList(i-1).Coils(ntx+1).obj,dtx,dty,dtz);
 		c2 = translateCoil(envList(i-1).Coils(ntx+2).obj,dtx,dty,dtz);

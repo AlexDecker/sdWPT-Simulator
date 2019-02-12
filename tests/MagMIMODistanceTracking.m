@@ -56,16 +56,6 @@ function M = MagMIMODistanceTracking(savefile, plotAnimation, evalMutualCoupling
 	group6.coils.obj = translateCoil(coilPrototypeTX,+R2_tx+stx/2,-2*R2_tx-stx,0);
 	group6.R = -1;group6.C = -1;                
 	
-	%{
-	if(d==0.2)
-		rx_X = -R2_tx-stx/2-(R2_tx+R1_rx)*(0.4-d)/0.3-3.25*A_rx;
-	elseif(d==0.1)
-		rx_X = -R2_tx-stx/2-(R2_tx+R1_rx)*(0.4-d)/0.3-0.3*A_rx;
-	else
-		rx_X = -R2_tx-stx/2-(R2_tx+R1_rx)*(0.4-d)/0.3;
-	end
-	%}
-	
 	rx_X = -17.7833*d^3+14.1700*d^2-2.9142*d-0.1096;
 	
 	group7.coils.obj = translateCoil(coilPrototypeRX,rx_X,0,d);
@@ -94,6 +84,11 @@ function M = MagMIMODistanceTracking(savefile, plotAnimation, evalMutualCoupling
 		end
 
 		if plotAnimation
+			figure;
+			plotCoil(coilPrototypeRX);
+			figure;
+		    plotCoil(coilPrototypeTX);
+		    figure;
 			hold on;
 
 			for i=1:7
