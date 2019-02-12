@@ -1,8 +1,18 @@
 clear all;
 
+dir1 = 'Coil1Center/';
+dir2 = 'Coil1Corner/';
+dir3 = 'Coil1LilGap5A/';
+dir4 = 'Coil1Mid/';
+dir5 = 'Coil1LilGap/';
+dir6 = 'Coil1Diag/';
+
+dir = dir6;
+
 disp('Starting 10cm...');
-[~, ~, SOC, TSOC, RL, TRL] = simulate_MagMIMO('envMIMODist10.mat');
+[~, ~, SOC, TSOC, RL, TRL] = simulate_MagMIMO([dir,'envMIMODist10.mat']);
 disp('Finished...');
+
 figure;
 plot(TRL.vals/3600,RL.vals);
 xlabel('Time (h)')
@@ -18,24 +28,30 @@ title('Load Resistance vs SOC');
 
 figure;
 hold on;
-plot([0,2.5],[0,100]);
-plot([0,3.5],[0,100]);
-plot([0,4.7],[0,100]);
-plot([0,8.8],[0,100]);
+
+
 plot(TSOC.vals/3600,100*SOC.vals);
 
 disp('Starting 20cm...');
-[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist20.mat');
+[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO([dir,'envMIMODist20.mat']);
 disp('Finished...');
 plot(TSOC.vals/3600,100*SOC.vals);
+
+
 disp('Starting 30cm...');
-[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist30.mat');
+[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO([dir,'envMIMODist30.mat']);
 disp('Finished...');
+
 plot(TSOC.vals/3600,100*SOC.vals);
 disp('Starting 40cm...');
-[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist40.mat');
+[~, ~, SOC, TSOC,~,~] = simulate_MagMIMO([dir,'envMIMODist40.mat']);
 disp('Finished...');
 plot(TSOC.vals/3600,100*SOC.vals);
+
+plot([0,2.5],[0,100],'--');
+plot([0,3.5],[0,100],'--');
+plot([0,4.7],[0,100],'--');
+plot([0,8.8],[0,100],'--');
 
 
 xlabel('Time (h)')

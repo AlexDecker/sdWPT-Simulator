@@ -8,7 +8,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     NTX = 6; %number of transmitting coils
     NRX = 1; %number of receiving devices
     W = 2*pi*1e6; %fixed operational frequency
-    R = [6*ones(NTX,1);27*ones(NRX,1)];%internal resistance of the RLC rings (obtained via fitting)
+    R = [0.2*ones(NTX,1);7.5*ones(NRX,1)];%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
     MAX_ACT_POWER = inf;%W, considering active power
 	MAX_APP_POWER = inf;%W, considering apparent power
@@ -25,7 +25,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     Rd = -1;       % (ohm. -1=calculate automatically)
     R_MAX = 1e7;   % (ohm. Used in oder to make matrix inversion easier)
     Q0 = 0;       % initial charge (As)
-    Qmax = 5148;  % (As), equivalent to 1430 mAH (iPhone 4s battery)
+    Qmax = 5148;  % (As), equivalent to 1430 mAh (iPhone 4s battery)
 
     %bat = linearBattery('Li_Ion_Battery_LIR18650.txt',Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,...
     %              constantCurrent_min,constantCurrent_max,constantVoltage,...
@@ -37,12 +37,12 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
 	
     %DEVICE
     %power_m = 0.7; % (W, regular iPhone 4s idle power consumption)
-    power_m = 0.72;
+    power_m = 0;
     power_sd = 0;
     minV = 2.0;     % (V)
     minVTO = 3.0;   % (V)
     err = 0.05;     % (5%)
-    efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
+    efficiency = 0.95; % (95% efficiency of AC/DC conversion)
 
     STEP=0.2;     % (s)
 

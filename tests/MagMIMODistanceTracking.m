@@ -23,19 +23,20 @@ function M = MagMIMODistanceTracking(savefile, plotAnimation, evalMutualCoupling
 	R1_tx = R2_tx-4*N_tx*wire_radius_tx;%raio interno
 	
 	%Dimensões das bobinas receptoras
-	R1_rx = 0.027682;%inner radius, tunned
-	N_rx = 55.25;%number of turns, tunned
+	R1_rx = 0.001368;%inner radius, tunned
+	N_rx = 21.9649;%number of turns, tunned
 	wire_radius_rx = 0.00079375;%wire radius (m) diam = 1/16''
 	R2_rx = R1_rx+2*N_rx*wire_radius_rx;%external radius
-	A_rx=0;B_rx=0.035398;%inner rectangle dimensions, tunned
+	A_rx=0.011272;B_rx=0.00068937;%inner rectangle dimensions, tunned
 
-	pts = 750;%resolução de cada bobina
+	pts_tx = 750;%resolução de cada bobina
+	pts_rx = 750;%resolução de cada bobina
 
 	stx = 0.04;%espaçamento entre os transmissores (aproximadamente, de acordo com
 	%a ilustração do artigo. Para gerar uma área de 0.3822m2 deve ser 0.0
 	
-	coilPrototypeRX = QiRXCoil(R1_rx,R2_rx,N_rx,A_rx,B_rx,wire_radius_rx,pts);
-	coilPrototypeTX = SpiralPlanarCoil(R2_tx,R1_tx,N_tx,wire_radius_tx,pts);
+	coilPrototypeRX = QiRXCoil(R1_rx,R2_rx,N_rx,A_rx,B_rx,wire_radius_rx,pts_rx);
+	coilPrototypeTX = SpiralPlanarCoil(R2_tx,R1_tx,N_tx,wire_radius_tx,pts_tx);
 
 	group1.coils.obj = translateCoil(coilPrototypeTX,-R2_tx-stx/2,+2*R2_tx+stx,0);
 	group1.R = -1;group1.C = -1;
@@ -54,8 +55,20 @@ function M = MagMIMODistanceTracking(savefile, plotAnimation, evalMutualCoupling
 
 	group6.coils.obj = translateCoil(coilPrototypeTX,+R2_tx+stx/2,-2*R2_tx-stx,0);
 	group6.R = -1;group6.C = -1;                
-
-	group7.coils.obj = translateCoil(coilPrototypeRX,0,0,d);
+	
+	%{
+	if(d==0.2)
+		rx_X = -R2_tx-stx/2-(R2_tx+R1_rx)*(0.4-d)/0.3-3.25*A_rx;
+	elseif(d==0.1)
+		rx_X = -R2_tx-stx/2-(R2_tx+R1_rx)*(0.4-d)/0.3-0.3*A_rx;
+	else
+		rx_X = -R2_tx-stx/2-(R2_tx+R1_rx)*(0.4-d)/0.3;
+	end
+	%}
+	
+	rx_X = -17.7833*d^3+14.1700*d^2-2.9142*d-0.1096;
+	
+	group7.coils.obj = translateCoil(coilPrototypeRX,rx_X,0,d);
 	group7.R = -1;group7.C = -1;
 
 	groupList = [group1;group2;group3;group4;group5;group6;group7];
@@ -81,13 +94,16 @@ function M = MagMIMODistanceTracking(savefile, plotAnimation, evalMutualCoupling
 		end
 
 		if plotAnimation
-		    plotCoil(coilPrototypeTX);
-		    figure;
-		    plotCoil(coilPrototypeRX);
-		    figure;
-		    animation(envList,0.05,0.2);
+			hold on;
+
+			for i=1:7
+				plotCoil(groupList(i).coils.obj);
+			end
+			z = linspace(0.1,0.4,100);
+			rx_X = -17.7833*z.^3+14.1700*z.^2-2.9142*z-0.1096;
+			plot3(rx_X,0*z,z,'r-');
+			plot3([rx_X(1),rx_X(end)],[0,0],[0.1,0.4],'x');
 		end
-		
 		disp('Calculations finished');
 	else
 		error('Something is wrong with the environments.')
