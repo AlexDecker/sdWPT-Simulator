@@ -11,7 +11,7 @@ params.R = [0.025;30];
 params.miEnv = 1.256627e-06;
 params.maxCurrent = 0.06;
 params.env = 'STEIN_ENV.mat';
-params.endProb = 0.002;
+params.endProb = 0.00175;
 
 %valor de referência
 ref_eff = [0.74, 0.74, 0.715, 0.63, 0.27, 0.14, 0.06, 0];
@@ -44,3 +44,7 @@ else
 	errorbar(linspace(d_min,d_max,m),mean(eff),std(eff),'b');
 end
 ylim([0 inf]);
+
+%calculating the normalized mean square error
+mse = mean(abs(mean(eff)-[ref_eff,zeros(1,length(mean(eff))-length(ref_eff))])/mean(ref_eff));
+disp(['normalized mean square error: ',num2str(mse*100),'%']);
