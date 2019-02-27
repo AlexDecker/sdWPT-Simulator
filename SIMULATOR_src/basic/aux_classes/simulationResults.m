@@ -135,12 +135,13 @@ classdef simulationResults
                 plot(obj.VB(2,:)/60,obj.VB(1,:));
                 ylabel('(V)');
                 yyaxis right
-                plot(obj.CC(2,:)/60,obj.CC(1,:)*0.52/1.3);
-                plot(obj.IE(2,:)/60,obj.IE(1,:));
-                plot(obj.DC(2,:)/60,obj.DC(1,:));
+                plot(obj.CC(2,:)/60,obj.CC(1,:));
+                %plot(obj.IE(2,:)/60,obj.IE(1,:));
+                %plot(obj.DC(2,:)/60,obj.DC(1,:));
                 plot(obj.SOC(2,:)/60,obj.SOC(1,:));
-                legend('Battery Voltage','Charge Current','Expected Current',...
-                'Discharge Current','SOC');
+                %legend('Battery Voltage','Charge Current','Expected Current',...
+                %'Discharge Current','SOC');
+                legend('Battery Voltage','Charge Current','SOC');
                 xlabel('Time (min)')
                 ylabel('(A)/(0-1)')
                 title(['Battery Chart for device ', num2str(obj.device_index)]);
@@ -151,19 +152,19 @@ classdef simulationResults
             if ~obj.running && obj.device_index~=0
                 figure;
                 hold on;
-                plot(obj.CC(2,:)/3600,obj.CC(1,:),'r');
-                plot(obj.IE(2,:)/3600,obj.IE(1,:),'b');
-                plot(obj.DC(2,:)/3600,obj.DC(1,:),'g');
-                plot(obj.VB(2,:)/3600,obj.VB(1,:),'m');
-                xlabel('Time (h)')
+                plot(obj.CC(2,:)/60,obj.CC(1,:),'r');
+                plot(obj.IE(2,:)/60,obj.IE(1,:),'b');
+                plot(obj.DC(2,:)/60,obj.DC(1,:),'g');
+                plot(obj.VB(2,:)/60,obj.VB(1,:),'m');
+                xlabel('Time (min)')
                 ylabel('(A) / (V)')
                 legend('Charge Current','Expected Current',...
                 'Discharge Current','Battery Voltage');
                 title(['Battery Chart for device ', num2str(obj.device_index)]);
 
                 figure;
-                plot(obj.SOC(2,:)/3600,obj.SOC(1,:)*100);
-                xlabel('Time (h)')
+                plot(obj.SOC(2,:)/60,obj.SOC(1,:)*100);
+                xlabel('Time (min)')
                 ylabel('(%)')
                 title(['SOC Chart for device ', num2str(obj.device_index)]);
             end

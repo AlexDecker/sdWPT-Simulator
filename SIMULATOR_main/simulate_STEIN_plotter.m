@@ -46,5 +46,6 @@ end
 ylim([0 inf]);
 
 %calculating the normalized mean square error
-mse = mean(abs(mean(eff)-[ref_eff,zeros(1,length(mean(eff))-length(ref_eff))])/mean(ref_eff));
+mse = sqrt(sum((mean(eff)-[ref_eff,zeros(1,length(mean(eff))-length(ref_eff))]).^2))/(length(mean(eff))*mean(ref_eff));
+
 disp(['normalized mean square error: ',num2str(mse*100),'%']);
