@@ -3,7 +3,7 @@ classdef powerRXApplication_dummieCoils < powerRXApplication
     end
     methods
         function obj = powerRXApplication_dummieCoils(id)
-            obj@powerRXApplication(id);%construindo a estrutura referente à superclasse
+            obj@powerRXApplication(id);%building superclass structure
             obj.APPLICATION_LOG.DATA = 'Exemplo de log';
         end
 
@@ -14,16 +14,16 @@ classdef powerRXApplication_dummieCoils < powerRXApplication
         end
 
         function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
-            src = data(1);%remetente
+            src = data(1);%sender
             disp(['I have ID = ',num2str(obj.ID),' and I detected the device with ID = ',num2str(src)]);
         end
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
             payload = obj.ID;
             payloadLen = 32;%bits
-            %canal 1 de RF, 1000bps, 5W
+            %channel 1 of RF, 1000bps, 5W
             obj = setSendOptions(obj,1,1000,5);
-            netManager = broadcast(obj,netManager,payload,payloadLen,GlobalTime);%faz um broadcast com seu id (0, 32 bits)
+            netManager = broadcast(obj,netManager,payload,payloadLen,GlobalTime);%broadcasts the id (0, 32 bits)
         end
 
     end

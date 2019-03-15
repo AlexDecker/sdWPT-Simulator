@@ -4,7 +4,7 @@
 %charges the receiver in fact.
 
 classdef powerTXApplication_MagMIMO < powerTXApplication
-    properties
+	properties
 		interval1 %time interval used to measure the channel for one coil (stage 1)
 		interval2 %time that a beamform value is assumed to keep valid (stage 2)
 		
@@ -23,10 +23,10 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 		
 		P_active %maximum active power to be spent
 		P_apparent %maximum apparent power (limits the maximum current)
-    end
-    methods
-        function obj = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2, P_active, P_apparent)
-            obj@powerTXApplication();%construindo a estrutura referente à superclasse
+	end
+	methods
+		function obj = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2, P_active, P_apparent)
+			obj@powerTXApplication();%building superclass structure
 			obj.interval1 = interval1;
 			obj.interval2 = interval2;
 			obj.rV = referenceVoltage;
@@ -38,11 +38,11 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 			obj.m = [];
 			obj.ZT = [];
 			obj.Rt = 0;		
-        end
+		end
 
-        function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
+		function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
 			%SWIPT configurations, 300bps (fig 8 of the paper), 5W (dummie)
-            obj = setSendOptions(obj,0,2048,5);
+			obj = setSendOptions(obj,0,2048,5);
 			%getting the ZT sub-matrix (for a real life implementation, these values have to be
 			%pre-parametrized)
 			Z = getCompleteLastZMatrix(WPTManager);
@@ -50,24 +50,24 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 			obj.Rt = mean(diag(obj.ZT));
 			%setting a dummie first magnetic channel vector
 			obj.m = zeros(WPTManager.nt,1);
-        	%appy the reference voltage for the next measurements
+			%appy the reference voltage for the next measurements
 			WPTManager = setSourceVoltages(obj,WPTManager,[obj.rV;zeros(WPTManager.nt-1,1)],0);
 			%keep the voltage to measure the results next round
 			netManager = setTimer(obj,netManager,0,obj.interval1);
 			obj.target = 2;
-        end
+		end
 
-        function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
+		function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
 			%the resistance of the load is sent by the power receiver periodically
 			obj.RL = data;
-        end
+		end
 
-        function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
-        	if obj.target==7
-        		disp('Charging...');
-        	else
-        		disp(['Target: ',num2str(obj.target)]);
-        	end
+		function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
+			if obj.target==7
+				disp('Charging...');
+			else
+				disp(['Target: ',num2str(obj.target)]);
+			end
 			if obj.RL>0
 				%only for test purposes
 				if obj.target==1
@@ -112,7 +112,7 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 				netManager = setTimer(obj,netManager,GlobalTime,obj.interval1);
 				warningMsg('Inconsistant data about the load resistance. Nothing to be done.');
 			end
-        end
+		end
 		
 		%utils---------------------------------------
 		function I = calculateBeamformingCurrents(obj)

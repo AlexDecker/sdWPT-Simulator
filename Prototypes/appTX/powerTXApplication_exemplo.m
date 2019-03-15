@@ -1,8 +1,8 @@
-%Aplicação exemplo do TX
+%Exemple of transmitting application
 
-%Executa paralelamente duas funções:
-%1-Faz a descoberta dos dispositivos ao redor
-%2-Adapta gradativamente a tensão até 90% do máximo suportado pela fonte
+%Performs two functions in parallel
+%1-Discovers the devices around
+%2-Adaps gradatively the voltage until reach 90% of the maximum supported by the source
 classdef powerTXApplication_exemplo < powerTXApplication
     properties
         ifactor
@@ -14,7 +14,7 @@ classdef powerTXApplication_exemplo < powerTXApplication
     end
     methods
         function obj = powerTXApplication_exemplo(timeSkip,ifactor,iVel,vtBaseVector)
-            obj@powerTXApplication();%construindo a estrutura referente à superclasse
+            obj@powerTXApplication();%building superclass structure
             obj.APPLICATION_LOG.DATA = zeros(2,0);
             obj.timeSkip = timeSkip;
             obj.ifactor = ifactor;
@@ -25,14 +25,14 @@ classdef powerTXApplication_exemplo < powerTXApplication
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
-            %canal 1 de RF, 1000bps, 5W
+            %channel 1 of RF, 1000bps, 5W
             obj = setSendOptions(obj,1,1000,5);
-            netManager = broadcast(obj,netManager,0,32,0);%faz um broadcast com seu id (0, 32 bits)
+            netManager = broadcast(obj,netManager,0,32,0);%(myId=0, 32 bits)
             netManager = setTimer(obj,netManager,0,obj.timeSkip);
         end
 
         function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)          
-            src = data(1);%pega o remetente
+            src = data(1);%catch the sender id
             disp(['DEVICE ',num2str(src),' DETECTED!']);
         end
 
@@ -59,7 +59,7 @@ classdef powerTXApplication_exemplo < powerTXApplication
 
         function [WPTManager,P] = getPower(obj,WPTManager,GlobalTime)
             [I,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
-            P = abs(obj.V*I'*obj.vtBaseVector);
+            P = abs(obj.V*I'*obj.vtBaseVector);%calculates the apparent current
         end
     end
 end

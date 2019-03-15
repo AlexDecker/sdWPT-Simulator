@@ -1,12 +1,12 @@
-%Aplicação que cria eventos apenas para a simulação não acabar antes do tempo limite
+%This application creates time events only for the simulation terminate at time-limit
 
 classdef powerTXApplication_dummie < powerTXApplication
     properties
-    	V %tensão
+    	V %voltage vector (only sources)
     end
     methods
         function obj = powerTXApplication_dummie(V)
-            obj@powerTXApplication();%construindo a estrutura referente à superclasse
+            obj@powerTXApplication();%building superclass structure
             obj.V = V;
         end
 

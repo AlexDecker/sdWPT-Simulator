@@ -3,7 +3,7 @@ classdef powerTXApplication_dummieCoils < powerTXApplication
     end
     methods
         function obj = powerTXApplication_dummieCoils()
-            obj@powerTXApplication();%construindo a estrutura referente à superclasse
+            obj@powerTXApplication();%building superclass structure
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)

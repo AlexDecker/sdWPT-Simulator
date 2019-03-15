@@ -1,32 +1,25 @@
 %(THIS IS AN EXAMPLE FOR THE ONES WHO WANT TO USE THIS SIMULATOR AS A SIMPLE NETWORK SIMULATOR.)
 clear all;
 
-savefile = true;%salvar depois da execução?
-plotAnimation = true;%mostrar a animação?
+savefile = true;%save after executing?
+plotAnimation = true;%show the animation of the coils?
 
-file = 'DUMMIE_COIL_ENV.mat';%arquivo para onde irão os ambientes
+file = 'DUMMIE_COIL_ENV.mat';%output file
 
-%Parâmetros DUMMIE------------------------------------------------------------------------------------------------
-w = 1e+5;%frequência angular padrão (dummie)
-mi = pi*4e-7; %(dummie)
-
-%Criação de bobinas dummie
-
-R = 0.01;%raio
-N = 4;%número de espiras
-pitch= 0.001;%espaçamento entre as espiras
-wire_radius = 0.0004;%espessura do fio (raio)
-pts = 1000; %resolução do caminho
-
-
+%DUMMIE-------------------------------------------------------------------------------------------------------------
+w = 1e+5;
+mi = pi*4e-7;
+R = 0.01;
+N = 4;
+pitch= 0.001;
+wire_radius = 0.0004;
+pts = 1000; 
 %-------------------------------------------------------------------------------------------------------------------
 
-
-%AQUI É ONDE VOCÊ VAI MEXER DE FATO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-%coordenadas da posição em metros
 group_list = [];
 
-%definindo um nó (esse é o powerTX, não altere, pois não será usado)
+%defining a network node using the POWER TRANSMITTER (transmitter because it is the first one. This node is defined
+%only by using POWERTXAPPICATION)
 x = 0;
 y = 0;
 z = 0;
@@ -35,16 +28,17 @@ group.coils.obj = translateCoil(SolenoidCoil(R,N,pitch,...
 group.R = -1;group.C = -1;
 group_list = [group_list;group];
 
-%definindo um nó (altere a posição (em metros) à vontade)
+%nodes that can support a POWERRXAPPLICATION:
+%defining a node using a POWER RECEIVER
 x = 0;
-y = 0.25;
+y = 0.25;%positioning in 3D space (meters)
 z = 0;
 group.coils.obj = translateCoil(SolenoidCoil(R,N,pitch,...
     wire_radius,pts,mi),x,y,z);
 group.R = -1;group.C = -1;
 group_list = [group_list;group];
 
-%definindo outro nó
+%defining other node using a POWER RECEIVER
 x = 0.15;
 y = 0.25;
 z = 1;
@@ -53,7 +47,7 @@ group.coils.obj = translateCoil(SolenoidCoil(R,N,pitch,...
 group.R = -1;group.C = -1;
 group_list = [group_list;group];
 
-%definindo mais um nó (se quiser mais, copie e cole esse trecho e mude a posição)
+%defining one more node using a POWER RECEIVER
 x = -0.15;
 y = 0.5;
 z = 1;
@@ -62,9 +56,7 @@ group.coils.obj = translateCoil(SolenoidCoil(R,N,pitch,...
 group.R = -1;group.C = -1;
 group_list = [group_list;group];
 
-%FIM DA SUA ÁREA DE ATUAÇÃO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-%w = 1e+5 é apenas um valor default. A frequência é de fato definida a posteriori   
+%------------------------------------------------------------------------------------------------------------------
 envPrototype = Environment(group_list,w,mi);
 
 envList = [envPrototype,envPrototype];

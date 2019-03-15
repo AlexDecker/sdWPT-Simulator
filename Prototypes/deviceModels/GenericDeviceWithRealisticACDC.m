@@ -5,11 +5,11 @@ classdef GenericDeviceWithRealisticACDC < Device
 
     methods
         function obj = GenericDeviceWithRealisticACDC(working,maxCurrent,currentConverter)
-			obj@Device(working,maxCurrent,1);
-			obj.currentConverter = currentConverter;
+		obj@Device(working,maxCurrent,1);
+		obj.currentConverter = currentConverter;
         end
 
-        %apenas o protótipo
+        %only the prototype
         function r=check(obj)
             r=(length(obj.working)==1)&&(length(obj.maxCurrent)==1)...
             	&&(length(obj.efficiency)==1)&&(obj.maxCurrent>0)...
@@ -17,20 +17,20 @@ classdef GenericDeviceWithRealisticACDC < Device
             	&&check(obj.currentConverter);
         end
 
-        %retorna a corrente esperada de acordo com o procedimento de
-        %carregamento da bateria (protótipo)
+        %returns the expected current according to the charging procedure of the battery
+        %(only the function prototype here)
         function [obj,Ie] = expectedCurrent(obj)
             Ie = Inf;
         end
 
-        %-avgChargeCurrent_ac (A, phasor): média da corrente de entrada no intervalo de tempo
-        %-timeVariation (s): intervalo de tempo
+        %-avgChargeCurrent_ac (A, phasor): averege input current at this time interval
+        %-timeVariation (s): time interval
         function [obj,DEVICE_DATA] = updateDeviceState(obj, avgChargeCurrent_ac, timeVariation, DEVICE_DATA, time)
             
-            %converte a corrente para DC
+            %AC to DC
             avgChargeCurrent_dc = getDCFromAC(obj.currentConverter,avgChargeCurrent_ac);
             
-            %limita a corrente para não danificar a bateria
+            %limits the current in order to not damage the bettery and the rest of the circuit
             if(avgChargeCurrent_dc>obj.maxCurrent)
                 avgChargeCurrent_dc = obj.maxCurrent;
                 warningMsg('Very high current');
