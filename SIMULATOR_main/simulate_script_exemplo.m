@@ -1,4 +1,3 @@
-%version: 2010a ou 2017a
 %This script is a simple demonstration of the simulator as a whole. It implements a
 %simple adaptative beamforming transmitter that recognizes the existance of eventual
 %receivers around. All response messages are expected to collide. However, only the
@@ -7,14 +6,14 @@
 function simulate_script_exemplo(version)
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
-    %ASPECTOS GERAIS
-    NTX = 6; %número de dispositivos transmissores
+    %GENERAL ASPECTS
+    NTX = 6; %number of transmitting coils
     W = 1e6;
-    R = 0.5*ones(9,1);%resistência dos RLCs
-    C = -1*ones(9,1);%capacitância dos RLCs (usar a do arquivo .mat)
+    R = 0.5*ones(9,1);%RLCs resistance
+    C = -1*ones(9,1);%RLC's capacitance (-1=use data from .mat)
     MAX_ACT_POWER = 200;%W
 	MAX_APP_POWER = 200;%W
-    TOTAL_TIME = 6000;%segundos de simulação (em tempo virtual)
+    TOTAL_TIME = 6000;%seconds of simulation (virtual time)
 
     %BATERIA
     fase1Limit = 0.7;          % (70%)
@@ -22,34 +21,34 @@ function simulate_script_exemplo(version)
     constantCurrent_min = 0.5; % (A)
     constantCurrent_max = 3.4;   % (A)
     constantVoltage = 4.2;     % (V)
-    Rc = -1;      % (ohm. -1=calcular automaticamente)
-    Rd = -1;       % (ohm. -1=calcular automaticamente)
+    Rc = -1;      % (ohm. -1=automatic calculation)
+    Rd = -1;       % (ohm. -1=automatic calculation)
     R_MAX = 1e7;   % (ohm)
     Q0 = 0;       % (As)
-    Qmax = 4320;  % (As), que equivale a 1200 mAh
+    Qmax = 4320;  % (As), ~1200 mAh
 
     bat = linearBattery('test_data.txt',Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,...
                   constantCurrent_min,constantCurrent_max,constantVoltage,...
                   limitToBegin,false);
 
-    %DISPOSITIVO
+    %DEVICE
     power_m = 0.5; % (W)
-    power_sd = 0.001;
+    power_sd = 0;
     minV = 2.3;     % (V)
     minVTO = 3.3;   % (V)
     err = 0.05;     % (5%)
-    efficiency = 0.95; % (95% de eficiência de conversão AC/DC)
+    efficiency = 0.95; % (95% efficiency for AC/DC conversion)
 
     STEP=0.2;     % (s)
 
     dev = genericDeviceWithBattery(bat,power_m,power_sd,minV,minVTO,err,efficiency);
     DEVICE_LIST = [struct('obj',dev), struct('obj',dev), struct('obj',dev)];
 
-    %APLICAÇÕES
+    %APPLICATIONS
     TIME_SKIP = 10;% (s)
     IFACTOR = 1.1;
     IVEL = 1;
-    %duas opções de vetor base pra aplicação
+    %two options of voltage base vector. Choose as you wish
     VT_BASE_VECTOR_1 = ones(NTX,1);
     VT_BASE_VECTOR_2 = [1;zeros(NTX-2,1);1];
 
@@ -60,7 +59,7 @@ function simulate_script_exemplo(version)
         powerRX = [powerRX struct('obj',powerRXApplication_exemplo(i))];
     end
 
-    %SIMULADOR
+    %SIMULATOR
 
     IFACTOR=1.5;
     DFACTOR=2;
@@ -77,16 +76,16 @@ function simulate_script_exemplo(version)
 
     [~,LOG_dev_list,LOG_app_list] = Simulate('testENV.mat',NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
-		powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
+	powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
-    %VISUALIZAÇÃO DOS RESULTADOS
+    %VISUALIZATION
         
     for i=1:length(LOG_dev_list)
         LOG = endDataAquisition(LOG_dev_list(i));
-        if(strcmp(version, '2010a'))
-            plotBatteryChart2010(LOG);%use isso se estiver no R2010
+        if(version <= 2010)
+            plotBatteryChart2010(LOG);
         else
-            plotBatteryChart(LOG); %use isso se estiver no R2017
+            plotBatteryChart(LOG);
         end
     end
 

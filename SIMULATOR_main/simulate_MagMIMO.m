@@ -11,7 +11,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     R = [0.2*ones(NTX,1);7.5*ones(NRX,1)];%internal resistance of the RLC rings (obtained via fitting)
     C = -1*ones(NTX+NRX,1);%resonance (because the values of .mat are also -1)
     MAX_ACT_POWER = inf;%W, considering active power
-	MAX_APP_POWER = inf;%W, considering apparent power
+        MAX_APP_POWER = inf;%W, considering apparent power
     TOTAL_TIME = 100000;%max seconds of simulation (virtual time)
 
     %BATTERY (iPhone 4s battery. We didn't find some values, so LIR18650 was used
@@ -30,11 +30,11 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     %bat = linearBattery('Li_Ion_Battery_LIR18650.txt',Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,...
     %              constantCurrent_min,constantCurrent_max,constantVoltage,...
     %              limitToBegin,false);
-	
-	bat = magMIMOLinearBattery('magMIMOLinearBattery_data.txt','Li_Ion_Battery_LIR18650.txt',...
-				Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,constantCurrent_min,constantCurrent_max,...
-				constantVoltage,limitToBegin,false);
-	
+        
+    bat = magMIMOLinearBattery('magMIMOLinearBattery_data.txt','Li_Ion_Battery_LIR18650.txt',...
+                                Rc,Rd,Q0,Qmax,R_MAX,fase1Limit,constantCurrent_min,constantCurrent_max,...
+                                constantVoltage,limitToBegin,false);
+        
     %DEVICE
     %power_m = 0.7; % (W, regular iPhone 4s idle power consumption)
     power_m = 0;
@@ -51,17 +51,17 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
 
     %APPLICATIONS
     
-	MAX_POWER = 20;
-	
-	%be careful: a saturation condition caused by this can decrease the efficiency of the algorithm
-	referenceVoltage = 1;
-	
-	interval1 = 0.4;
-	interval2 = 30;%specified at paper
-	interval3 = 300;%every 5 min (specified at paper)
+    MAX_POWER = 20;
+        
+    %be careful: a saturation condition caused by this can decrease the efficiency of the algorithm
+    referenceVoltage = 1;
+        
+    interval1 = 0.4;
+    interval2 = 30;%specified at paper
+    interval3 = 300;%every 5 min (specified at paper)
     powerTX = powerTXApplication_MagMIMO(referenceVoltage, interval1, interval2, ...
-		MAX_POWER, MAX_APP_POWER);
-	
+                MAX_POWER, MAX_APP_POWER);
+        
     powerRX = [];
 
     for i=1:NRX
@@ -85,7 +85,7 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
 
     [~,LOG_dev_list,LOG_app_list] = Simulate(envFile,NTX,R,C,W,TOTAL_TIME,MAX_ERR,R_MAX,...
         IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,MAX_APP_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,...
-		powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
+        powerTX,powerRX,B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF);
 
     %SIMULATION RESULTS
     P_RX = [];%active power received
@@ -99,16 +99,16 @@ function [P_RX, T_RX, SOC, TSOC, RL, TRL] = simulate_MagMIMO(envFile)
     for i=1:length(LOG_dev_list)
         LOG = endDataAquisition(LOG_dev_list(i));
         
-		%plotRLChart(LOG);
-		
-		P_RX = [P_RX, struct('vals', R(NTX+i)*LOG.CC(1,:).^2)];
-		T_RX = [T_RX, struct('vals', LOG.CC(2,:))];
-		
-		SOC  = [SOC, struct('vals', LOG.SOC(1,:))];
-		TSOC = [TSOC, struct('vals', LOG.SOC(2,:))];
-		
-		RL  = [RL, struct('vals', LOG.RL(1,:))];
-		TRL = [TRL, struct('vals', LOG.RL(2,:))];
+        %plotRLChart(LOG);
+                
+        P_RX = [P_RX, struct('vals', R(NTX+i)*LOG.CC(1,:).^2)];
+        T_RX = [T_RX, struct('vals', LOG.CC(2,:))];
+                
+        SOC  = [SOC, struct('vals', LOG.SOC(1,:))];
+        TSOC = [TSOC, struct('vals', LOG.SOC(2,:))];
+                
+        RL  = [RL, struct('vals', LOG.RL(1,:))];
+        TRL = [TRL, struct('vals', LOG.RL(2,:))];
     end
 end
 
