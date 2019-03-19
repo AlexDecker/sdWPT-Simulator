@@ -1,5 +1,4 @@
-%Mostra a animação da movimentação das bobinas em uma ambiente ao longo do
-%tempo
+%Animates the movement of the coils along the time
 function animation(eList,dtime,ds)
     h = plot3(NaN,NaN,NaN,'-'); %initiallize plot. Get a handle to graphic object
     X = [];Y = [];Z = [];
@@ -25,13 +24,13 @@ function animation(eList,dtime,ds)
                 py = [py eList(i).Coils(j).obj.y];
                 pz = [pz eList(i).Coils(j).obj.z];
             end
-			try
-				set(h, 'XData', px, 'YData', py, 'ZData', pz);
-				drawnow %you can probably remove this line, as pause already calls drawnow
-			catch
-				quit = true;
-				break;
-			end
+            try
+                set(h, 'XData', px, 'YData', py, 'ZData', pz);
+                drawnow %you can probably remove this line, as pause already calls drawnow
+            catch
+                quit = true;
+                break;
+            end
         end
     end
 end
