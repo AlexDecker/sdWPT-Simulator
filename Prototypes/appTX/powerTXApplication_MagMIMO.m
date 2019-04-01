@@ -63,7 +63,7 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 		end
 
 		function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
-			if obj.target==WPTManager.nt+1
+			if obj.target==WPTManager.nt_groups+1
 				disp('Charging...');
 			else
 				disp(['Target: ',num2str(obj.target)]);
@@ -82,7 +82,7 @@ classdef powerTXApplication_MagMIMO < powerTXApplication
 					obj.m(obj.target-1) = (1i)*sqrt((obj.rV/Isi-obj.Rt)/obj.RL);
 				end
 				%set voltage for the measurement of target
-				if obj.target==WPTManager.nt+1
+				if obj.target==WPTManager.nt_groups+1
 					%no more target, next is simply stage 2
 					%calculate the optimum values
 					I = calculateBeamformingCurrents(obj);
