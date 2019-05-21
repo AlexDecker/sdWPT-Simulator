@@ -139,7 +139,7 @@ classdef envListManagerBAT
             end
             %log-------------------
             I1=I0;%valor default
-            step = obj.step;
+            step = min(obj.step,t1-t0);%avoiding too big steps...
             
             while(true)
                 if(t==t1)
