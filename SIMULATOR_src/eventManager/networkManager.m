@@ -1,3 +1,5 @@
+%TODO: implement this using a min-heap
+
 %Mantém um conjunto de listas de eventos que podem ser usadas tanto para mensagens
 %entre nós quanto para timers dentro de um mesmo nó
 classdef networkManager

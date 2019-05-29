@@ -1,26 +1,30 @@
-%Baseado no envListManager, porem com suporte a recarga de baterias.
+%Based on envListManager, but with support to energy consumers (devices)
 
 classdef envListManagerBAT
     
     properties
         ENV %envListManager
-        deviceList %lista de dispositivos com interface compativel com Device
-        Vlist %lista das tensoes Vt variadas porem ainda nao computadas
-        Tlist %tempos em que cada entrada em Vlist foi adicionada
-        CurrTime %Ultimo momento que se tem conhecimento (por leitura ou escrita)
-        previousRL %RL da ultima iteracao, guardado por razoes de eficiencia
-        step %passo de integracao
-        first %booleano. indica a primeira vez que as baterias foram atualizadas
+        deviceList %list of structs where the field 'obj' contains 'Device'-friendly objects
 
-        showProgress %se verdadeiro, imprime na tela o progresso da simulacao
-        lastPrint %utilizado para reduzir o numero de prints de progresso
+		%TODO: save a list of voltages and times is useless. Calculate and integrate the current
+		%every time the voltage changes
+        Vlist %list of voltage vectors updated but still not processed
+        Tlist %times where the voltages were updated
+
+        CurrTime %Last moment that we have knowledge about (reading or writing parameters)
+        previousRL %RL of the last iteration (for performance reasons)
+        step %integration step
+        first %boolean. Is it the first time that the batteries are being updated?
+
+        showProgress %if true, prints from time to time the progress regarding the total time
+        lastPrint %used for reducing the number of progress prints
         
         TRANSMITTER_DATA %simulationResults (TX)
-        DEVICE_DATA %lista de simulationResults (RX)
-        nt %numero de aneis transmissores
-        nt_groups %numero de grupos transmissores
+        DEVICE_DATA %list of simulationResults (RX)
+        nt %number of transmitting RLC rings
+        nt_groups %number of transmitting devices (groups of RLC rings)
 
-        latestCI %os ultimos valores calculados da corrente em fasores
+        latestCI %the last calculated values of current (phasors)
     end
 
     methods
@@ -58,7 +62,7 @@ classdef envListManagerBAT
             end
         end
 
-        %verifica se os par�metros est�o em ordem
+        %verifies if the attibutes are valid
         function r=check(obj)
             r=(obj.step>0)&&check(obj.ENV);
             r=r&&(length(obj.ENV.R_group)==obj.nt_groups + length(obj.deviceList));
@@ -67,7 +71,7 @@ classdef envListManagerBAT
             end
         end
 
-        %altera o vetor de tans�es dos transmissores
+        %updates the transmitters' voltage vector
         function obj = setVt(obj, Vt, CurrTime)
             if(length(Vt)~=obj.nt_groups)
                 error('envListManagerBAT: Inconsistent value of Vt');
@@ -81,14 +85,13 @@ classdef envListManagerBAT
             obj.Tlist = [obj.Tlist CurrTime];
         end   
 		
-		%para fins de medi��es
+		%for evaluation and measurements
         function Z = getCompleteLastZMatrix(obj)
         	Z = composeZMatrix(getZ(obj.ENV,obj.CurrTime),...
         		[obj.ENV.RS*ones(obj.nt_groups,1);obj.previousRL],getGroupMarking(obj.ENV));
         end
 
-        %calcula o vetor de resist�ncias que abstrai os dispositivos
-        %receptores do sistema
+        %Calculates the load resistance vector which abstracts the devices within the system
         function [obj,RL] = calculateAllRL(obj,time,Vt)
         	
         	%expected current
@@ -138,7 +141,7 @@ classdef envListManagerBAT
                     I0(c0:c1),t);
             end
             %log-------------------
-            I1=I0;%valor default
+            I1=I0;%default value
             step = min(obj.step,t1-t0);%avoiding too big steps...
             
             while(true)
@@ -152,14 +155,14 @@ classdef envListManagerBAT
                         t = t+step;
                     end 
                 end
-            	%calcula a resist�ncia equivalente dos consumidores de energia
+				%calculating the equivalent resistance of the energy consumers
                 [obj,RL] = calculateAllRL(obj,t,Vt);
                 
-                %obt�m a medida de corrente em cada anel RLC
+				%calculating the current for each RLC ring
                 [obj.ENV,I1,obj.TRANSMITTER_DATA] = getCurrent(obj.ENV,RL,...
                     obj.TRANSMITTER_DATA,t);
                     
-                %encontra o ponto m�dio com a �ltima amostragem
+				%finding the average point with the last sample
                 meanI = (I1+I0)/2;
                 meanI_group = getGroupMarking(obj.ENV)'*meanI;
                 
@@ -173,7 +176,8 @@ classdef envListManagerBAT
                 end
                 %log-------------------
                 
-                %atualiza a carga das baterias de acordo com a corrente atual e o intervalo de tempo t
+				%updating the stated of the devices (battery, operation or other used-defined feature)
+				%according to the actual current and the update time interval t.
                 for i=1:length(obj.deviceList)
                     [obj.deviceList(i).obj,obj.DEVICE_DATA(i)] = updateDeviceState(obj.deviceList(i).obj,...
                     meanI_group(length(Vt)+i), step,obj.DEVICE_DATA(i),t);
@@ -181,7 +185,7 @@ classdef envListManagerBAT
                 
                 I0 = I1;
                 
-                %visualiza��o do progresso
+				%data visualization
                 if obj.showProgress && (obj.lastPrint ~= round(100*t/obj.ENV.tTime))
                     disp(['progress (until totalTime): ',num2str(round(100*t/obj.ENV.tTime)),'%']);
                     obj.lastPrint = round(100*t/obj.ENV.tTime);
@@ -189,7 +193,7 @@ classdef envListManagerBAT
             end
         end
 
-        %atualiza a carga de todas as baterias, por�m admitindo Vt vari�vel
+		%updates the charge of the batteries, but admitting variable tensions
         function [obj,I] = updateBatteryCharges(obj,time)
             if(time<obj.CurrTime)
                 error('envListManagerBAT: Inconsistent time value');
@@ -217,22 +221,22 @@ classdef envListManagerBAT
             obj.CurrTime = time;
         end
 
-        %'tolerance' pode ser utilizado para melhorar o desempenho
+        %'tolerance' may be used for performance improvement
         function [cI,I,cI_groups,Q,obj] = getSystemState(obj,CurrTime,tolerance)
             s = size(obj.Vlist);
             nCol = s(2);
             if exist('tolerance','var')
                 tolerance_val = tolerance;
             else
-                tolerance_val = 0;%valor default
+                tolerance_val = 0;%default value
             end
-            %recalcule se j� tiver passado mais do que um per�odo de toler�ncia,
-            %se a tens�o tiver mudado ou se for a primeira medi��o
+			%recalculate if the last measurement is too old, if the voltage changed
+			%or ir it is the first measurement
             if((abs(CurrTime-obj.CurrTime)>tolerance_val)||(nCol~=1)||(obj.first))
                 [obj,cI] = updateBatteryCharges(obj,CurrTime);
                 obj.latestCI = cI;
             else
-                cI = obj.latestCI;%envie o �ltimo valor calculado
+                cI = obj.latestCI;%return the last calculated value
             end
             Q = zeros(length(obj.deviceList),1);
             for i=1:length(obj.deviceList)
@@ -242,9 +246,8 @@ classdef envListManagerBAT
             cI_groups = getGroupMarking(obj.ENV)'*cI;
         end
         
-        %calcula o vetor de corrente e a matriz de imped�ncia completa
-        %com base em estimativas de simulationResults para determinado
-        %momento t
+		%calculates the current vector and the impedance matriz based on
+		%statistics from simulationResults for a given moment t
         function [curr,Z] = getEstimates(obj,t)
             curr = getCurrentEstimate(obj.TRANSMITTER_DATA,t);
             RS = getRLEstimate(obj.TRANSMITTER_DATA,t);
