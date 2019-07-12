@@ -1,20 +1,23 @@
+%This class controls a list of environment objects and use them for estimating
+%the entire system (except by energy consumers) at each moment.
 classdef envListManager
     properties
         envList
-        Vt_group %vetor coluna com a tens�o ac de cada grupo transmissor (V) 
-        R_group %vetor coluna com a resis�ncia de cada grupo Transmissor/Receptor (ohm)
-        w %frequ�ncia operacional angular (rad/s)
-        tTime %tempo decorrido do primeiro (time=0) ao �ltimo quadro (s)
-        err %erro admiss�vel para a pot�ncia (%)
-        maxResistance %teto para qualquer valor de resist�ncia (ohm)
-        ifactor %> 1 e < dfactor, usado na busca por RS
+        Vt_group %column vector with the voltage of each transmitting group (V) 
+        R_group %column vector with the resistance of each group (ohm)
+		C_group %the same as above, but for capacitances
+        w %angular operational frequency (rad/s)
+        tTime %time between the first (time=0) and the last frame (s)
+        err %acceptable error for power calculation (%)
+        maxResistance %ceil for the resistance values (ohm)
+        ifactor %> 1 and < dfactor, used for searching RS
         dfactor
-        iVel %velocidade inical para a busca de RS
+        iVel %initial velocity for searching RS
         maxActPower %maximum active power for the voltage source
 		maxAppPower %maximum apparent power for the voltage source (limits the current)
-        mostRecentZ %valor mais recente de Z utilizado 
-		miEnv %constante de permeabilidade magn�tica do meio
-        RS %ponto de partida para a busca do pr�ximo vetor RS
+        mostRecentZ %most recent calculated Z matrix 
+		miEnv %magnetic permeability of the medium
+        RS %last calculated RS, used for easily finding the next value
     end
     methods
         function obj = envListManager(envList,Vt_group,w,R_group,tTime,err,...
@@ -23,6 +26,7 @@ classdef envListManager
             obj.Vt_group = Vt_group;
             obj.w = w;
             obj.R_group = R_group;
+			obj.C_group = -ones(length(R_group),1);
             obj.tTime=tTime;
 
             obj.err=err;
@@ -49,7 +53,7 @@ classdef envListManager
             obj.mostRecentZ = getZ(obj,0);
         end
 
-        %verifica se os par�metros est�o em ordem
+        %verify if the attributes of this object are valid
         function r = check(obj)
             r = true;
             for i = 1:length(obj.envList)
@@ -68,11 +72,14 @@ classdef envListManager
             
             if ((length(obj.R_group)>length(obj.mostRecentZ)) &&...
                 ~isempty(obj.mostRecentZ)) ||...
+				length(obj.C_group)~=length(obj.R_group) ||...
                 (length(obj.R_group)~=length(obj.envList(1).R_group)) ||...
                 (length(obj.Vt_group)>=length(obj.R_group))
-                warningMsg('Please review the lengths of R_group and Vt_group.');
+                warningMsg('Please review the lengths of R_group, C_group and Vt_group.');
                 disp('R_group:');
                 disp(obj.R_group);
+				disp('C_group:');
+				disp(obj.C_group);
                 disp('Vt_group:');
                 disp(obj.Vt_group);
                 r = false;
@@ -106,9 +113,8 @@ classdef envListManager
             [c0,c1] = getGroupLimits(obj.envList(1),g);
         end
 
-        %os dados de que n�o se t�m informa��o s�o aproximados com uma
-        %combina��o linear convexa, na forma
-        %dado[time] = dado[i0]*lambda+(1-lambda)*dado[1]
+        %the data is estimated using convex linear combination:
+        %data[time] = data[i0]*lambda+(1-lambda)*data[1]
         function [i0,i1,lambda] = getIndexFromTime(obj,time)
             n = length(obj.envList);
             i = 1+(n-1)*time/obj.tTime;
@@ -117,27 +123,34 @@ classdef envListManager
             lambda = i1-i;
         end
 
-        function Z = getZ(obj,time)%requer onisci�ncia for�ada
+        function Z = getZ(obj,time)%impedance matrix
             [i0,i1,lambda] = getIndexFromTime(obj,time);
 			
-			%define com R os valores antes marcados com -1
+			%define as R the values of resistance previously marked with -1
             obj.envList(i0).R_group = obj.envList(i0).R_group...
             	+ (obj.envList(i0).R_group<0).*(obj.R_group-obj.envList(i0).R_group);
+			
+			%define new values of capacitance if each position of C_group is valid
+			obj.envList(i0).C_group = obj.envList(i0).C_group...
+            	+ (obj.C_group>=0).*(obj.C_group-obj.envList(i0).C_group);
             
-            obj.envList(i0).miEnv = obj.miEnv;
+			obj.envList(i0).miEnv = obj.miEnv;
             obj.envList(i0).w = obj.w;
             Z0 = generateZENV(obj.envList(i0));
-			
-			%define com R os valores antes marcados com -1
+
+			%define as R the values of resistance previously marked with -1
             obj.envList(i1).R_group = obj.envList(i1).R_group...
             	+ (obj.envList(i1).R_group<0).*(obj.R_group-obj.envList(i1).R_group);
-            	
+            
+			%define new values of capacitance if each position of C_group is valid
+			obj.envList(i1).C_group = obj.envList(i1).C_group...
+            	+ (obj.C_group>=0).*(obj.C_group-obj.envList(i1).C_group);
+
            	obj.envList(i1).miEnv = obj.miEnv;
             obj.envList(i1).w = obj.w;
             Z1 = generateZENV(obj.envList(i1));
 
-            Z = lambda*Z0+(1-lambda)*Z1;%faz a interpola��o linear entre as
-            %duas matrizes que se tem informa��o real
+            Z = lambda*Z0+(1-lambda)*Z1;%linear interpolation
         end
 
         %generates a matrix in which each line is the ordered triple of the center of each coil.
@@ -154,7 +167,7 @@ classdef envListManager
             P = lambda*P0 + (1-lambda)*P1;
         end
 
-        %RL_group: resist�ncia equivalente do dispositivo atrelado a cada grupo receptor.
+        %RL_group: equivalent resistance of each receiving group.
         function [obj,I,TRANSMITTER_DATA] = getCurrent(obj,RL_group,...
             TRANSMITTER_DATA,time)
             if ~check(obj)

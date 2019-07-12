@@ -6,7 +6,7 @@ classdef envListManagerBAT
         ENV %envListManager
         deviceList %list of structs where the field 'obj' contains 'Device'-friendly objects
 
-		%TODO: save a list of voltages and times is useless. Calculate and integrate the current
+		%TODO: save a list of voltages and times is now useless. Calculate and integrate the current
 		%every time the voltage changes
         Vlist %list of voltage vectors updated but still not processed
         Tlist %times where the voltages were updated

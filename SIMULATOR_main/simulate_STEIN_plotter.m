@@ -1,14 +1,14 @@
 clear all;
 
-n = 100;
+n = 6;%100;
 smooth_radius = 20;
 m = 11;
 d_min = 5;
 d_max = 30;
 tTime = 1000;
 
-params.improved_circ = true;
-params.improved_rx = false;
+params.improved_circ = false;
+params.improved_rx = true;
 params.improved_tx = false;
 
 params.R = [0.025;30];

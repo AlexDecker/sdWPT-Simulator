@@ -1,7 +1,9 @@
-%saídas
-%eZ: Matriz de impedância efetivamente usada
-%RS: resistência da fonte (considerando que todos possuem a mesma fonte, ohms)
-%I: Vetor coluna com as correntes nos elementos do sistema (A, uma por anel RLC)
+%Outputs:
+%eZ: effectively used impedance matrix
+%RS: resistance of the voltage source (we consider that all active circuits have a single
+%source)
+%I: column vector with the phasor-notation-currents ps each circuit (A, one for each
+%RLC ring)
 
 %entradas
 %Vt_group: Vetor coluna com as tensões das fontes (V, phasor, uma por grupo transmissor)

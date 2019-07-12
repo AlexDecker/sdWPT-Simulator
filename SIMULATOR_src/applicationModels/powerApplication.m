@@ -1,4 +1,3 @@
-%MODELO DE APLICAÇÃO DO TX
 classdef powerApplication
     properties(SetAccess = private, GetAccess = public)
         ID
@@ -6,10 +5,10 @@ classdef powerApplication
         END_SIMULATION
     end
     properties(Access = protected)
-    	CurrTime %Ultimo momento que se tem conhecimento
+    	CurrTime %last known moment
     end 
     properties(Access=public)
-        APPLICATION_LOG %retornado pela função Simulate ao término da execução
+        APPLICATION_LOG %returned by Simulate function after executing the simulation
     end
     methods(Access=public)
         function obj = powerApplication(ID)
@@ -32,15 +31,18 @@ classdef powerApplication
         	obj.END_SIMULATION = true;
         end
     end
-    %Funções auxiliares
+    %Auxiliary functions
     methods(Access=protected)
-        %define um timer para um período 'vTime' no futuro
+        %define a timer triggered at 'vTime' seconds in the future
+		%TODO: avoid the case where the user sets vTime<integration step
         function netManager = setTimer(obj,netManager,globalTime,vTime)
         	if(globalTime>obj.CurrTime)
         		error('powerApplication (setTimer): Inconsistent time value');
-        	else
-        		obj.CurrTime = globalTime;
         	end
+			if(vTime<=0)
+				error('powerApplication (setTimer): Inconsistent vTime value');
+			end
+        	obj.CurrTime = globalTime;
             netManager = setTimer(netManager,obj.ID,globalTime,vTime);
         end
         %define configurações de comunicação
