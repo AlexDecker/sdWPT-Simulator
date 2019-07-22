@@ -1,6 +1,6 @@
 clear all;
 
-n = 6;%100;
+n = 3;%100;
 smooth_radius = 20;
 m = 11;
 d_min = 5;

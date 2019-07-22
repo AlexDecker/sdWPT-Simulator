@@ -17,7 +17,7 @@ classdef powerRXApplication_Qiplus < powerRXApplication
 	        %SWIPT, 2048bps (according to IC datasheet), 5W (dummie)
             obj = setSendOptions(obj,0,2048,5);
 			WPTManager = setCapacitance(obj,WPTManager,0,1.7023e-04);
-            netManager = setTimer(obj,netManager,0,obj.dt);
+            netManager = setTimer(obj,netManager,0,obj.dt/10);
         end
 
         function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
@@ -33,8 +33,7 @@ classdef powerRXApplication_Qiplus < powerRXApplication
 
 			%change its own capacitancy in order to ressonate at the operatonal frequency
 			WPTManager = setCapacitance(obj,WPTManager,GlobalTime,1.7023e-04);
-
-			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
+			netManager = setTimer(obj,netManager,GlobalTime,obj.dt/10);
         end
 
     end

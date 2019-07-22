@@ -33,8 +33,12 @@ classdef powerApplication
     end
     %Auxiliary functions
     methods(Access=protected)
+	%gets the operational frequency of the system
+	function w = getOperationalFrequency(obj, WPTManager)
+		w = WPTManager.ENV.w;
+	end
         %define a timer triggered at 'vTime' seconds in the future
-		%TODO: avoid the case where the user sets vTime<integration step
+	%TODO: avoid the case where the user sets vTime<integration step
         function netManager = setTimer(obj,netManager,globalTime,vTime)
         	if(globalTime>obj.CurrTime)
         		error('powerApplication (setTimer): Inconsistent time value');
