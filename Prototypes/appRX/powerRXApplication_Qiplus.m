@@ -5,6 +5,7 @@ classdef powerRXApplication_Qiplus < powerRXApplication
     properties
     	dt
     	imax %maximum acceptable current
+		L %self inductance (for tunning the varicap)
     end
     methods
         function obj = powerRXApplication_Qiplus(id,dt,imax)
@@ -14,10 +15,17 @@ classdef powerRXApplication_Qiplus < powerRXApplication
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
-	        %SWIPT, 2048bps (according to IC datasheet), 5W (dummie)
+	        
+			%SWIPT, 2048bps (according to IC datasheet), 5W (dummie)
             obj = setSendOptions(obj,0,2048,5);
-			WPTManager = setCapacitance(obj,WPTManager,0,1.7023e-04);
-            netManager = setTimer(obj,netManager,0,obj.dt/10);
+           	
+		   	%gets the inductance of the coil
+			obj = getSelfInductance(obj,WPTManager);
+
+			%change its own capacitancy in order to ressonate at the operatonal frequency
+			WPTManager = updateCapacitance(obj,WPTManager,0);
+			
+			netManager = setTimer(obj,netManager,0,obj.dt);
         end
 
         function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
@@ -32,9 +40,30 @@ classdef powerRXApplication_Qiplus < powerRXApplication
 			end
 
 			%change its own capacitancy in order to ressonate at the operatonal frequency
-			WPTManager = setCapacitance(obj,WPTManager,GlobalTime,1.7023e-04);
-			netManager = setTimer(obj,netManager,GlobalTime,obj.dt/10);
+			WPTManager = updateCapacitance(obj,WPTManager,GlobalTime);
+
+			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
         end
 
+		%Some useful functions
+
+		%gets the inductance of the coil
+		function obj = getSelfInductance(obj,WPTManager)
+			%get any environment (we assume the self inductances being constant
+			env = WPTManager.ENV.envList(1);
+			%For Qi, there are only 2 groups (the first for TX and the second for RX)
+			[~,L,~] = getParameters(env,2);
+			%the equivalent inductance of the paralell coils
+			obj.L = 1/sum(1./L);
+		end
+
+		function WPTManager = updateCapacitance(obj,WPTManager,GlobalTime)
+			%gets the angular operational frequency of the transmitted signal
+			%w = getOperationalFrequency(obj,WPTManager);
+			w = 2*pi*4000;
+			C = 1/(w^2*obj.L);%calculates the value for the resonance capacitor
+			%applies the calculated value to the varcap
+			WPTManager = setCapacitance(obj,WPTManager,GlobalTime,C);
+		end
     end
 end

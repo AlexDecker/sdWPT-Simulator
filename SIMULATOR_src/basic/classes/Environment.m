@@ -65,6 +65,30 @@ classdef Environment
             c1=sum(sum(obj.groupMarking(:,1:g)));
         end
         
+		%get some parameters regarding a given group g
+		%R. Resistance; C. Capacitance; L. List of self inductances
+		function [R, L, C] = getParameters(obj,g)
+			if g<1
+				error('(Environment) getParameters: g must be at least 1');
+			else
+				if g>length(obj.R_group)
+					error(['(Environment) getParameters: g can be at most ',...
+							num2str(lenght(obj.R_group))]);
+				end
+			end
+			%getting resistance and capacitance
+			R = obj.R_group(g);
+			C = obj.C_group(g);
+			%finding which coils own to the given group
+			[c0,c1] = getGroupLimits(obj,g);
+
+			miVector = genMiVector(obj);
+			%all self-inductances
+			M = miVector.*diag(obj.M);
+			%the asked self-inductances
+			L = M(c0:c1);
+		end
+
         %Unknown values of M must be specified as -1.
         function obj = evalM(obj,M)
             for i = 1:length(M)
@@ -80,9 +104,11 @@ classdef Environment
             end
             obj.M=M;
         end
-
-        function Z = generateZENV(obj)
-            if isempty(obj.Coils)
+		
+		%generates a vector in which each entry has the magnetic permeability
+		%of the correspondent coil
+		function miVector = genMiVector(obj)
+		    if isempty(obj.Coils)
                 miVector = obj.miEnv*ones(length(obj.M),1);
             else
                 miVector = zeros(length(obj.M),1);
@@ -90,6 +116,12 @@ classdef Environment
                     miVector(i) = obj.Coils(i).obj.mi;
                 end
             end
+		end
+
+        function Z = generateZENV(obj)
+
+        	miVector = genMiVector(obj);
+
             L = (obj.groupMarking*obj.C_group ~= -1).*diag(obj.M); %if C=-1, resonance
             
             Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)));...%mutual inductance
