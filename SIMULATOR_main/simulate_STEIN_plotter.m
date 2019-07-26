@@ -18,6 +18,8 @@ params.env = 'STEIN_ENV.mat';
 params.endProb = 0.00175;
 params.beta = 0.5;
 
+params.greedy = false;
+
 %reference values
 ref_eff = [0.74, 0.74, 0.715, 0.63, 0.27, 0.14, 0.06, 0];
 ref_err = [0.0078, 0.0104, 0.0547, 0.2396, 0.1849, 0.2760, 0.0938, 0.0052];

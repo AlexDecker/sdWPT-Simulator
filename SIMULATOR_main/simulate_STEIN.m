@@ -9,6 +9,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		IMPROVED_circ = params.improved_circ;
 		IMPROVED_rx = params.improved_rx;
 		IMPROVED_tx = params.improved_tx;
+		GREEDY = params.greedy;
     else
         R = [0.0250;35];
         miEnv = 1.256627e-06;
@@ -19,6 +20,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		IMPROVED_circ = false;
 		IMPROVED_rx = false;
 		IMPROVED_tx = false;
+		GREEDY = false
     end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -57,7 +59,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 	end
 
 	if IMPROVED_rx
-		powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent));
+		powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent,GREEDY));
 	else
     	powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
 	end
