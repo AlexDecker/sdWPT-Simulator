@@ -121,6 +121,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 					end
 					%if the change is acceptable, update the frequency	
 					if (obj.w+ddw*obj.dw>=2*pi*110000) && (obj.w+ddw*obj.dw<=2*pi*205000)
+						%disp(['TX: ',num2str(obj.w/(2*pi*1000)),' KHz']);
 						WPTManager = setOperationalFrequency(...
 							obj,WPTManager,GlobalTime,obj.w+ddw*obj.dw);
 						obj.w = obj.w+ddw*obj.dw;
@@ -165,6 +166,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 
 		function [obj,WPTManager,netManager] = goToStateOne(obj,WPTManager,netManager,GlobalTime)
 			obj.state = 1;
+			%disp('TX: 4 KHz');
 			WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*4000);%4kHz
 			obj.w = 2*pi*4000;
 			WPTManager = turnOn(obj,WPTManager,GlobalTime);%turns on the power transmitter (analog ping)
@@ -172,6 +174,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 
 		function [obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime)
 			obj.state = 2;
+			%disp('TX: 110 KHz');
 			WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*110000);%110kHz
 			obj.w = 2*pi*110000;
 			WPTManager = turnOn(obj,WPTManager,GlobalTime);%turns on the power transmitter

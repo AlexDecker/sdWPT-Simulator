@@ -6,10 +6,21 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
         ENVIRONMENT = params.env;
         ENDPROB = params.endProb;
 		BETA = params.beta;
+
+		%true for resonant ping
 		IMPROVED_circ = params.improved_circ;
+
+		%0 for regular Qi, 1 for Qi+ and 2 for Qi++
 		IMPROVED_rx = params.improved_rx;
+		
+		%not used
 		IMPROVED_tx = params.improved_tx;
+
+		%receiver always asks for more power
 		GREEDY = params.greedy;
+        %limits for Qi++
+        RMIN = params.rmin;
+        CMAX = params.cmax;
     else
         R = [0.0250;35];
         miEnv = 1.256627e-06;
@@ -18,9 +29,11 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
         ENDPROB = 0;
 		BETA = 0.7; 
 		IMPROVED_circ = false;
-		IMPROVED_rx = false;
+		IMPROVED_rx = 0;%regular RX
 		IMPROVED_tx = false;
-		GREEDY = false
+		GREEDY = 0;
+        RMIN = 0.0250;
+        CMAX = 1;
     end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -58,10 +71,14 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     	powerTX = powerTXApplication_Qi(dt,V,MAX_ACT_POWER,dw,ENDPROB);
 	end
 
-	if IMPROVED_rx
-		powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent,GREEDY));
+	if IMPROVED_rx==2
+		powerRX = struct('obj',powerRXApplication_Qipp(1,dt,maxCurrent,GREEDY,RMIN,CMAX));
 	else
-    	powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
+		if IMPROVED_rx==1
+			powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent,GREEDY));
+		else
+    		powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
+		end
 	end
 
     %SIMULATOR

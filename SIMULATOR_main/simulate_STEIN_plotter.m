@@ -1,6 +1,9 @@
 clear all;
+rng('shuffle');
+number = rand;%used to differenciate the experiments
+disp(['Starting experiment number ',num2str(number)]);
 
-n = 100;
+n = 1;
 smooth_radius = 20;
 m = 11;
 d_min = 5;
@@ -8,8 +11,12 @@ d_max = 30;
 tTime = 1000;
 
 params.improved_circ = false;
-params.improved_rx = true;
+params.improved_rx = 2;%1: Qi+, 2: Qi++, other: regular Qi 1.0
 params.improved_tx = false;
+
+%limits for Qi++ optimization
+params.rmin = 30;%0.025;
+params.cmax = 1;
 
 params.R = [0.025;30];
 params.miEnv = 1.256627e-06;
@@ -18,7 +25,7 @@ params.env = 'STEIN_ENV.mat';
 params.endProb = 0.00175;
 params.beta = 0.5;
 
-params.greedy = false;
+params.greedy = 0;
 
 %reference values
 ref_eff = [0.74, 0.74, 0.715, 0.63, 0.27, 0.14, 0.06, 0];
@@ -45,7 +52,6 @@ for i=1:n
 		+abs(params.R(1).*sBC_TX2.^2)+abs(params.R(2).*sCC_RX.^2)))';
 end
 
-number = rand;%used to differenciate the experiments
 
 if n==1
 	plot(linspace(d_min,d_max,m),eff,'b');
@@ -60,4 +66,5 @@ ylabel('Efficiency','FontSize',14,'FontWeight','bold')
 %calculating the normalized mean square error
 mse = sqrt(sum((mean(eff)-[ref_eff,zeros(1,length(mean(eff))-length(ref_eff))]).^2))/(length(mean(eff))*mean(ref_eff));
 
+disp(['Finishing experiment number ',num2str(number)]);
 disp(['normalized mean square error: ',num2str(mse*100),'%']);
