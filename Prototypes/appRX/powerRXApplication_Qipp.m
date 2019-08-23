@@ -13,16 +13,13 @@ classdef powerRXApplication_Qipp < powerRXApplication
         Cmax %maximum allowed capacitance
         Rmin %minimum allowed resistance
 		%pre-parametrized parameters
-		Lr %self inductance
+		Mr %RX inductance sub-matrix
+        Mt %TX inductance sub-matrix
 		Rt %transmitter's internal resistance
 		Ct %transmitter's internal capacitance
-		Lt %transmitter's self inductance
 		V %peak voltage
-		%operational parameters
-		Rr %last used resistance
-		Cr %last used capacitance
 		%inferred parameters
-		M %channel coupling
+		Mtr %channel coupling
     end
     methods
         function obj = powerRXApplication_Qipp(id,dt,imax,greedy,Rmin,Cmax)
@@ -72,7 +69,7 @@ classdef powerRXApplication_Qipp < powerRXApplication
 				end
 				
 				%get the variable parammeters from constants, I and w
-				obj = estimateParameters(obj,I,w);
+				obj = estimateParameters(obj,I,w,WPTManager);
 
 				%the following command is used for checking the peak voltage
 				if obj.V~=WPTManager.ENV.Vt_group(1)
@@ -80,9 +77,7 @@ classdef powerRXApplication_Qipp < powerRXApplication
 				end
 
                 %change its own capacitancy in order to optimize the received current
-			    [WPTManager,expectedI] = updateImpedance(obj,WPTManager,GlobalTime,w);
-                abs(I)
-                expectedI
+			    WPTManager = updateImpedance(obj,WPTManager,GlobalTime,w);
 			end
 			
 			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
@@ -91,85 +86,121 @@ classdef powerRXApplication_Qipp < powerRXApplication
 		%Some useful functions
 
 		function obj = getPreParameters(obj,WPTManager)
-			%get any environment (we assume the self inductances being constant
+			
+            %get any environment (we assume the self inductances being constant
 			env = WPTManager.ENV.envList(1);
-			%For Qi, there are only 2 groups (the first for TX and the second for RX)
-			[obj.Rt,Lt,obj.Ct] = getParameters(env,1);
-			[obj.Rr,Lr,obj.Cr] = getParameters(env,2);
-			%the equivalent inductance of the paralell coils
-			obj.Lr = 1/sum(1./Lr);
-			obj.Lt = 1/sum(1./Lt);
+			
+            %For Qi, there are only 2 groups (the first for TX and the second for RX)
+			[obj.Rt,~,obj.Ct] = getParameters(env,1);
+            
+            %The relative position between TX coils and between RX coils never changes
+            %So, one can pre-parametrize the coupling sub-matrices of TX and RX sets.
+			w = getOperationalFrequency(obj,WPTManager);
+            Z = getCompleteLastZMatrix(WPTManager);
+            M = -imag(Z)/w;
+            obj.Mt = M(1:2,1:2);
+            obj.Mr = M(3:4,3:4);
+
 			obj.V = 5;%Qi v1
+
 		end
 
 		function WPTManager = getResCapacitance(obj,WPTManager,GlobalTime)
 			%gets the angular operational frequency of the transmitted signal
 			w = getOperationalFrequency(obj,WPTManager);
-			C = 1/(w^2*obj.Lr);%calculates the value for the resonance capacitor
+            %get the equivalent RX self inductance
+            Lr = 1/(1/obj.Mr(1,1)+1/obj.Mr(2,2));
+			C = 1/(w^2*Lr);%calculates the value for the resonance capacitor
 			%applies the calculated value to the varcap
 			WPTManager = setCapacitance(obj,WPTManager,GlobalTime,C);
 		end
 		
 		%core functions
 		
-		function obj = estimateParameters(obj,I,w)
-		    zt = obj.Rt - (1i)/(w*obj.Ct) + (1i)*w*obj.Lt;
-            zr = obj.Rr - (1i)/(w*obj.Cr) + (1i)*w*obj.Lr;
-            
-            a = (1i)*I;
-            b = obj.V;
-            c = (1i)*zt*zr*I;
-
-            wM1=(-b+sqrt(b^2-4*a*c))/(2*a);
-            wM2=(-b-sqrt(b^2-4*a*c))/(2*a);
-            
-            if(abs(imag(wM1))<abs(imag(wM2)))
-                obj.M = wM1/w;
-            else
-                obj.M = wM2/w;
-            end
+		function obj = estimateParameters(obj,I,w,WPTManager)
+            %get the rest of M matrix using some method
+            Z = getCompleteLastZMatrix(WPTManager);
+            M = -imag(Z)/w;
+            obj.Mtr = M(1:2,3:4);
 		end
 
-		function [WPTManager,expectedI] = updateImpedance(obj,WPTManager,GlobalTime,w)
-            zt = obj.Rt - (1i)/(w*obj.Ct) + (1i)*w*obj.Lt;
-            
-            %the corner of the domain
-            ao = -w*obj.Lr*imag(zt) + obj.Rmin*real(zt);
-            bo = w*obj.Lr*real(zt) + obj.Rmin*imag(zt);
-            
-            %the point in real(zt)=0 closest to the global maximum
-            m1 = real(zt)/imag(zt);
-            m2 = 1;
-            m3 = -obj.Rmin*abs(zt)^2/imag(zt);
-            x0 = -w^2*obj.M^2;
-            y0 = 0;
-            ap = (m2*(m2*x0-m1*y0)-m1*m3)/(m1^2+m2^2);
-            bp = (m1*(-m2*x0+m1*y0)-m2*m3)/(m1^2+m2^2);
+		function WPTManager = updateImpedance(obj,WPTManager,GlobalTime,w)
+            zt = obj.Rt - (1i)/(w*obj.Ct);
 
-            %optimal solution (for a,b variables)
-            if imag(zt)<=0
-                a = ap;
-                b = bp;
-            else
-                if ap < ao
-                    a = ao;
-                    b = b0;
-                else
-                    a = ap;
-                    b = bp;
+            M = [obj.Mt, obj.Mtr;
+                obj.Mtr.', obj.Mr];
+
+            iZ = eye(4)/([zt*ones(2),zeros(2);zeros(2),obj.Rmin*ones(2)]-(1i)*w*M);
+
+            a = [0,0,1,1]*iZ*[0;0;1;1];
+            j = obj.V*iZ*[1;1;0;0];                                                                                 
+            k = obj.V*iZ*[0;0;1;1]*[0,0,1,1]*iZ*[1;1;0;0];
+            c = j(3)+j(4);
+            b = -(k(3)+k(4));
+            
+            alpha = abs(b/a)^2+2*real(c'*b/a);
+            beta = 2*real(c'*b/a);                                                                              
+            gamma = -2*imag(c'*b/a); 
+
+            %crictical points over the frontier of the domain
+            [dx_r,dy_r,z_r] = criticalOnLine(alpha,beta,gamma,a,-real(a)/imag(a),1e-7);
+            [dx_i,dy_i,z_i] = criticalOnLine(alpha,beta,gamma,a,imag(a)/real(a),1e-7);
+
+            %getting which crictical points are inside the domain
+
+            %the point in which the lines cross each other
+            dx0 = 1;
+            dy0 = 0;
+            DX = dx0;
+            DY = dy0;
+            Z  = ((beta-2*alpha)*dx0+gamma*dy0+alpha-beta)/(dx0^2+dy0^2);
+            %real(zr)=0
+            if(imag(a)>=0)
+                for i=1:length(dx_r)
+                    if(dx_r(i)>=dx0)
+                        DX = [DX, dx_r(i)];
+                        DY = [DY, dy_r(i)];
+                        Z  = [Z, z_r(i)];
+                    end
                 end
+            else
+                for i=1:length(dx_r)
+                    if(dx_r(i)<=dx0)
+                        DX = [DX, dx_r(i)];
+                        DY = [DY, dy_r(i)];
+                        Z  = [Z, z_r(i)];
+                    end
+                end   
+            end 
+            %imag(zr)=0
+            if(real(a)>=0)
+                for i=1:length(dx_i)
+                    if(dx_i(i)>=dx0)
+                        DX = [DX, dx_i(i)];
+                        DY = [DY, dy_i(i)];
+                        Z  = [Z, z_i(i)];
+                    end
+                end
+            else
+                for i=1:length(dx_i)
+                    if(dx_i(i)<=dx0)
+                        DX = [DX, dx_i(i)];
+                        DY = [DY, dy_i(i)];
+                        Z  = [Z, z_i(i)];
+                    end
+                end   
             end
             
-            expectedI = sqrt(obj.V^2/((a^2+b^2)/(w^2*obj.M^2)+2*a+w^2*obj.M^2));
+            [MAX, ind] = max(Z);
 
             %the optimal zr
-            zr = (a + (1i)*b)*(zt')/abs(zt)^2;
+            Rr = ((DX(ind)-1)*real(a)-DY(ind)*imag(a))/abs(a)^2;
+            Reac = DY(ind)/real(a)-imag(a)/real(a)*Rr;
+            Cr = abs(w/Reac);
 
             %inserting the new parameters
-            obj.Rr = max(real(zr),obj.Rmin);
-            obj.Cr = min(1/(w*(w*obj.Lr)-imag(zr)),obj.Cmax);
-            WPTManager = setResistance(obj,WPTManager,GlobalTime,obj.Rr);
-            WPTManager = setCapacitance(obj,WPTManager,GlobalTime,obj.Cr);
+            WPTManager = setResistance(obj,WPTManager,GlobalTime,max(Rr,0)+obj.Rmin);
+            WPTManager = setCapacitance(obj,WPTManager,GlobalTime,min(Cr,obj.Cmax));
 		end
     end
 end
