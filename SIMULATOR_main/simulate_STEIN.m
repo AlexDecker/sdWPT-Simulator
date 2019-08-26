@@ -18,9 +18,6 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 
 		%receiver always asks for more power
 		GREEDY = params.greedy;
-        %limits for Qi++
-        RMIN = params.rmin;
-        CMAX = params.cmax;
     else
         R = [0.0250;35];
         miEnv = 1.256627e-06;
@@ -32,8 +29,6 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		IMPROVED_rx = 0;%regular RX
 		IMPROVED_tx = false;
 		GREEDY = 0;
-        RMIN = 0.0250;
-        CMAX = 1;
     end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -72,7 +67,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 	end
 
 	if IMPROVED_rx==2
-		powerRX = struct('obj',powerRXApplication_Qipp(1,dt,maxCurrent,GREEDY,RMIN,CMAX));
+		powerRX = struct('obj',powerRXApplication_Qipp(1,dt,maxCurrent,GREEDY));
 	else
 		if IMPROVED_rx==1
 			powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent,GREEDY));

@@ -14,10 +14,6 @@ params.improved_circ = false;
 params.improved_rx = 2;%1: Qi+, 2: Qi++, other: regular Qi 1.0
 params.improved_tx = false;
 
-%limits for Qi++ optimization
-params.rmin = 30;%0.025;
-params.cmax = 1;
-
 params.R = [0.025;30];
 params.miEnv = 1.256627e-06;
 params.maxCurrent = 0.06;

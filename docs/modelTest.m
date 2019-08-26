@@ -6,16 +6,20 @@ verificacao = inf;
 maxCoupling = 0.1;
 
 while verificacao>0
-    lambda = rand;
-    w = 2*pi*(lambda*110000 + (1-lambda)*220000);
+	if(rand>0.5)
+		lambda = rand;
+		w = 2*pi*(lambda*110000 + (1-lambda)*220000);
+	else
+		w = 2*pi*4000;
+	end
 
-    Lr = 3.15e-6;
-    Lt = 4.85e-6;
+    Lr = 0.0058;
+    Lt = 0.0039;
     zt = 0.025 - 1i/(w*4.02e-07);
     
-    R0 = 10+rand*10;%resistencia minima do receptor
+    R0 = 30;%resistencia minima do receptor
 
-    v = 1+10*rand;
+    v = 5;
 
     maxM = maxCoupling*sqrt(Lr*Lt);
     M = rand(4);

@@ -22,13 +22,12 @@ classdef powerRXApplication_Qipp < powerRXApplication
 		Mtr %channel coupling
     end
     methods
-        function obj = powerRXApplication_Qipp(id,dt,imax,greedy,Rmin,Cmax)
+        function obj = powerRXApplication_Qipp(id,dt,imax,greedy)
             obj@powerRXApplication(id);%building superclass structure
             obj.dt = dt;
             obj.imax = imax;
 			obj.greedy = greedy;
-            obj.Rmin = Rmin;
-            obj.Cmax = Cmax;
+			obj.Cmax = 0.1;
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -87,20 +86,22 @@ classdef powerRXApplication_Qipp < powerRXApplication
 
 		function obj = getPreParameters(obj,WPTManager)
 			
-            %get any environment (we assume the self inductances being constant
-			env = WPTManager.ENV.envList(1);
+            w = getOperationalFrequency(obj,WPTManager);
+            Z = getCompleteLastZMatrix(WPTManager);
+			R = diag(real(Z));
+			obj.Rt = R(1);
+			obj.Rmin = R(end);
+			obj.Ct = WPTManager.ENV.envList(1).C_group(1);
+			Cr = WPTManager.ENV.envList(1).C_group(2);
 			
-            %For Qi, there are only 2 groups (the first for TX and the second for RX)
-			[obj.Rt,~,obj.Ct] = getParameters(env,1);
-            
+			disp(WPTManager.ENV.envList(1).M)
             %The relative position between TX coils and between RX coils never changes
             %So, one can pre-parametrize the coupling sub-matrices of TX and RX sets.
-			w = getOperationalFrequency(obj,WPTManager);
-            Z = getCompleteLastZMatrix(WPTManager);
-            M = -imag(Z)/w;
-            obj.Mt = M(1:2,1:2);
-            obj.Mr = M(3:4,3:4);
-
+            React = imag(Z);%reactance
+            obj.Mt = -React(1:2,1:2)/w-1/(w^2*obj.Ct);
+            obj.Mr = -React(3:4,3:4)/w-1/(w^2*Cr);
+			disp(obj.Mt);
+			disp(obj.Mr);
 			obj.V = 5;%Qi v1
 
 		end
@@ -109,7 +110,7 @@ classdef powerRXApplication_Qipp < powerRXApplication
 			%gets the angular operational frequency of the transmitted signal
 			w = getOperationalFrequency(obj,WPTManager);
             %get the equivalent RX self inductance
-            Lr = 1/(1/obj.Mr(1,1)+1/obj.Mr(2,2));
+            Lr = 1/(1/abs(obj.Mr(1,1))+1/abs(obj.Mr(2,2)));
 			C = 1/(w^2*Lr);%calculates the value for the resonance capacitor
 			%applies the calculated value to the varcap
 			WPTManager = setCapacitance(obj,WPTManager,GlobalTime,C);

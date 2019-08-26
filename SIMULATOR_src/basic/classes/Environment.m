@@ -67,27 +67,27 @@ classdef Environment
         
 		%get some parameters regarding a given group g
 		%R. Resistance; C. Capacitance; L. List of self inductances
-		function [R, L, C] = getParameters(obj,g)
-			if g<1
-				error('(Environment) getParameters: g must be at least 1');
-			else
-				if g>length(obj.R_group)
-					error(['(Environment) getParameters: g can be at most ',...
-							num2str(lenght(obj.R_group))]);
-				end
-			end
-			%getting resistance and capacitance
-			R = obj.R_group(g);
-			C = obj.C_group(g);
-			%finding which coils own to the given group
-			[c0,c1] = getGroupLimits(obj,g);
+		%function [R, L, C] = getParameters(obj,g)
+		%	if g<1
+		%		error('(Environment) getParameters: g must be at least 1');
+		%	else
+		%		if g>length(obj.R_group)
+		%			error(['(Environment) getParameters: g can be at most ',...
+		%					num2str(lenght(obj.R_group))]);
+		%		end
+		%	end
+		%	%getting resistance and capacitance
+		%	R = obj.R_group(g);
+		%	C = obj.C_group(g);
+		%	%finding which coils own to the given group
+		%	[c0,c1] = getGroupLimits(obj,g);
 
-			miVector = genMiVector(obj);
-			%all self-inductances
-			M = miVector.*diag(obj.M);
-			%the asked self-inductances
-			L = M(c0:c1);
-		end
+		%	miVector = genMiVector(obj);
+		%	%all self-inductances
+		%	M = miVector.*diag(obj.M);
+		%	%the asked self-inductances
+		%	L = M(c0:c1);
+		%end
 
         %Unknown values of M must be specified as -1.
         function obj = evalM(obj,M)
