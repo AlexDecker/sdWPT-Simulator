@@ -124,8 +124,8 @@ classdef Environment
 
             L = (obj.groupMarking*obj.C_group ~= -1).*diag(obj.M); %if C=-1, resonance
             
-            Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)));...%mutual inductance
-                + (1i)*obj.w*diag(miVector.*L);%self-inductance
+            Z = - (1i)*obj.w*obj.miEnv*(obj.M-diag(diag(obj.M)))+...%mutual inductance
+                (1i)*obj.w*diag(miVector.*L);%self-inductance
             
             %compose the final matrix (if C=-1, resonance)
             Z = composeZMatrix(Z,...

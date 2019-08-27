@@ -35,10 +35,11 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     %GENERAL ASPECTS
     NTX = 1; %number of transmitters
 	if IMPROVED_circ
-		C = [4.02e-07;1.7023e-04];%rx resonace for quickly restablishing connection when lost
+		C = [1.4535e-06;4.7002e-04];%rx resonace for quickly restablishing connection when lost
 		%(rx resonates with the 4Hz ping frequency
 	else
-    	C = [4.02e-07;2.7237e-07];%for 2*pi*100kHz angular resonant frequency
+    	C = [1.4535e-06;7.5203e-07];%for 2*pi*100kHz angular resonant frequency
+        %C = [7.2507e-07;3.7590e-07];
 	end
     W = 2*pi*4000;%dummie
     
@@ -58,7 +59,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     %APPLICATIONS
     dt = 0.4;%according to IC datasheet
     V = 5;%according to evkit datasheet
-    dw = 2*pi*1000;%1000
+    dw = 2*pi*100;%1000
 	
 	if IMPROVED_tx
 		%TODO

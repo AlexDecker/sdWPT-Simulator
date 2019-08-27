@@ -22,7 +22,7 @@ classdef powerRXApplication_Qi < powerRXApplication
         end
 
         function [obj,netManager,WPTManager] = handleTimer(obj,GlobalTime,netManager,WPTManager)
-        	[I,WPTManager] = getI(obj,WPTManager,GlobalTime);
+            [I,WPTManager] = getI(obj,WPTManager,GlobalTime);
         	if(abs(I)>0)%if it is transmitting power
         		%sends its own current (continuing message)
 		    	netManager = send(obj,netManager,0,[I,obj.imax],128,GlobalTime);

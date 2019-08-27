@@ -38,8 +38,7 @@ classdef LookupTable
       %a função abaixo utiliza interpolação linear entre dois pontos
       %conhecidos para descobrir o desconhecido.
       function Y = getYFromX(obj,X)
-          
-          if X==obj.table(end,1)
+          if X>=obj.table(end,1)
               Y = obj.table(end,2);
           else
               %busca os indices da tabela que são maiores que o valor de

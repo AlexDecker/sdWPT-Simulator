@@ -55,7 +55,6 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
 		    end
         end
     end
-    
     I = Z\V;
     P_act = real(I'*V);%the active power is the real part of the complex power (IEEE Std 1459-2010)
 	P_app = abs(I'*V);%the apparent power is the absolute value of the complex power (IEEE Std 1459-2010)

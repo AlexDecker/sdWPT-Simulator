@@ -64,19 +64,19 @@ classdef powerTXApplication_Qi < powerTXApplication
 
 		function [obj,netManager,WPTManager] = handleMessage(obj,data,GlobalTime,netManager,WPTManager)
         	switch(obj.state)
-			case 1
-				if length(data)==2
-					%somebody answered the ping. Start the power transmission
-		    			obj.imax = data(2);
-		    			[obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime);
-		    			disp('Connection established');
-		    		end
+			    case 1
+                if length(data)==2
+                    %somebody answered the ping. Start the power transmission
+                    obj.imax = data(2);
+                    [obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime);
+                    disp('Connection established');
+                end
         		case 2
 				if rand>=obj.endProb
 					obj.okUntil = GlobalTime+obj.dt; %renova o atestado por mais um ciclo
 						
-					[It,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
-					pot = real([sum(It);data(1)]'*[obj.V;0]);%calculates the active power
+					%[It,WPTManager] = getCurrents(obj,WPTManager,GlobalTime);
+					%pot = real([sum(It);data(1)]'*[obj.V;0]);%calculates the active power
 						
 					%adjusts the operational frequency
 					%(as the ressonant frequency is ~100 KHz, when the frequency
@@ -85,13 +85,13 @@ classdef powerTXApplication_Qi < powerTXApplication
 
 					ddw = 0;
 					variation = obj.imax-abs(data(1));
-					
-					if (variation<0)||(pot>=obj.pmax) %reduces the received power
+                    					
+					if (variation<0) %reduces the received power
 						if obj.lastVar>0 %if passed by the optimum point
 							ddw = -obj.ddw;%come back
 						else
 							if obj.lastVar<0
-								if abs(obj.lastVar)>abs(variation) %if the
+								if abs(obj.lastVar)>=abs(variation) %if the
 								%result got better
 									ddw = obj.ddw;%keep going
 								else
@@ -107,7 +107,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 								ddw = -obj.ddw;%come back
 							else
 								if obj.lastVar>0
-									if abs(obj.lastVar)>abs(variation)
+									if abs(obj.lastVar)>=abs(variation)
 									%if it got better
 										ddw = obj.ddw;%keep going
 									else
@@ -119,6 +119,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 							end
 						end
 					end
+                    ddw=-1;
 					%if the change is acceptable, update the frequency	
 					if (obj.w+ddw*obj.dw>=2*pi*110000) && (obj.w+ddw*obj.dw<=2*pi*205000)
 						%disp(['TX: ',num2str(obj.w/(2*pi*1000)),' KHz']);
@@ -126,7 +127,6 @@ classdef powerTXApplication_Qi < powerTXApplication
 							obj,WPTManager,GlobalTime,obj.w+ddw*obj.dw);
 						obj.w = obj.w+ddw*obj.dw;
 					end
-					
 					obj.lastVar = variation;
 					obj.ddw = ddw;
 						

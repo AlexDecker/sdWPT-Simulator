@@ -86,22 +86,21 @@ classdef powerRXApplication_Qipp < powerRXApplication
 
 		function obj = getPreParameters(obj,WPTManager)
 			
-            w = getOperationalFrequency(obj,WPTManager);
-            Z = getCompleteLastZMatrix(WPTManager);
-			R = diag(real(Z));
-			obj.Rt = R(1);
-			obj.Rmin = R(end);
+            Z = getCompleteLastZMatrix(WPTManager);%getting the impedance matrix
+			R = diag(real(Z));%getting the resistance vector
+			obj.Rt = R(1);%getting the constant TX resistance
+			obj.Rmin = R(end);%the initial resistance is used as minimum allowed
+            %TX constant capacitance
 			obj.Ct = WPTManager.ENV.envList(1).C_group(1);
-			Cr = WPTManager.ENV.envList(1).C_group(2);
 			
-			disp(WPTManager.ENV.envList(1).M)
+            %getting the coupling matrix
+			M = WPTManager.ENV.envList(1).M*WPTManager.ENV.envList(1).miEnv;
+            %the signal of the self-inductance is the oposite of the others
+            M = M - 2*diag(diag(M));
             %The relative position between TX coils and between RX coils never changes
             %So, one can pre-parametrize the coupling sub-matrices of TX and RX sets.
-            React = imag(Z);%reactance
-            obj.Mt = -React(1:2,1:2)/w-1/(w^2*obj.Ct);
-            obj.Mr = -React(3:4,3:4)/w-1/(w^2*Cr);
-			disp(obj.Mt);
-			disp(obj.Mr);
+            obj.Mt = M(1:2,1:2);
+            obj.Mr = M(3:4,3:4);
 			obj.V = 5;%Qi v1
 
 		end
@@ -119,7 +118,8 @@ classdef powerRXApplication_Qipp < powerRXApplication
 		%core functions
 		
 		function obj = estimateParameters(obj,I,w,WPTManager)
-            %get the rest of M matrix using some method
+            %get the rest of M matrix using some method which is currently being 
+            %abstracted in this function
             Z = getCompleteLastZMatrix(WPTManager);
             M = -imag(Z)/w;
             obj.Mtr = M(1:2,3:4);
@@ -200,8 +200,8 @@ classdef powerRXApplication_Qipp < powerRXApplication
             Cr = abs(w/Reac);
 
             %inserting the new parameters
-            WPTManager = setResistance(obj,WPTManager,GlobalTime,max(Rr,0)+obj.Rmin);
-            WPTManager = setCapacitance(obj,WPTManager,GlobalTime,min(Cr,obj.Cmax));
+            %WPTManager = setResistance(obj,WPTManager,GlobalTime,max(Rr,0)+obj.Rmin);
+            %WPTManager = setCapacitance(obj,WPTManager,GlobalTime,min(Cr,obj.Cmax));
 		end
     end
 end
