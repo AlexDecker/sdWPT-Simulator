@@ -50,7 +50,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 		end
 
 		function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
-        		%SWIPT, 2048bps (according to IC datasheet), 5W (dummie)
+            %SWIPT, 2048bps (according to IC datasheet), 5W (dummie)
 			obj = setSendOptions(obj,0,2048,5);
 
 			%starts at state 0
@@ -84,18 +84,23 @@ classdef powerTXApplication_Qi < powerTXApplication
 					%received power decreases)
 
 					ddw = 0;
+                    inc = 1.2;
+                    dec = 2;
 					variation = obj.imax-abs(data(1));
                     					
 					if (variation<0) %reduces the received power
 						if obj.lastVar>0 %if passed by the optimum point
 							ddw = -obj.ddw;%come back
+                            obj.dw = obj.dw/dec;
 						else
 							if obj.lastVar<0
 								if abs(obj.lastVar)>=abs(variation) %if the
 								%result got better
 									ddw = obj.ddw;%keep going
+                                    obj.dw=obj.dw*inc;
 								else
 									ddw = -obj.ddw;%come back
+                                    obj.dw = obj.dw/dec;
 								end
 							else %no information
 								ddw = 1;%start from somewhere
@@ -105,13 +110,16 @@ classdef powerTXApplication_Qi < powerTXApplication
 						if (variation>0) %increase the receiving power
 							if obj.lastVar<0 %if passed by the optimim point
 								ddw = -obj.ddw;%come back
+                                obj.dw = obj.dw/dec;
 							else
 								if obj.lastVar>0
 									if abs(obj.lastVar)>=abs(variation)
 									%if it got better
 										ddw = obj.ddw;%keep going
+                                        obj.dw=obj.dw*inc;
 									else
 										ddw = -obj.ddw;%go back
+                                        obj.dw=obj.dw/dec;
 									end
 								else %no information
 									ddw = 1;%start somehow
@@ -119,7 +127,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 							end
 						end
 					end
-                    ddw=-1;
+
 					%if the change is acceptable, update the frequency	
 					if (obj.w+ddw*obj.dw>=2*pi*110000) && (obj.w+ddw*obj.dw<=2*pi*205000)
 						%disp(['TX: ',num2str(obj.w/(2*pi*1000)),' KHz']);

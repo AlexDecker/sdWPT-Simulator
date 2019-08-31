@@ -38,17 +38,19 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		C = [1.4535e-06;4.7002e-04];%rx resonace for quickly restablishing connection when lost
 		%(rx resonates with the 4Hz ping frequency
 	else
-    	C = [1.4535e-06;7.5203e-07];%for 2*pi*100kHz angular resonant frequency
-        %C = [7.2507e-07;3.7590e-07];
+    	%C = [1.4535e-06;7.5203e-07];%for 2*pi*100kHz angular resonant frequency
+        %C = [7.2507e-07;3.7590e-07];%estava aqui
+        %C = [4e-07;1.83e-07];
+        C = [4e-07;1e-07];
 	end
     W = 2*pi*4000;%dummie
     
-    MAX_ACT_POWER = 5;%W
+    MAX_ACT_POWER = 7.5;%W
     MAX_APP_POWER = inf;%W
     R_MAX = 1e7;   % (ohm)
     TOTAL_TIME = 1000;%seconds of simulation (virtual time)
     STEP = 0.1; % (s) There is no battery to charge, so this value is only limited
-    %bu application timeskip
+    %by application timeskip
 
     %DEVICE
     
@@ -59,7 +61,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     %APPLICATIONS
     dt = 0.4;%according to IC datasheet
     V = 5;%according to evkit datasheet
-    dw = 2*pi*100;%1000
+    dw = 2*pi*1000;%1000
 	
 	if IMPROVED_tx
 		%TODO
@@ -82,7 +84,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     IFACTOR=1.5;
     DFACTOR=2;
     INIT_VEL=0.01;
-    MAX_ERR = 0.005;
+    MAX_ERR = 1e-06;
 
     SHOW_PROGRESS = true;
 

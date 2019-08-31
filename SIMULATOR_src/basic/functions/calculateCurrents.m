@@ -22,7 +22,6 @@
 
 function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,ifactor,...
     dfactor,iVel,maxActPower,maxAppPower,groupMarking)
-
     s = size(Z);
     s2 = size(groupMarking);
     
@@ -58,9 +57,7 @@ function [eZ,RS,I]=calculateCurrents(Vt_group,Z,RL_group,RS0,err,maxResistance,i
     I = Z\V;
     P_act = real(I'*V);%the active power is the real part of the complex power (IEEE Std 1459-2010)
 	P_app = abs(I'*V);%the apparent power is the absolute value of the complex power (IEEE Std 1459-2010)
-    
 	ttl = 10000;
-	
     if (P_act-maxActPower<err*maxActPower)&&(P_app-maxAppPower<err*maxAppPower) %operação normal
         RS = 0;
         eZ = Z;
