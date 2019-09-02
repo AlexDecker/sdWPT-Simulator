@@ -7,15 +7,12 @@ classdef powerRXApplication_Qiplus < powerRXApplication
     	dt
     	imax %maximum acceptable current
 		L %self inductance (for tunning the varicap)
-		greedy %if 1, always ask for the maximum current, if -1, always ask for high
-        %frequency. If 0, the same as regular qi 1.0
     end
     methods
-        function obj = powerRXApplication_Qiplus(id,dt,imax,greedy)
+        function obj = powerRXApplication_Qiplus(id,dt,imax)
             obj@powerRXApplication(id);%building superclass structure
             obj.dt = dt;
             obj.imax = imax;
-			obj.greedy = greedy;
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -39,19 +36,8 @@ classdef powerRXApplication_Qiplus < powerRXApplication
         	[I,WPTManager] = getI(obj,WPTManager,GlobalTime);
 			
         	if(abs(I)>0)%if it is transmitting power
-				%greedy mode is used for getting the best from the unalterated TX
-				if obj.greedy==1
-					%always asks for more power
-		    		netManager = send(obj,netManager,0,[0,obj.imax],128,GlobalTime);
-				else
-                    if obj.greedy==-1
-                        %humble mode. Ask for less power in order to get higher frequency
-                    	netManager = send(obj,netManager,0,obj.imax*[1,1],128,GlobalTime);
-                    else
-					    %sends its own current (continuing message)
-					    netManager = send(obj,netManager,0,[I,obj.imax],128,GlobalTime);
-                    end
-				end
+                %sends its own current (continuing message)
+                netManager = send(obj,netManager,0,[I,obj.imax],128,GlobalTime);
 			end
 
 			%change its own capacitancy in order to ressonate at the operatonal frequency

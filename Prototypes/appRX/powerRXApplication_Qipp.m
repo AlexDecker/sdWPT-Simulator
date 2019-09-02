@@ -8,8 +8,6 @@ classdef powerRXApplication_Qipp < powerRXApplication
 		%Application parameters
     	dt
     	imax %maximum acceptable current
-		greedy %if 1, always ask for the maximum current. If -1, ask for minimum. Otherwise,
-            %run normally according to Qi 1.0
         Cmax %maximum allowed capacitance
         Rmin %minimum allowed resistance
 		%pre-parametrized parameters
@@ -22,11 +20,10 @@ classdef powerRXApplication_Qipp < powerRXApplication
 		Mtr %channel coupling
     end
     methods
-        function obj = powerRXApplication_Qipp(id,dt,imax,greedy)
+        function obj = powerRXApplication_Qipp(id,dt,imax)
             obj@powerRXApplication(id);%building superclass structure
             obj.dt = dt;
             obj.imax = imax;
-			obj.greedy = greedy;
 			obj.Cmax = 0.1;
         end
 
@@ -54,18 +51,8 @@ classdef powerRXApplication_Qipp < powerRXApplication
 			w = getOperationalFrequency(obj,WPTManager);
 
         	if(abs(I)>0)%if it is transmitting power
-				%greedy approach: always asks for more power
-				if obj.greedy==1
-					netManager = send(obj,netManager,0,[0,obj.imax],128,GlobalTime);
-				else
-                    if obj.greedy==-1
-                        %humble: ask for less power, get high frequency
-                        netManager = send(obj,netManager,0,obj.imax*[1,1],128,GlobalTime);
-                    else
-        			    %sends its own current (continuing message)
-		    		    netManager = send(obj,netManager,0,[I,obj.imax],128,GlobalTime);
-                    end
-				end
+                %sends its own current (continuing message)
+                netManager = send(obj,netManager,0,[I,obj.imax],128,GlobalTime);
 				
 				%get the variable parammeters from constants, I and w
 				obj = estimateParameters(obj,I,w,WPTManager);

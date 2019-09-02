@@ -15,9 +15,6 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		
 		%not used
 		IMPROVED_tx = params.improved_tx;
-
-		%receiver always asks for more power
-		GREEDY = params.greedy;
     else
         R = [0.0250;35];
         miEnv = 1.256627e-06;
@@ -28,7 +25,6 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		IMPROVED_circ = false;
 		IMPROVED_rx = 0;%regular RX
 		IMPROVED_tx = false;
-		GREEDY = 0;
     end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -38,10 +34,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		C = [1.4535e-06;4.7002e-04];%rx resonace for quickly restablishing connection when lost
 		%(rx resonates with the 4Hz ping frequency
 	else
-    	%C = [1.4535e-06;7.5203e-07];%for 2*pi*100kHz angular resonant frequency
-        %C = [7.2507e-07;3.7590e-07];%estava aqui
-        %C = [4e-07;1.83e-07];
-        C = [4e-07;1e-07];
+        C = [4e-07;1e-07];%got from datasheets
 	end
     W = 2*pi*4000;%dummie
     
@@ -61,7 +54,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     %APPLICATIONS
     dt = 0.4;%according to IC datasheet
     V = 5;%according to evkit datasheet
-    dw = 2*pi*1000;%1000
+    dw = 2*pi*1000;
 	
 	if IMPROVED_tx
 		%TODO
@@ -70,10 +63,10 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 	end
 
 	if IMPROVED_rx==2
-		powerRX = struct('obj',powerRXApplication_Qipp(1,dt,maxCurrent,GREEDY));
+		powerRX = struct('obj',powerRXApplication_Qipp(1,dt,maxCurrent));
 	else
 		if IMPROVED_rx==1
-			powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent,GREEDY));
+			powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent));
 		else
     		powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
 		end
@@ -88,8 +81,8 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 
     SHOW_PROGRESS = true;
 
-    B_SWIPT = 0.7;%minimum SINR for the message to be undertood
-    B_RF = BETA;%minimum SINR for the message to be undertood (dummie no caso)
+    B_SWIPT = BETA;%minimum SINR for the message to be undertood
+    B_RF = 0.7;%minimum SINR for the message to be undertood (dummie no caso)
     A_RF = 2;%expoent for free-space path loss (RF only)(dummie no caso)
     N_SWIPT = 3e-08;%Noise for SWIPT (W)
     N_RF = 0.1;%Noise for RF (W)(dummie no caso)

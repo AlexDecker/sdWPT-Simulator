@@ -1,9 +1,8 @@
 rng('shuffle');
-err = 1e-9;
+err = 1e-7;
 
 
-verificacao = inf;
-maxCoupling = 0.1;
+verificacao = 5;
 
 while verificacao>0
 	if(rand>0.5)
@@ -17,19 +16,20 @@ while verificacao>0
           0.3539,   -0.3326]*1.0e-05;
     Mr = [-0.6853,   0.6892;
            0.6892,  -0.6624]*1.0e-05;
-    zt = 0.025 - 1i/(w*4.02e-07);
+    zt = 0.015 - 1i/(w*4e-07);
     
-    R0 = 30;%resistencia minima do receptor
+    R0 = 3.97;%resistencia minima do receptor
 
     v = 5;
 
-    maxM = maxCoupling*sqrt(Lr*Lt);
-    M = rand(4);
-    M = maxM/0.5*(M+M');
-    M = M-diag(diag(M))-diag([Lt,Lt,Lr,Lr]);
+    Mtr = rand(2);
+    maxM = sqrt(mean(mean(Mt))*mean(mean(Mr)));
+    Mtr = (0.33-0.1)*maxM*Mtr+0.1*maxM;
+    M = [Mt, Mtr;
+        Mtr', Mr];
 
     Z = [zt*ones(2),zeros(2);zeros(2),R0*ones(2)]-(1i)*w*M;
-    zr = 10+30*rand - 1i/(w*(1e-09+1e-05*rand));
+    zr = R0+30*rand - 1i/(w*(1e-09+1e-05*rand));
     iZc = eye(4)/(Z + [zeros(2),zeros(2);zeros(2),zr*ones(2)]);
     I = iZc*(v*[1;1;0;0]);
     Ir = I(3)+I(4);
@@ -90,7 +90,6 @@ while verificacao>0
     
 
     %ultimos parametros
-    r = 10+10*rand;
     d = 3;
 
     %encontro das retas da fronteira

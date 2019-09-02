@@ -42,7 +42,7 @@ classdef powerTXApplication_Qi < powerTXApplication
 			obj.imax = 1.2;%default (A)
 			obj.pmax = pmax;
 			obj.dw = dw;
-			obj.w = 2*pi*4000;%4kHz
+			obj.w = 2*pi*110000;%110000kHz
 
 			obj.lastVar = 0;
 			obj.ddw = 1;
@@ -84,8 +84,8 @@ classdef powerTXApplication_Qi < powerTXApplication
 					%received power decreases)
 
 					ddw = 0;
-                    inc = 1.2;
-                    dec = 2;
+                    inc = 1.2;%increment rate of dw
+                    dec = 2;%decrement rate of dw
 					variation = obj.imax-abs(data(1));
                     					
 					if (variation<0) %reduces the received power
@@ -174,17 +174,13 @@ classdef powerTXApplication_Qi < powerTXApplication
 
 		function [obj,WPTManager,netManager] = goToStateOne(obj,WPTManager,netManager,GlobalTime)
 			obj.state = 1;
-			%disp('TX: 4 KHz');
 			WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*4000);%4kHz
-			obj.w = 2*pi*4000;
 			WPTManager = turnOn(obj,WPTManager,GlobalTime);%turns on the power transmitter (analog ping)
 		end
 
 		function [obj,WPTManager] = goToStateTwo(obj,WPTManager,GlobalTime)
 			obj.state = 2;
-			%disp('TX: 110 KHz');
-			WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,2*pi*110000);%110kHz
-			obj.w = 2*pi*110000;
+			WPTManager = setOperationalFrequency(obj,WPTManager,GlobalTime,obj.w);%recover last freq
 			WPTManager = turnOn(obj,WPTManager,GlobalTime);%turns on the power transmitter
 			obj.okUntil = GlobalTime + obj.dt;
 			obj.lastVar = 0;
