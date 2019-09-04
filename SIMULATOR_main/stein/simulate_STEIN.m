@@ -63,7 +63,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 	end
 
 	if IMPROVED_rx==2
-		powerRX = struct('obj',powerRXApplication_Qipp(1,dt,maxCurrent));
+		powerRX = struct('obj',powerRXApplication_QiOptimal(1,dt,maxCurrent));
 	else
 		if IMPROVED_rx==1
 			powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent));

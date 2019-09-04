@@ -119,7 +119,6 @@ classdef Environment
 		end
 
         function Z = generateZENV(obj)
-
         	miVector = genMiVector(obj);
 
             L = (obj.groupMarking*obj.C_group ~= -1).*diag(obj.M); %if C=-1, resonance

@@ -3,22 +3,31 @@ rng('shuffle');
 number = rand;%used to differenciate the experiments
 disp(['Starting experiment number ',num2str(number)]);
 
-n = 300;
+n = 100;
 smooth_radius = 100;
-m = 50;
-d_min = 5;
-d_max = 30;
-tTime = 1000;
+m = 140;
+tTime = 2778;
 
 params.improved_circ = false;
-params.improved_rx = 0;%1: Qi+, 2: Qi++, other: regular Qi 1.0
+params.improved_rx = 2;%1: Qi+, 2: Qi++, other: regular Qi 1.0
 params.improved_tx = false;
 
 params.R = [0.015;3.97];
 params.miEnv = 1.256627e-06;
 params.maxCurrent = 1.2594;
-params.env = 'STEIN_ENV.mat';
+params.env = 'STEIN_ENV_large.mat';
 params.beta = 0.225;
+
+%involved distances
+if strcmp('STEIN_ENV.mat',params.env)
+    d_min = 5;
+    d_max = 30;
+else
+    if strcmp('STEIN_ENV_large.mat',params.env)
+        d_min = 5;
+        d_max = 74.5;
+    end
+end
 
 %reference values in V(from STEIN paper, 35g/L salty water experiment)
 ref_volt = [4.93, 4.63, 3.88, 3.27, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00;
@@ -57,7 +66,7 @@ plot(linspace(d_min,d_max,m),voltage0,'.g');
 %CONSIDERING LINK INTERRUPTION
 voltage = zeros(n,m);
 for i=1:n
-    params.endProb = 0.0027;%0.0027
+    params.endProb = 0.0027;
     [~, ~, ~, t_RX, CC_RX, t_W, W,~] = simulate_STEIN(params);
     %converting time to distance
 	d_RX = ((tTime-t_RX)*d_min + d_max*t_RX)/tTime;
@@ -78,12 +87,13 @@ ylim([0 inf]);
 title(['Exp number ',num2str(number)]);
 xlabel('Distance (mm)','FontSize',14,'FontWeight','bold')
 ylabel('Voltage(V)','FontSize',14,'FontWeight','bold')
-legend('Real data','Real data (interpolation)','Simulated data (no perturbations)',...
-    'Simulated data (with perturbations)');
+legend('Real','Real (interpolation)','Simulated (no perturbations)',...
+    'Simulated (with perturbations)');
 
-%figure;
-%plot(t_W,W);
-%ylim([105000,210000]);
+figure;
+plot(t_W,W);
+ylim([105000,210000]);
+
 disp(['Finishing experiment number ',num2str(round(1000000*number))]);
 
 %comparing the simulated data with the real (interpolated) data

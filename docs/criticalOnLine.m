@@ -1,9 +1,9 @@
 %return all critical points of the simplified Qi landscape over a line which angular coefficient is phi
 %zero is the maximum number to be considered as zero.
 function [dX,dY,Z] = criticalOnLine(alpha,beta,gamma,a,phi,zero)
-   A = -(beta-2*alpha+gamma*phi)*(phi^2+1)
-   B = -2*(alpha-beta-gamma*phi)*(phi^2+1)
-   C = -(alpha-beta-gamma*phi)*(-2*phi^2)+(beta-2*alpha+gamma*phi)*phi^2
+   A = -(beta-2*alpha+gamma*phi)*(phi^2+1);
+   B = -2*(alpha-beta-gamma*phi)*(phi^2+1);
+   C = -(alpha-beta-gamma*phi)*(-2*phi^2)+(beta-2*alpha+gamma*phi)*phi^2;
 
    if(abs(A)<zero)
        dX = -C/B;

@@ -8,7 +8,7 @@
 %maxV (m) amplitude for the translation variations
 %maxR (rad) amplitude for the rotation variations
 
-function STEINTracking(savefile,plotAnimation,evalMutualCoupling,file,maxV,maxR)
+function STEINTracking(savefile,plotAnimation,evalMutualCoupling,file,nFrames,maxV,maxR)
 
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -20,7 +20,6 @@ function STEINTracking(savefile,plotAnimation,evalMutualCoupling,file,maxV,maxR)
     w = 1e+5;%dummie
     mi = pi*4e-7;
 
-    nFrames = 10;
     ntx = 2;%number of transmitters (the transmitter coil is bifilar, so here we
     %consider it as two overlapped coils)
 
