@@ -198,7 +198,7 @@ function [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENV_LIST_FILE,NTX,R,C,W,T
 			end
 		end
 		
-		cleanWarningMsg();%avoids a warning message flooding
+		%cleanWarningMsg();%avoids a warning message flooding
 	end
 	
 	%harvesting logs

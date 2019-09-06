@@ -10,6 +10,8 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
 		%Application parameters
     	dt
     	imax %maximum acceptable current
+        ttl_TX %time for TX optimization
+        ttl_RX %time for RX optimization
 		%pre-parametrized parameters
         Rmin %minimum allowed resistance
         P %maximum allowed active power
@@ -25,10 +27,12 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
         ttl %when 0, toggle state
     end
     methods
-        function obj = powerRXApplication_QiOptimal(id,dt,imax)
+        function obj = powerRXApplication_QiOptimal(id,dt,imax,ttl_TX,ttl_RX)
             obj@powerRXApplication(id);%building superclass structure
             obj.dt = dt;
             obj.imax = imax;
+            obj.ttl_TX = ttl_TX;
+            obj.ttl_RX = ttl_RX;
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -41,7 +45,7 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
 			
             %let TX optimize first
             obj.state = 0;
-            obj.ttl = 100;
+            obj.ttl = obj.ttl_TX;
 
             %starting operational loop
 			netManager = setTimer(obj,netManager,0,obj.dt);
@@ -72,7 +76,7 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
                     if obj.ttl>0
                         obj.ttl=obj.ttl-1;
                     else
-                        obj.ttl=500;
+                        obj.ttl=obj.ttl_RX;
                         obj.state=1;
                     end
                 else
@@ -83,7 +87,7 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
                     if obj.ttl>0
                         obj.ttl=obj.ttl-1;
                     else
-                        obj.ttl=100;
+                        obj.ttl=obj.ttl_TX;
                         obj.state=0;
                     end
                 end

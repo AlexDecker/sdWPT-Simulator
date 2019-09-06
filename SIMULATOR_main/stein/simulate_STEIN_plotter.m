@@ -3,13 +3,12 @@ rng('shuffle');
 number = rand;%used to differenciate the experiments
 disp(['Starting experiment number ',num2str(number)]);
 
-n = 100;
+n = 0;
 smooth_radius = 100;
 m = 140;
-tTime = 2778;
 
 params.improved_circ = false;
-params.improved_rx = 2;%1: Qi+, 2: Qi++, other: regular Qi 1.0
+params.improved_rx = 1;%1: Qi+, 2: Qi++, other: regular Qi 1.0
 params.improved_tx = false;
 
 params.R = [0.015;3.97];
@@ -18,14 +17,20 @@ params.maxCurrent = 1.2594;
 params.env = 'STEIN_ENV_large.mat';
 params.beta = 0.225;
 
+%params for TX/RX joint optimization
+params.ttl_TX = 25;
+params.ttl_RX = inf;
+
 %involved distances
 if strcmp('STEIN_ENV.mat',params.env)
     d_min = 5;
     d_max = 30;
+    tTime = 1000;
 else
     if strcmp('STEIN_ENV_large.mat',params.env)
         d_min = 5;
         d_max = 74.5;
+        tTime = 5000;
     end
 end
 
@@ -89,6 +94,7 @@ xlabel('Distance (mm)','FontSize',14,'FontWeight','bold')
 ylabel('Voltage(V)','FontSize',14,'FontWeight','bold')
 legend('Real','Real (interpolation)','Simulated (no perturbations)',...
     'Simulated (with perturbations)');
+set(gcf,'Position',[10,10,550,390]);
 
 figure;
 plot(t_W,W);
@@ -99,5 +105,5 @@ disp(['Finishing experiment number ',num2str(round(1000000*number))]);
 %comparing the simulated data with the real (interpolated) data
 %TODO
 
-save(['experiment_',num2str(round(1000000*number)),'.mat']);
+%save(['experiment_',num2str(round(1000000*number)),'.mat']);
 

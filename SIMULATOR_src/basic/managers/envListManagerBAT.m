@@ -176,18 +176,21 @@ classdef envListManagerBAT
                 end
                 %log-------------------
                 
-				%updating the stated of the devices (battery, operation or other used-defined feature)
+				%updating the state of the devices (battery, operation or other used-defined feature)
 				%according to the actual current and the update time interval t.
                 for i=1:length(obj.deviceList)
                     [obj.deviceList(i).obj,obj.DEVICE_DATA(i)] = updateDeviceState(obj.deviceList(i).obj,...
-                    meanI_group(length(Vt)+i), step,obj.DEVICE_DATA(i),t);
+                    meanI_group(length(Vt)+i), step, obj.DEVICE_DATA(i), t);
                 end
                 
                 I0 = I1;
                 
-				%data visualization
-                if obj.showProgress && (obj.lastPrint ~= round(100*t/obj.ENV.tTime))
-                    disp(['progress (until totalTime): ',num2str(round(100*t/obj.ENV.tTime)),'%']);
+				%message control
+                if (obj.lastPrint ~= round(100*t/obj.ENV.tTime))
+                    if obj.showProgress
+                        disp(['progress (until totalTime): ',num2str(round(100*t/obj.ENV.tTime)),'%']);
+                    end
+                    cleanWarningMsg();%avoids a warning message flooding
                     obj.lastPrint = round(100*t/obj.ENV.tTime);
                 end
             end
