@@ -1,7 +1,8 @@
 function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     if exist('params','var')
         R = params.R;
-        miEnv = params.miEnv;
+        MI_ENV = params.miEnv;
+		STEP_BY_STEP = params.stepByStep;
         maxCurrent = params.maxCurrent;
         ENVIRONMENT = params.env;
         ENDPROB = params.endProb;
@@ -20,12 +21,13 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
         TTL_TX = params.ttl_TX;
         TTL_RX = params.ttl_RX;
     else
-        R = [0.0250;35];
-        miEnv = 1.256627e-06;
-        maxCurrent = 1.5; % (A)
+        R = [0.015;3.97];
+        MI_ENV = 1.256627e-06;
+		STEP_BY_STEP = false;
+        maxCurrent = 1.2594; % (A)
         ENVIRONMENT = 'STEIN_ENV.mat';
         ENDPROB = 0;
-		BETA = 0.7; 
+		BETA = 0.225; 
 		IMPROVED_circ = false;
 		IMPROVED_rx = 0;%regular RX
 		IMPROVED_tx = false;
@@ -97,7 +99,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     [LOG_TX,LOG_dev_list,LOG_app_list] = Simulate(ENVIRONMENT,NTX,R,C,W,...
         TOTAL_TIME,MAX_ERR,R_MAX,IFACTOR,DFACTOR,INIT_VEL,MAX_ACT_POWER,...
         MAX_APP_POWER,DEVICE_LIST,STEP,SHOW_PROGRESS,powerTX,powerRX,...
-        B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,miEnv);
+        B_SWIPT,B_RF,A_RF,N_SWIPT,N_RF,MI_ENV,STEP_BY_STEP);
 
     
     LOG_RX = endDataAquisition(LOG_dev_list(1));

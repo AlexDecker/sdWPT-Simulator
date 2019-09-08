@@ -94,6 +94,7 @@ classdef powerRXApplication_Qiplus < powerRXApplication
                         %update window
                         item.Ir = I;
                         item.Zr = obj.Rr - (1i)/(w*obj.Cr);
+						item.Z1 = zeros(4);%RETIRAR
                         obj.window = [obj.window(2:end), item];
 
                         %get the variable parammeters from constants, I and w
@@ -110,6 +111,7 @@ classdef powerRXApplication_Qiplus < powerRXApplication
                     else
                         item.Ir = I;
                         item.Zr = obj.Rr - (1i)/(w*obj.Cr);
+						item.Z1 = zeros(4);%RETIRAR
                         obj.window = [obj.window, item];
                     end
                 end
@@ -173,8 +175,19 @@ classdef powerRXApplication_Qiplus < powerRXApplication
             Z = getCompleteLastZMatrix(WPTManager);
             Z1 = Z.*(1-[0;0;1;1]*[0,0,1,1])+[zeros(2),zeros(2);zeros(2),-(1i)*w*obj.Mr];
             diff = Z-Z1; actualZr = diff(end,end);
+			
+			obj.window(end).Z1 = Z1;
+			
+			%confirming if the context is of saturation or frame changing
+			sat = false;
+			for i=2:length(obj.window)
+				if sum(sum(abs(obj.window(i).Z1-obj.window(i-1).Z1)))~=0
+					sat=true;
+					break;
+				end
+			end
             
-            if(abs(real(Z1(1,1))-0.015)<1e-6)
+            if(~sat)
                 iZ = eye(4)/Z1;
                 actualA = [0,0,1,1]*iZ*[0;0;1;1];
                 actualJ = obj.V*iZ*[1;1;0;0];
@@ -182,17 +195,27 @@ classdef powerRXApplication_Qiplus < powerRXApplication
                 actualB = [0,0,1,1]*iZ*[1;1;0;0];
                 I = actualJ-(Zr(end)/(1+Zr(end)*actualA))*actualK;
 
-                errs = [];
-                for i=1:length(dIr)
+                %errs = [];
+				%for i=1:length(Ir)
+                %for i=1:length(dIr)
                     %I = actualJ-(Zr(i)/(1+Zr(i)*actualA))*actualK;
-                    dir = (Zr0(i)/(1+Zr0(i)*actualA)-Zr1(i)/(1+Zr1(i)*actualA))*obj.V*actualA*actualB;
-                    %errs = [errs, (sum(I(3:4))-Ir(i))/Ir(i)];
-                    errs=[errs,abs(dir-dIr(i))/abs(dir)];
-                end
-                errs
+					%errs = [errs, (sum(I(3:4))-Ir(i))/Ir(i)];
+					
+                    %dir0 = (Zr0(i)/(1+Zr0(i)*actualA)-Zr1(i)/(1+Zr1(i)*actualA))*obj.V*actualA*actualB;
+					%dir1 = (Zr0(i)-Zr1(i))/(Zr0(i)*Zr1(i)*actualA^2 + (Zr0(i)+Zr1(i))*actualA + 1)*obj.V*actualA*actualB;
+					%er = dIr(i)*Zr0(i)*Zr1(i)*actualA^2 + dIr(i)*(Zr0(i)+Zr1(i))*actualA + dIr(i)-(Zr0(i)-Zr1(i))*obj.V*actualA*actualB;
+                    %errs=[errs,er];
+                %end
+                %errs
 
-                Q = [dIr.*Zr0.*Zr1;dIr.*(Zr0+Zr1);-obj.V*ones(1,length(dIr))].';
+                Q = [dIr.*Zr0.*Zr1;dIr.*(Zr0+Zr1);-obj.V*(Zr0-Zr1)].';
                 Q*[actualA^2;actualA;actualA*actualB]+dIr.';
+				x = (eye(3)/(Q'*Q))*Q'*(-dIr.');
+				disp('results');
+				x(1) %compare esse e o da linha de baixo pra saber se a estimativa de A está correta
+				x(2).^2
+				x(2)
+				actualA
             end
 
             M = -imag(Z)/w;
@@ -235,8 +258,8 @@ classdef powerRXApplication_Qiplus < powerRXApplication
                 end
             end
             %inserting the new parameters
-            obj.Rr = Rr_best+5*rand;
-            obj.Cr = 3*rand*Cr_best;
+            obj.Rr = Rr_best+rand;
+            obj.Cr = rand*Cr_best;
             WPTManager = setResistance(obj,WPTManager,GlobalTime,obj.Rr);
             WPTManager = setCapacitance(obj,WPTManager,GlobalTime,obj.Cr);
 		end

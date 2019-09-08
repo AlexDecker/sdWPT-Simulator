@@ -25,12 +25,14 @@ params.ttl_RX = inf;
 if strcmp('STEIN_ENV.mat',params.env)
     d_min = 5;
     d_max = 30;
-    tTime = 1000;
+	tTime = 1000;
+	params.stepByStep = false;
 else
     if strcmp('STEIN_ENV_large.mat',params.env)
         d_min = 5;
         d_max = 74.5;
         tTime = 5000;
+		params.stepByStep = true;
     end
 end
 

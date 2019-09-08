@@ -18,10 +18,13 @@ classdef envListManager
         mostRecentZ %most recent calculated Z matrix 
 		miEnv %magnetic permeability of the medium
         RS %last calculated RS, used for easily finding the next value
+		stepByStep %if true, the data inside the frames is using without smoothing. So,
+			%the system parameters change abruptly from time to time
     end
     methods
         function obj = envListManager(envList,Vt_group,w,R_group,tTime,err,...
-            maxResistance,ifactor,dfactor,iVel,maxActPower,maxAppPower,miEnv)
+            maxResistance,ifactor,dfactor,iVel,maxActPower,maxAppPower,miEnv,...
+			stepByStep)
             obj.envList = envList;
             obj.Vt_group = Vt_group;
             obj.w = w;
@@ -36,10 +39,17 @@ classdef envListManager
             obj.iVel=iVel;
 			obj.maxActPower = maxActPower;
 			obj.maxAppPower = maxAppPower;
-            if exist('miEnv','var')
+            
+			if exist('miEnv','var')
                 obj.miEnv = miEnv;
             else
                 obj.miEnv = pi*4e-7;
+            end
+			
+			if exist('stepByStep','var')
+                obj.stepByStep = stepByStep;
+            else
+                obj.stepByStep = false;
             end
 
             obj.RS = 0;
@@ -120,7 +130,11 @@ classdef envListManager
             i = 1+(n-1)*time/obj.tTime;
             i0 = floor(i);
             i1 = ceil(i);
-            lambda = i1-i;
+			if obj.stepByStep %without smoothing
+				lambda = round(i1-i);
+			else
+				lambda = i1-i; %smoothing using linear interpolation
+			end
         end
 
         function Z = getZ(obj,time)%impedance matrix
