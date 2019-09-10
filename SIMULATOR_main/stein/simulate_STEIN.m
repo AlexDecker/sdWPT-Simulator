@@ -39,7 +39,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     %GENERAL ASPECTS
     NTX = 1; %number of transmitters
 	if IMPROVED_circ
-		C = [1.4535e-06;4.7002e-04];%rx resonace for quickly restablishing connection when lost
+		C = [1.4535e-06;1.6321e-04];%rx resonace for quickly restablishing connection when lost
 		%(rx resonates with the 4Hz ping frequency
 	else
         C = [4e-07;1e-07];%got from datasheets

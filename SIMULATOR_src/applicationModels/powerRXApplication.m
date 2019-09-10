@@ -22,7 +22,7 @@ classdef powerRXApplication < powerApplication
     end
     %Auxiliary functions
     methods(Access=protected)
-		%get the current within the coil in phasor notation
+		%get the current within the resistor in phasor notation
         function [I,WPTManager] = getI(obj,WPTManager,GlobalTime)
         	if(GlobalTime>obj.CurrTime)
         		error('powerRXApplication (getI): Inconsistent time value');
@@ -31,6 +31,17 @@ classdef powerRXApplication < powerApplication
         	end
             [~,~,cI_groups,~,WPTManager] = getSystemState(WPTManager,GlobalTime);
             I = cI_groups(WPTManager.nt_groups+obj.ID);
+        end
+        %get the current within each coil in phasor notation
+        function [I,WPTManager] = getCoilCurrents(obj,WPTManager,GlobalTime)
+        	if(GlobalTime>obj.CurrTime)
+        		error('powerRXApplication (getI): Inconsistent time value');
+        	else
+        		obj.CurrTime = GlobalTime;
+        	end
+            [cI,~,~,~,WPTManager] = getSystemState(WPTManager,GlobalTime);
+            [c0,c1] = getGroupLimits( WPTManager.ENV.envList(1),WPTManager.nt_groups+obj.ID);
+            I = cI(c0:c1);
         end
 		%get the charging current, the discharge current, the battery voltage and the
 		%equivalent resistance of the device.

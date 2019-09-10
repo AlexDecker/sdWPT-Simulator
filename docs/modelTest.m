@@ -106,8 +106,8 @@ while verificacao>0
     z = z./(res1.*res2);
 
     %verificando as restricoes
-    res_test = ((dx-1)*real(a)-dy*imag(a))/abs(a)^2;
-    reac_test = dy/real(a)-imag(a)/real(a)*res_test;
+    res_test = ((dx-1)*real(a)+dy*imag(a))/abs(a)^2;
+    reac_test = (-(dx-1)*imag(a)+dy*real(a))/abs(a)^2;
     if (res_test>=0)~=res1
         error('restricao de resistencia');
     end

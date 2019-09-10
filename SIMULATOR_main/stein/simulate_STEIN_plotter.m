@@ -3,7 +3,7 @@ rng('shuffle');
 number = rand;%used to differenciate the experiments
 disp(['Starting experiment number ',num2str(number)]);
 
-n = 0;
+n = 100;
 smooth_radius = 100;
 m = 140;
 
@@ -31,7 +31,7 @@ else
     if strcmp('STEIN_ENV_large.mat',params.env)
         d_min = 5;
         d_max = 74.5;
-        tTime = 5000;
+        tTime = 1000;
 		params.stepByStep = true;
     end
 end
@@ -107,5 +107,5 @@ disp(['Finishing experiment number ',num2str(round(1000000*number))]);
 %comparing the simulated data with the real (interpolated) data
 %TODO
 
-%save(['experiment_',num2str(round(1000000*number)),'.mat']);
+save(['experiment_',num2str(round(1000000*number)),'.mat']);
 
