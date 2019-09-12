@@ -292,8 +292,8 @@ classdef powerRXApplication_Qiplus < powerRXApplication
 
 		function [obj,WPTManager] = updateImpedance(obj,WPTManager,GlobalTime,w)
             
-            Rr_best = obj.safeRr;
-            Cr_best = obj.safeCr;
+            Rr_best = obj.Rmin;%obj.safeRr;
+            Cr_best = 1e-7;%obj.safeCr;
             
             if ~isnan(obj.A)
                 
@@ -378,9 +378,12 @@ classdef powerRXApplication_Qiplus < powerRXApplication
                 
                 Zr_best = Rr_best + React_best*(1i);
                 I_best = abs(obj.C + Zr_best*obj.B/(1+obj.A*Zr_best));
-                if I_best<I_best_0
-                    Rr_best = Rr_best_0;
-                    Cr_best = Cr_best_0;
+                if I_best+1e-6*I_best_0<I_best_0
+                    global SubOptimals;
+                    if isempty(SubOptimals), SubOptimals=1;, else, SubOptimals=SubOptimals+1;,end
+                else
+                    global Optimals;
+                    if isempty(Optimals), Optimals=1;, else, Optimals=Optimals+1;,end
                 end
             end
 
