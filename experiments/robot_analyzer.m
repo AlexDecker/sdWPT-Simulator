@@ -63,7 +63,7 @@ function statistics = robot_analyzer(voltages,threshold1, threshold2)
                 blob.offlineTime = blob.offlineTime + blobs(i);
             else
                 blob.end = time;
-                if blob.end>blob.begin
+                if blob.end>blob.begin + threshold2/10
                     statistics = [statistics,blob];
                 end
                 blob.interruptions = 0;
@@ -83,9 +83,9 @@ function statistics = robot_analyzer(voltages,threshold1, threshold2)
     hold on;
     m = 5*max(double(voltages(:,2)))/1024;
     for i=1:length(statistics)
-        rectangle('Position',[statistics(i).begin,0,...
-            statistics(i).end-statistics(i).begin,m],'FaceColor',[rand rand rand],...
+        rectangle('Position',[double(statistics(i).begin)/1000,0,...
+            double(statistics(i).end-statistics(i).begin)/1000,m],'FaceColor',[rand rand rand],...
             'EdgeColor','None');
     end
-    plot(voltages(:,1),5*double(voltages(:,2))/1024,'.g');
+    plot(double(voltages(:,1))/1000,5*double(voltages(:,2))/1024,'.g');
 end
