@@ -2,7 +2,7 @@ rng('shuffle');
 err = 1e-7;
 
 
-verificacao = 5;
+verificacao = 50;
 
 while verificacao>0
 	if(rand>0.5)
@@ -12,10 +12,10 @@ while verificacao>0
 		w = 2*pi*4000;
 	end
 
-    Mt = [-0.3661,   0.3539;
-          0.3539,   -0.3326]*1.0e-05;
-    Mr = [-0.6853,   0.6892;
-           0.6892,  -0.6624]*1.0e-05;
+    Mt = [-1.3235,   0.3539;
+          0.3539,   -1.2023]*1.0e-05;
+    Mr = [-1.9735,   0.6892;
+           0.6892,  -1.9076]*1.0e-05;
     zt = 0.015 - 1i/(w*4e-07);
     
     R0 = 3.97;%resistencia minima do receptor
@@ -99,6 +99,20 @@ while verificacao>0
     %gerando a malha da funcao objetivo
     [dx,dy] = meshgrid(dx0-d:0.05:dx0+d,dy0-d:0.05:dy0+d);
     z = ((beta-2*alpha)*dx+gamma*dy+alpha-beta)./(dx.^2+dy.^2);
+	for i = 1:length(dx.')
+		for j = 1:length(dy)
+			x = dx0-d+(i-1)*0.05;
+			y = dy0-d+(j-1)*0.05;
+			x1 = (beta-2*alpha)/(2*z(i,j));
+			y1 = gamma/(2*z(i,j));
+			d2 = ((beta-2*alpha)^2+gamma^2)/(4*z(i,j)^2)+abs(b/a)^2/z(i,j);
+			if d2<-err*abs(d2)
+				error('Distancia invalida');
+			end
+			(x-x1)^2+(y-y1)^2
+			d2
+		end
+	end
 
     %restricoes
     res1 = real(a)*(dx-1)+imag(a)*dy>=0;
@@ -181,7 +195,7 @@ end
 
 %plotando a landscape
 figure;
-set(gcf, 'Position',  [100, 100, 1000, 1000]);
+set(gcf, 'Position',  [100, 100, 500, 500]);
 hold on;
 surf(dx,dy,z);
 xlim([dx0-d,dx0+d]);
@@ -192,7 +206,7 @@ title(num2str(a));
 
 %visualizacao da solucao otimizada
 figure;
-set(gcf, 'Position',  [100, 100, 1000, 1000]);
+set(gcf, 'Position',  [100, 100, 500, 500]);
 hold on;
 %semi retas do dominio
 if(imag(a)>=0)
