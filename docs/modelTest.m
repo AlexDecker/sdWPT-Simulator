@@ -101,16 +101,17 @@ while verificacao>0
     z = ((beta-2*alpha)*dx+gamma*dy+alpha-beta)./(dx.^2+dy.^2);
 	for i = 1:length(dx.')
 		for j = 1:length(dy)
-			x = dx0-d+(i-1)*0.05;
-			y = dy0-d+(j-1)*0.05;
+			x = dx(i,j);
+			y = dy(i,j);
 			x1 = (beta-2*alpha)/(2*z(i,j));
 			y1 = gamma/(2*z(i,j));
 			d2 = ((beta-2*alpha)^2+gamma^2)/(4*z(i,j)^2)+abs(b/a)^2/z(i,j);
 			if d2<-err*abs(d2)
 				error('Distancia invalida');
 			end
-			(x-x1)^2+(y-y1)^2
-			d2
+			if abs((x-x1)^2+(y-y1)^2-d2)>err*abs(d2)
+                error('Distancia invalida 2');
+            end
 		end
 	end
 
