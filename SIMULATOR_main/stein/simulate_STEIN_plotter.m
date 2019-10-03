@@ -3,7 +3,7 @@ rng('shuffle');
 number = rand;%used to differenciate the experiments
 disp(['Starting experiment number ',num2str(number)]);
 
-n = 100;
+n = 0;%100;
 smooth_radius = 100;
 m = 140;
 

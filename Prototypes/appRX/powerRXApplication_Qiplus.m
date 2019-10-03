@@ -32,7 +32,6 @@ classdef powerRXApplication_Qiplus < powerRXApplication
         %parameters adquired from the environment
         A
         B
-        C
         %last RX impedance that led to a non-saturated system state
         safeRr
         safeCr
@@ -62,7 +61,7 @@ classdef powerRXApplication_Qiplus < powerRXApplication
             
             %initializing operational parameters
             obj.variability = 0.05;
-            obj.A = NaN; obj.B = NaN; obj.C = NaN;
+            obj.A = NaN; obj.B = NaN;
             obj.safeRr = obj.Rmin;
             obj.safeCr = 1e-7;
 
@@ -203,7 +202,8 @@ classdef powerRXApplication_Qiplus < powerRXApplication
             %EXTRA DATA FOR DIAGNOSTICS------------------------------------------------
 
             Z = getCompleteLastZMatrix(WPTManager);
-            Z1 = Z.*(1-[0;0;1;1]*[0,0,1,1])+[zeros(2),zeros(2);zeros(2),-(1i)*W(end)*obj.Mr];
+            Z1 = Z.*(1-[0;0;1;1]*[0,0,1,1])+...
+                [zeros(2),zeros(2);zeros(2),-(1i)*W(end)*obj.Mr+obj.Rmin*ones(2)];
             diff = Z-Z1; actualZr = diff(end,end);
 			
 			obj.window(end).Z1 = Z1;
@@ -223,7 +223,6 @@ classdef powerRXApplication_Qiplus < powerRXApplication
             global FalseNegatives;
             global A_error;
             global B_error;
-            global C_error;
 
             if isempty(Positives), Positives = 0;, end
             if isempty(Negatives), Negatives = 0;, end
@@ -238,12 +237,11 @@ classdef powerRXApplication_Qiplus < powerRXApplication
             
             iZ = eye(4)/Z1;
             actualA = [0,0,1,1]*iZ*[0;0;1;1];
-            actualB = -obj.V*[0,0,1,1]*iZ*[0;0;1;1]*[0,0,1,1]*iZ*[1;1;0;0];
-            actualC = obj.V*[0,0,1,1]*iZ*[1;1;0;0];
-
+            actualB = obj.V*[0,0,1,1]*iZ*[1;1;0;0];
+            
             %--------------------------------------------------------------------------
 
-            Q = [dIr.*Zr0.*Zr1;dIr.*(Zr0+Zr1);-obj.V*(Zr0-Zr1)].';
+            Q = [dIr.*Zr0.*Zr1;dIr.*(Zr0+Zr1);(Zr1-Zr0)].';
             %if abs(det(Q'*Q))>1e-5 
             if rcond(Q'*Q)>1e-14
                 x = (eye(3)/(Q'*Q))*Q'*(-dIr.');
@@ -262,8 +260,7 @@ classdef powerRXApplication_Qiplus < powerRXApplication
                         obj.A = mean([x(2),-sqrt(x(1))]);
                     end
 
-                    obj.B = -dIr(end)/(Zr0(end)/(1+Zr0(end)*obj.A)-Zr1(end)/(1+Zr1(end)*obj.A));
-                    obj.C = Ir(end) - Zr(end)/(1+Zr(end)*obj.A)*obj.B;
+                    obj.B = x(3)/obj.A;
 
                     %register these value as safe
                     obj.safeRr = Rr(end);
@@ -275,12 +272,10 @@ classdef powerRXApplication_Qiplus < powerRXApplication
 
                     obj.A = NaN;%the estimated value cannot be used
                     obj.B = NaN;
-                    obj.C = NaN;
                 end
                 %comparing the estimated values to the actual values
                 A_error = [A_error, abs(obj.A-actualA)/abs(actualA)];
                 B_error = [B_error, abs(obj.B-actualB)/abs(actualB)];
-                C_error = [C_error, abs(obj.C-actualC)/abs(actualC)];
             else
                 %use the old data and
                 %increase entropy at system params in order to get more
@@ -299,96 +294,79 @@ classdef powerRXApplication_Qiplus < powerRXApplication
                 
                 %A lower bound for the best current (debugging purposes)--------
                 I_best_0 = 0;
-                Rr_best_0 = NaN;
-                Cr_best_0 = NaN;
-                for Rr = linspace(obj.Rmin,10,50)
+                %Rr_best_0 = inf;
+                %Cr_best_0 = inf;
+                for Rr = linspace(0,10,70)
                     for Cr = linspace(1e-8,1e-6,500)
                         zr = Rr - (1i)/(w*Cr);
-                        ir = abs(obj.C + (zr/(1+zr*obj.A))*obj.B);
+                        ir = abs(obj.B - (zr/(1+zr*obj.A))*obj.B*obj.A);
                         if(ir>I_best_0)
                             I_best_0 = ir;
-                            Rr_best_0 = Rr;
-                            Cr_best_0 = Cr;
+                            %Rr_best_0 = Rr;
+                            %Cr_best_0 = Cr;
                         end
                     end
                 end
+                %zr = Rr_best_0 - (1i)/(w*Cr_best_0);
+                %x = real(obj.A*zr)+1;
+                %y = imag(obj.A*zr);
+                
+                %testing the first formula of the article
+                %{
+                abs(obj.B - (zr/(1+zr*obj.A))*obj.A*obj.B)
+                sqrt((obj.B - (zr/(1+zr*obj.A))*obj.A*obj.B)'*(obj.B - (zr/(1+zr*obj.A))*obj.A*obj.B))
+                sqrt((obj.B' - (zr'/(1+zr'*obj.A'))*obj.A'*obj.B')*(obj.B - (zr/(1+zr*obj.A))*obj.A*obj.B))
+                sqrt(obj.B'*obj.B + (-obj.A*obj.B*zr)'*(-obj.A*obj.B*zr)/abs(1+obj.A*zr)^2+...
+                    obj.B'*(-obj.A*obj.B*zr)/(1+obj.A*zr)+(-obj.A*obj.B*zr)'*obj.B/((1+obj.A*zr)'))
+                sqrt(abs(obj.B)^2 + abs(obj.A)^2*abs(obj.B)^2*abs(zr)^2/abs(1+obj.A*zr)^2+...
+                    2*real((-obj.A*obj.B*zr)'*obj.B/((1+obj.A*zr)')))
+                sqrt(abs(obj.B)^2 + abs(obj.A)^2*abs(obj.B)^2*abs(zr)^2/abs(1+obj.A*zr)^2-...
+                    2*real(obj.A*abs(obj.B)^2*zr+abs(obj.A)^2*abs(obj.B)^2*abs(zr)^2)/abs(1+obj.A*zr)^2)
+                sqrt(abs(obj.B)^2 - abs(obj.A)^2*abs(obj.B)^2*abs(zr)^2/abs(1+obj.A*zr)^2-...
+                    2*abs(obj.B)^2*real(obj.A*zr)/abs(1+obj.A*zr)^2)
+                sqrt(abs(obj.B)^2-abs(obj.B)^2*(abs(1+obj.A*zr)^2-1)/abs(1+obj.A*zr)^2)
+                sqrt(abs(obj.B)^2/abs(1+obj.A*zr)^2)
+                %}
+                %testing the last formula (it should be equal to the first)
+                %sqrt(abs(obj.B)^2/(x^2+y^2))
+                %the found solution is over the frontier? If so, the expression below will return something
+                %close to zero
+                %(real(obj.A)*x+imag(obj.A)*y-real(obj.A))*(real(obj.A)*y-imag(obj.A)*x+imag(obj.A))
                 %---------------------------------------------------------------
-                alpha = abs(obj.B/obj.A)^2+2*real(obj.C'*obj.B/obj.A);
-                beta = 2*real(obj.C'*obj.B/obj.A);
-                gamma = -2*imag(obj.C'*obj.B/obj.A);
                 
-                %critical points over the lines which define the domain's frontier
-                [dx_r,dy_r,z_r] = criticalOnLine(alpha,beta,gamma,obj.A,-real(obj.A)/imag(obj.A),1e-8);
-                [dx_i,dy_i,z_i] = criticalOnLine(alpha,beta,gamma,obj.A,imag(obj.A)/real(obj.A),1e-8);
+                %candidates for optimal solution               
+                x = [real(obj.A)^2/abs(obj.A)^2,imag(obj.A)^2/abs(obj.A)^2,1];
+                y = [real(obj.A)*imag(obj.A)/abs(obj.A)^2,-real(obj.A)*imag(obj.A)/abs(obj.A)^2,0];
+                %candidates for optimal resistance
+                Rr = ((x-1)*real(obj.A)+y*imag(obj.A))/abs(obj.A)^2;
+                %candidates for optimal capacitive reactance
+                React = (y*real(obj.A)-imag(obj.A)*(x-1))/abs(obj.A)^2;
+                %candidates for optimal impedances
+                Zr = Rr + React*(1i);
+                %candidates for optimal current
+                I = abs(obj.B - Zr*obj.B*obj.A./(1+obj.A*Zr));
+                %discarting unfeasible solutions
+                I = (((Rr<-1e-9)|(React>1e-9)).*(-I-1e-9))+I;
 
-                %the inntersection between the lines
-                dx0 = 1;
-                dy0 = 0;
+                %actual solution
+                [I0,index] = max(I);
 
-                %critical points which are in fact inside the domain
-                %1. the intersection between the lines
-                DX = dx0;
-                DY = dy0;
-                Z  = ((beta-2*alpha)*dx0+gamma*dy0+alpha-beta)/(dx0^2+dy0^2);
-
-                %2. the line where real(zr)=0
-                if(imag(obj.A)>=0)
-                    for i=1:length(dx_r)
-                        if(dx_r(i)>=dx0)
-                            DX = [DX, dx_r(i)];
-                            DY = [DY, dy_r(i)];
-                            Z  = [Z, z_r(i)];
-                        end
-                    end
-                else
-                    for i=1:length(dx_r)
-                        if(dx_r(i)<=dx0)
-                            DX = [DX, dx_r(i)];
-                            DY = [DY, dy_r(i)];
-                            Z  = [Z, z_r(i)];
-                        end
-                    end
-                end
-                %3. the line where imag(zr)=0
-                if(real(obj.A)>=0)
-                    for i=1:length(dx_i)
-                        if(dx_i(i)>=dx0)
-                            DX = [DX, dx_i(i)];
-                            DY = [DY, dy_i(i)];
-                            Z  = [Z, z_i(i)];
-                        end
-                    end
-                else
-                    for i=1:length(dx_i)
-                        if(dx_i(i)<=dx0)
-                            DX = [DX, dx_i(i)];
-                            DY = [DY, dy_i(i)];
-                            Z  = [Z, z_i(i)];
-                        end
-                    end
-                end
-
-                %the optimal is one of the critical points
-                [M,ind] = max(Z);
-                dx_best = DX(ind);
-                dy_best = DY(ind);
-                Rr_best = obj.Rmin+min(((dx_best-1)*real(obj.A)+dy_best*imag(obj.A))/abs(obj.A)^2,0);
-                React_best = (dy_best*real(obj.A)-imag(obj.A)*(dx_best-1))/abs(obj.A)^2;
-                Cr_best = min(abs(1/(w*React_best)),1);
-                
-                Zr_best = Rr_best + React_best*(1i);
-                I_best = abs(obj.C + Zr_best*obj.B/(1+obj.A*Zr_best));
-                if I_best+1e-6*I_best_0<I_best_0
+                Rr_best = Rr(index);
+                Cr_best = -1/(w*min(React(index),-1e-9));
+    
+                if I0+1e-6*I_best_0<I_best_0
+                    %the value is below the estimated
                     global SubOptimals;
                     if isempty(SubOptimals), SubOptimals=1;, else, SubOptimals=SubOptimals+1;,end
                 else
+                    %the value is consistent to the estimated value
                     global Optimals;
                     if isempty(Optimals), Optimals=1;, else, Optimals=Optimals+1;,end
                 end
             end
 
             %inserting the new parameters
-            obj.Rr = min(Rr_best*(1+rand*obj.variability),7);
+            obj.Rr = min(Rr_best*(1+rand*obj.variability),10)+obj.Rmin;
             obj.Cr = Cr_best*(1+rand*obj.variability);
             WPTManager = setResistance(obj,WPTManager,GlobalTime,obj.Rr);
             WPTManager = setCapacitance(obj,WPTManager,GlobalTime,obj.Cr);

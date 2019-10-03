@@ -1,8 +1,8 @@
 rng('shuffle');
-err = 1e-7;
+err = 1e-9;
 
 
-verificacao = 50;
+verificacao = 1;
 
 while verificacao>0
 	if(rand>0.5)
@@ -64,6 +64,11 @@ while verificacao>0
     beta = 2*real(c'*b/a);
     gamma = -2*imag(c'*b/a);
 
+    if(abs(alpha+abs(c)^2)>err*abs(c)^2)||(abs(beta+2*abs(c)^2)>2*err*abs(c)^2)||(abs(gamma)>err)
+        error('novas definicoes');
+    end
+
+
     zeta = a*zr;
 
     x = real(zeta);
@@ -103,13 +108,11 @@ while verificacao>0
 		for j = 1:length(dy)
 			x = dx(i,j);
 			y = dy(i,j);
-			x1 = (beta-2*alpha)/(2*z(i,j));
-			y1 = gamma/(2*z(i,j));
-			d2 = ((beta-2*alpha)^2+gamma^2)/(4*z(i,j)^2)+abs(b/a)^2/z(i,j);
-			if d2<-err*abs(d2)
+
+			if z(i,j)<-err*abs(d2)
 				error('Distancia invalida');
 			end
-			if abs((x-x1)^2+(y-y1)^2-d2)>err*abs(d2)
+			if abs(x^2+y^2-abs(c)^2/z(i,j))>err*abs(abs(c)^2/z(i,j))
                 error('Distancia invalida 2');
             end
 		end
