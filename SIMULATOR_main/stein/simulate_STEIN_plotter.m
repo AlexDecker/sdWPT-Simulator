@@ -45,7 +45,7 @@ ref_volt = [4.93, 4.63, 3.88, 3.27, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00;
             4.92, 4.60, 4.12, 3.37, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00];
 ref_mean = mean(ref_volt);
 %confidence interval size, considering t-student distribution
-ref_err = (2.015*std(ref_volt)/sqrt(6))/2;
+ref_err = 2.015*std(ref_volt)/sqrt(6);
 %distance of the samples (mm)
 ref_dist = [5, 7.50, 10.00, 12.5, 15.0, 17.5, 20.0, 22.5, 25, 27.5, 30];
 
@@ -88,7 +88,7 @@ if n==1
 	plot(linspace(d_min,d_max,m),voltage,'b');
 else
     %admit n=100. if you have Statistics Toolbox, use tinv instead of the constant
-	errorbar(linspace(d_min,d_max,m),mean(voltage),1.66039*std(voltage)/(2*sqrt(100)),'b');
+	errorbar(linspace(d_min,d_max,m),mean(voltage),1.66039*std(voltage)/sqrt(100),'b');
 end
 ylim([0 inf]);
 title(['Exp number ',num2str(number)]);
