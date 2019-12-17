@@ -30,79 +30,34 @@ MIMO40Y = [0;7.007786429;15.01668521;21.02335929;27.03003337;33.25917686;39.0433
 %executing the simulations
 
 disp('Starting 10cm...');
-[~, ~, SOC, TSOC, RL, TRL] = simulate_MagMIMO('envMIMODist10.mat');
+[~, ~, SOC, TSOC, ~, ~] = simulate_MagMIMO('envMIMODist10.mat');
 disp('Finished...');
-
-figure;
-plot(TRL.vals/3600,RL.vals);
-xlabel('Time (h)')
-ylabel('RL (ohms)')
-title('Load Resistance Progression');
-
-%load resistance vs SOC chart
-figure;
-plot(SOC.vals(1:min(length(SOC.vals),length(RL.vals)))*100,...
-	RL.vals(1:min(length(SOC.vals),length(RL.vals))));
-xlabel('SOC (%)')
-ylabel('RL (ohms)')
-title('Load Resistance vs SOC');
-
-figure;
-hold on;
-
-%Starting main chart
-plot(TSOC.vals/3600,100*SOC.vals);
-
-%error estimation
-lim_min = max(min(TSOC.vals/3600),min(MIMO10X));
-lim_max = min(max(TSOC.vals/3600),max(MIMO10X));
-[X,index] = unique(TSOC.vals/3600);%removing repeated values
-eMIMO10 = interp1(MIMO10X,MIMO10Y,...
-	linspace(lim_min,lim_max,100))...
-	- interp1(X,100*SOC.vals(index),...
-	linspace(lim_min,lim_max,100));
+X10 = TSOC.vals/3600;
+Y10 = 100*SOC.vals;
 
 disp('Starting 20cm...');
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist20.mat');
 disp('Finished...');
-plot(TSOC.vals/3600,100*SOC.vals);
-
-%error estimation
-lim_min = max(min(TSOC.vals/3600),min(MIMO20X));
-lim_max = min(max(TSOC.vals/3600),max(MIMO20X));
-[X,index] = unique(TSOC.vals/3600);%removing repeated values
-eMIMO20 = interp1(MIMO20X,MIMO20Y,...
-	linspace(lim_min,lim_max,100))...
-	- interp1(X,100*SOC.vals(index),...
-	linspace(lim_min,lim_max,100));
+X20 = TSOC.vals/3600;
+Y20 = 100*SOC.vals;
 
 disp('Starting 30cm...');
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist30.mat');
 disp('Finished...');
-plot(TSOC.vals/3600,100*SOC.vals);
-
-%error estimation
-lim_min = max(min(TSOC.vals/3600),min(MIMO30X));
-lim_max = min(max(TSOC.vals/3600),max(MIMO30X));
-[X,index] = unique(TSOC.vals/3600);%removing repeated values
-eMIMO30 = interp1(MIMO30X,MIMO30Y,...
-	linspace(lim_min,lim_max,100))...
-	- interp1(X,100*SOC.vals(index),...
-	linspace(lim_min,lim_max,100));
+X30 = TSOC.vals/3600;
+Y30 = 100*SOC.vals;
 
 disp('Starting 40cm...');
 [~, ~, SOC, TSOC,~,~] = simulate_MagMIMO('envMIMODist40.mat');
 disp('Finished...');
-plot(TSOC.vals/3600,100*SOC.vals);
+X40 = TSOC.vals/3600;
+Y40 = 100*SOC.vals;
 
-%error estimation
-lim_min = max(min(TSOC.vals/3600),min(MIMO40X));
-lim_max = min(max(TSOC.vals/3600),max(MIMO40X));
-[X,index] = unique(TSOC.vals/3600);%removing repeated values
-eMIMO40 = interp1(MIMO40X,MIMO40Y,...
-	linspace(lim_min,lim_max,100))...
-	- interp1(X,100*SOC.vals(index),...
-	linspace(lim_min,lim_max,100));
+figure;hold on;
+plot(X10,Y10,'-');
+plot(X20,Y20,'-');
+plot(X30,Y30,'-');
+plot(X40,Y40,'-');
 
 %reference curves
 plot(MIMO10X,MIMO10Y,'--');
@@ -115,12 +70,32 @@ ylabel('(%)')
 legend('10 cm','20 cm','30 cm','40 cm');
 title('SOC Progression');
 
-%error estimation
-e10 = sqrt(sum(eMIMO10.^2))/(length(eMIMO10)*mean(MIMO10Y));
-e20 = sqrt(sum(eMIMO20.^2))/(length(eMIMO20)*mean(MIMO20Y));
-e30 = sqrt(sum(eMIMO30.^2))/(length(eMIMO30)*mean(MIMO30Y));
-e40 = sqrt(sum(eMIMO40.^2))/(length(eMIMO40)*mean(MIMO40Y));
-disp(['normalized mean square error: (10 cm)',num2str(e10*100),'%']);
-disp(['normalized mean square error: (20 cm)',num2str(e20*100),'%']);
-disp(['normalized mean square error: (30 cm)',num2str(e30*100),'%']);
-disp(['normalized mean square error: (40 cm)',num2str(e40*100),'%']);
+%preparing the data to comparision
+x10 = linspace(max(min(X10),min(MIMO10X)),min(max(X10),max(MIMO10X)),100);
+x20 = linspace(max(min(X20),min(MIMO20X)),min(max(X20),max(MIMO20X)),100);
+x30 = linspace(max(min(X30),min(MIMO30X)),min(max(X30),max(MIMO30X)),100);
+x40 = linspace(max(min(X40),min(MIMO40X)),min(max(X40),max(MIMO40X)),100);
+ref10 = interp1(MIMO10X,MIMO10Y,x10);%the reference data for 10cm
+ref20 = interp1(MIMO20X,MIMO20Y,x20);
+ref30 = interp1(MIMO30X,MIMO30Y,x30);
+ref40 = interp1(MIMO40X,MIMO40Y,x40);
+calc10 = interp1(X10(index),Y10(index),x10);%the data to be evaluated for 10cm
+calc20 = interp1(X20(index),Y20(index),x20);
+calc30 = interp1(X30(index),Y30(index),x30);
+calc40 = interp1(X40(index),Y40(index),x40);
+
+%root mean squared error
+rmse10 = sqrt(mean((ref10-calc10).^2))
+rmse20 = sqrt(mean((ref20-calc20).^2))
+rmse30 = sqrt(mean((ref30-calc30).^2))
+rmse40 = sqrt(mean((ref40-calc40).^2))
+
+%pearson correlation
+V = cov(ref10,calc10);%covariance matrix
+corr10 = V(1,2)/sqrt(V(1,1)*V(2,2))
+V = cov(ref20,calc20);%covariance matrix
+corr20 = V(1,2)/sqrt(V(1,1)*V(2,2))
+V = cov(ref30,calc30);%covariance matrix
+corr30 = V(1,2)/sqrt(V(1,1)*V(2,2)) 
+V = cov(ref40,calc40);%covariance matrix
+corr40 = V(1,2)/sqrt(V(1,1)*V(2,2)) 
