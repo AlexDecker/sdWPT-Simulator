@@ -53,6 +53,7 @@ disp('Finished...');
 X40 = TSOC.vals/3600;
 Y40 = 100*SOC.vals;
 
+
 figure;hold on;
 plot(X10,Y10,'-');
 plot(X20,Y20,'-');
@@ -79,9 +80,13 @@ ref10 = interp1(MIMO10X,MIMO10Y,x10);%the reference data for 10cm
 ref20 = interp1(MIMO20X,MIMO20Y,x20);
 ref30 = interp1(MIMO30X,MIMO30Y,x30);
 ref40 = interp1(MIMO40X,MIMO40Y,x40);
+[~,index] = unique(X10);
 calc10 = interp1(X10(index),Y10(index),x10);%the data to be evaluated for 10cm
+[~,index] = unique(X20);
 calc20 = interp1(X20(index),Y20(index),x20);
+[~,index] = unique(X30);
 calc30 = interp1(X30(index),Y30(index),x30);
+[~,index] = unique(X40);
 calc40 = interp1(X40(index),Y40(index),x40);
 
 %root mean squared error
