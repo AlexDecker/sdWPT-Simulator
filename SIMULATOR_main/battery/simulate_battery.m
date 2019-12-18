@@ -115,32 +115,37 @@ for i=1:length(LOG_dev_list)
 		ax.YAxis(1).Limits = [0,5];
     end
     %ERROR ESTIMATION
-    volt_lim_min = max(min(LOG.VB(2,:)/60),min(VOLTAGEX));
-    volt_lim_max = min(max(LOG.VB(2,:)/60),max(VOLTAGEX));
-	eVOLTAGE = interp1(VOLTAGEX,VOLTAGEY,...
-		linspace(volt_lim_min,volt_lim_max,100))...
-		- interp1(LOG.VB(2,:)/60,LOG.VB(1,:),...
-		linspace(volt_lim_min,volt_lim_max,100));
+    volt_min = max(min(LOG.VB(2,:)/60),min(VOLTAGEX));
+    volt_max = min(max(LOG.VB(2,:)/60),max(VOLTAGEX));
+    voltX = linspace(volt_min,volt_max,100);
+	refVolt = interp1(VOLTAGEX,VOLTAGEY,voltX);
+    [~,index] = unique(LOG.VB(2,:));
+    calcVolt = interp1(LOG.VB(2,index)/60,LOG.VB(1,index),voltX);
 	
-	cap_lim_min = max(min(LOG.SOC(2,:)/60),min(CAPACITYX));
-    cap_lim_max = min(max(LOG.SOC(2,:)/60),max(CAPACITYX));
-	eCAPACITY = interp1(CAPACITYX,CAPACITYY,...
-		linspace(cap_lim_min,cap_lim_max,100))...
-		-interp1(LOG.SOC(2,:)/60,LOG.SOC(1,:),...
-		linspace(cap_lim_min,cap_lim_max,100));
+	cap_min = max(min(LOG.SOC(2,:)/60),min(CAPACITYX));
+    cap_max = min(max(LOG.SOC(2,:)/60),max(CAPACITYX));
+    capX = linspace(cap_min,cap_max,100);
+	refCap = interp1(CAPACITYX,CAPACITYY,capX);
+    [~,index] = unique(LOG.SOC(2,:));
+	calcCap = interp1(LOG.SOC(2,index)/60,LOG.SOC(1,index),capX);
 	
-	cur_lim_min = max(min(LOG.CC(2,:)/60),min(CURRENTX));
-    cur_lim_max = min(max(LOG.CC(2,:)/60),max(CURRENTX));
-	eCURRENT = interp1(CURRENTX,CURRENTY,...
-		linspace(cur_lim_min,cur_lim_max,100))...
-		-interp1(LOG.CC(2,:)/60,LOG.CC(1,:),...
-		linspace(cur_lim_min,cur_lim_max,100));
+	cur_min = max(min(LOG.CC(2,:)/60),min(CURRENTX));
+    cur_max = min(max(LOG.CC(2,:)/60),max(CURRENTX));
+    curX = linspace(cur_min,cur_max,100);
+	refCur = interp1(CURRENTX,CURRENTY,curX);
+    [~,index] = unique(LOG.CC(2,:));
+	calcCur = interp1(LOG.CC(2,:)/60,LOG.CC(1,:),curX);
 
-	eVOLT = sqrt(sum(eVOLTAGE.^2))/(length(eVOLTAGE)*mean(VOLTAGEY));
-	eCAP = sqrt(sum(eCAPACITY.^2))/(length(eCAPACITY)*mean(CAPACITYY));
-	eCURR = sqrt(sum(eCURRENT.^2))/(length(eCURRENT)*mean(CURRENTY));
-	
-	disp(['normalized mean square error: (voltage)',num2str(eVOLT*100),'%']);
-	disp(['normalized mean square error: (SOC)',num2str(eCAP*100),'%']);
-	disp(['normalized mean square error: (current)',num2str(eCURR*100),'%']);
+    %Root Mean Squared Error
+    rmseVolt = sqrt(mean((refVolt-calcVolt).^2))
+    rmseCap = sqrt(mean((refCap-calcCap).^2))
+    rmseCur = sqrt(mean((refCur-calcCur).^2))
+
+    %Pearson correlation
+    V = cov(refVolt,calcVolt);
+    corrVolt = V(1,2)/sqrt(V(1,1)*V(2,2))
+    V = cov(refCap,calcCap);
+    corrCap = V(1,2)/sqrt(V(1,1)*V(2,2))
+    V = cov(refCur,calcCur);
+    corrCur = V(1,2)/sqrt(V(1,1)*V(2,2))
 end
