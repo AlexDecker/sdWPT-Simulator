@@ -35,15 +35,17 @@ classdef powerRXApplication_Qiplus < powerRXApplication
         %last RX impedance that led to a non-saturated system state
         safeRr
         safeCr
+		version %1: use (safeRr, safeCr); 2: use (Rmin, 1e-7 F)
     end
     methods
-        function obj = powerRXApplication_Qiplus(id,dt,imax,ttl_TX,ttl_RX,wSize)
+        function obj = powerRXApplication_Qiplus(id,dt,imax,ttl_TX,ttl_RX,wSize,version)
             obj@powerRXApplication(id);%building superclass structure
             obj.dt = dt;
             obj.imax = imax;
             obj.ttl_TX = ttl_TX;
             obj.ttl_RX = ttl_RX;
             obj.wSize = wSize;
+			obj.version = version;
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -262,7 +264,7 @@ classdef powerRXApplication_Qiplus < powerRXApplication
 
                     obj.B = x(3)/obj.A;
 
-                    %register these value as safe
+                    %register these values as safe
                     obj.safeRr = Rr(end);
                     obj.safeCr = Cr(end);
                 else
@@ -287,11 +289,17 @@ classdef powerRXApplication_Qiplus < powerRXApplication
 
 		function [obj,WPTManager] = updateImpedance(obj,WPTManager,GlobalTime,w)
             
-            Rr_best = obj.Rmin;%obj.safeRr;
-            Cr_best = 1e-7;%obj.safeCr;
+			if obj.version==1
+				Rr_best = obj.safeRr;
+				Cr_best = obj.safeCr;
+			elseif obj.version==2
+				Rr_best = obj.Rmin;
+				Cr_best = 1e-7;
+			else
+				error('powerRXApplication_Qiplus: version must be either 1 or 2');
+			end
             
             if ~isnan(obj.A)
-                
                 %A lower bound for the best current (debugging purposes)--------
                 I_best_0 = 0;
                 %Rr_best_0 = inf;

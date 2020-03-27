@@ -8,7 +8,8 @@ smooth_radius = 100;
 m = 140;
 
 params.improved_circ = false;
-params.improved_rx = 1;%1: Qi+, 2: Qi++, other: regular Qi 1.0
+params.improved_rx = 1;%1: Qi+, 2: Qi optimal, other: regular Qi 1.0
+params.version = 2;%Qi+ version
 params.improved_tx = false;
 
 params.R = [0.015;3.97];
@@ -63,6 +64,7 @@ plot(linspace(d_min,d_max,m),ref_mean1,'--r');
 params.endProb = 0;%no random link interruption
 [~, ~, ~, t_RX, CC_RX, t_W, W,~] = simulate_STEIN(params);
 %converting time to distance
+%TODO: incorporate d_RX to reduceSeries, because currently it only works for uniformly-spaced temporal series
 d_RX = ((tTime-t_RX)*d_min + d_max*t_RX)/tTime;
 %adjusting the length of the vectors 
 sCC_RX = reduceSeries(CC_RX, smooth_radius, m);

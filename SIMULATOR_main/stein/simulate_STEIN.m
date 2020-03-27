@@ -20,6 +20,8 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
         %for TX/RX joint optimization
         TTL_TX = params.ttl_TX;
         TTL_RX = params.ttl_RX;
+		
+		VERSION = params.version; %Qi+ version
     else
         R = [0.015;3.97];
         MI_ENV = 1.256627e-06;
@@ -33,6 +35,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		IMPROVED_tx = false;
         TTL_TX = 50;
         TTL_RX = 800;
+		VERSION = 2;
     end
     disp('Reminding: Please be sure that the workspace is clean (use clear all)');
 
@@ -75,7 +78,7 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
 		powerRX = struct('obj',powerRXApplication_QiOptimal(1,dt,maxCurrent,TTL_TX,TTL_RX));
 	else
 		if IMPROVED_rx==1
-			powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent,TTL_TX,TTL_RX,wSize));
+			powerRX = struct('obj',powerRXApplication_Qiplus(1,dt,maxCurrent,TTL_TX,TTL_RX,wSize,VERSION));
 		else
     		powerRX = struct('obj',powerRXApplication_Qi(1,dt,maxCurrent));
 		end

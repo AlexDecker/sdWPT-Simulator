@@ -1,7 +1,10 @@
-Experiments:
+Saved experiment data and the corresponding charts:
 358077 - Optimal (alternative)
 784349 - RegularQi.svg
 984658 - RX-optimal.svg
 946664 - ResonantPing.svg
 652768 - RX-Optimized.svg
 849236 - RX_Optimized2.svg (Rmin+1e-7F)
+
+type 'plot_charts' to plot the comparative charts of voltage, current
+type 'simulate_STEIN_efficiency' to plot the comparative chart of efficiency without message drops
