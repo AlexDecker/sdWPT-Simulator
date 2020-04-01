@@ -46,6 +46,8 @@ classdef powerRXApplication_Qiplus < powerRXApplication
             obj.ttl_RX = ttl_RX;
             obj.wSize = wSize;
 			obj.version = version;
+			
+			obj.APPLICATION_LOG.DATA = [];
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -378,6 +380,9 @@ classdef powerRXApplication_Qiplus < powerRXApplication
             obj.Cr = Cr_best*(1+rand*obj.variability);
             WPTManager = setResistance(obj,WPTManager,GlobalTime,obj.Rr);
             WPTManager = setCapacitance(obj,WPTManager,GlobalTime,obj.Cr);
+			
+			%%For debugging purposes%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			obj.APPLICATION_LOG.DATA(end+1) = obj.Rr;
 		end
     end
 end

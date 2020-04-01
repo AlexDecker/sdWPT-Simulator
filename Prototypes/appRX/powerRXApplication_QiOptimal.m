@@ -6,6 +6,9 @@
 %just for obtaining an upper bound for RX-Qi applications.
 
 classdef powerRXApplication_QiOptimal < powerRXApplication
+	properties(Constant)
+		tolerance = 1e-3;
+	end
     properties
 		%Application parameters
     	dt
@@ -33,6 +36,8 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
             obj.imax = imax;
             obj.ttl_TX = ttl_TX;
             obj.ttl_RX = ttl_RX;
+			
+			obj.APPLICATION_LOG.DATA = [];
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -83,7 +88,7 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
                     %use the feedback in order to freeze TX action
                     netManager = send(obj,netManager,0,[obj.imax,obj.imax],128,GlobalTime);
                     %change its own capacitancy in order to optimize the received current
-			        WPTManager = updateImpedance(obj,WPTManager,GlobalTime,w);
+			        [obj, WPTManager] = updateImpedance(obj,WPTManager,GlobalTime,w);
                     if obj.ttl>0
                         obj.ttl=obj.ttl-1;
                     else
@@ -140,7 +145,7 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
             obj.Mtr = M(1:2,3:4);
 		end
 
-		function WPTManager = updateImpedance(obj,WPTManager,GlobalTime,w)
+		function [obj, WPTManager] = updateImpedance(obj,WPTManager,GlobalTime,w)
             Zt = (obj.Rt - (1i)/(w*obj.Ct))*[ones(2),zeros(2);zeros(2),zeros(2)];
 
             M = [obj.Mt, obj.Mtr;
@@ -158,12 +163,12 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
             Cr_best = 1e-7;
             I_best = 0;
             aux = 0;
-            for Rr = linspace(obj.Rmin,2,10)
+            for Rr = linspace(obj.Rmin,2*obj.Rmin,10)
                 for Cr = linspace(1e-8,1e-6,500)
                     zr = Rr - (1i)/(w*Cr);
                     I  = j - (zr/(1+zr*a))*k;
                     P  = real(obj.V*I'*[1;1;0;0]);
-                    if(P<obj.P)%if the spent power is feasible
+                    if(P < obj.P - powerRXApplication_QiOptimal.tolerance)%if the spent power is feasible
                         Ir = abs(sum(I(3:4)));
                         if(Ir>I_best)
                             I_best = Ir;
@@ -178,6 +183,9 @@ classdef powerRXApplication_QiOptimal < powerRXApplication
             %inserting the new parameters
             WPTManager = setResistance(obj,WPTManager,GlobalTime,Rr_best);
             WPTManager = setCapacitance(obj,WPTManager,GlobalTime,Cr_best);
+			
+			%%For debugging purposes%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			obj.APPLICATION_LOG.DATA(end+1) = Rr_best;
 		end
     end
 end

@@ -62,7 +62,7 @@ plot(linspace(d_min,d_max,m),ref_mean1,'--r');
 
 %NO LINK INTERRUPTION
 params.endProb = 0;%no random link interruption
-[~, ~, ~, t_RX, CC_RX, t_W, W,~] = simulate_STEIN(params);
+[~, ~, ~, t_RX, CC_RX, t_W, W, ~, ~, ~, ~] = simulate_STEIN(params);
 %converting time to distance
 %TODO: incorporate d_RX to reduceSeries, because currently it only works for uniformly-spaced temporal series
 d_RX = ((tTime-t_RX)*d_min + d_max*t_RX)/tTime;

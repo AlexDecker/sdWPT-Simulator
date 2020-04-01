@@ -10,6 +10,7 @@ classdef powerRXApplication_Qi < powerRXApplication
             obj@powerRXApplication(id);%building superclass structure
             obj.dt = dt;
             obj.imax = imax;
+			obj.APPLICATION_LOG.DATA = [];
         end
 
         function [obj,netManager,WPTManager] = init(obj,netManager,WPTManager)
@@ -28,6 +29,11 @@ classdef powerRXApplication_Qi < powerRXApplication
 		    	netManager = send(obj,netManager,0,[I,obj.imax],128,GlobalTime);
 		    end
 			netManager = setTimer(obj,netManager,GlobalTime,obj.dt);
+			
+			%%for debugging purposes%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			Z = getCompleteLastZMatrix(WPTManager);%getting the impedance matrix
+			R = diag(real(Z));%getting the resistance vector
+			obj.APPLICATION_LOG.DATA(end+1) = R(end);
         end
 
     end

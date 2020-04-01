@@ -1,4 +1,4 @@
-function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
+function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir, t_BC_RX, BC_RX1, BC_RX2, Rr] = simulate_STEIN(params)
     if exist('params','var')
         R = params.R;
         MI_ENV = params.miEnv;
@@ -107,7 +107,10 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     
     LOG_RX = endDataAquisition(LOG_dev_list(1));
     t_RX = LOG_RX.CC(2,:);
-    CC_RX = LOG_RX.CC(1,:);
+    CC_RX = LOG_RX.CC(1,:);%DC current for RX
+	t_BC_RX = LOG_TX.BC(3,:);
+    BC_RX1 = LOG_RX.BC(1,:);%AC current for each RX coil
+    BC_RX2 = LOG_RX.BC(2,:);
     
     LOG_TX = endDataAquisition(LOG_TX);
     t_TX = LOG_TX.BC(3,:);
@@ -117,4 +120,6 @@ function [t_TX, BC_TX1,BC_TX2, t_RX, CC_RX, t_W, W, Ir] = simulate_STEIN(params)
     W = LOG_app_list(1).DATA(1,:);
     Ir = LOG_app_list(1).DATA(2,:);
     t_W = LOG_app_list(1).DATA(3,:);
+	
+	Rr = LOG_app_list(2).DATA; %resistance values
 end
